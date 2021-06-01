@@ -1,37 +1,49 @@
-# global_i18n_standard
+# i18n<a name="EN-US_TOPIC_0000001101364976"></a>
 
-#### 介绍
-Providing i18n capabilities such as date/time formatting | 提供时间日期格式化等国际化能力
+-   [Introduction](#section11660541593)
+-   [Directory Structure](#section1464106163817)
+-   [Constraints](#section1718733212019)
+-   [Usage](#section894511013511)
+-   [Repositories Involved](#section15583142420413)
 
-#### 软件架构
-软件架构说明
+## Introduction<a name="section11660541593"></a>
 
+The i18n module provides a wide array of internationalization \(i18n\) APIs for implementing functions such as date and time formatting.
 
-#### 安装教程
+## Directory Structure<a name="section1464106163817"></a>
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+The directory structure for the i18n module is as follows:
 
-#### 使用说明
+```
+/base/global/
+├── i18n_standard           # Code repository for the i18n framework
+│   ├── frameworks          # Core code of the i18n framework
+│   ├── interfaces          # APIs
+│   │   ├── js              # JavaScript APIs
+│   │   └── native          # Native APIs
+```
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Constraints<a name="section1718733212019"></a>
 
-#### 参与贡献
+**Development language**: JavaScript
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+**Language, script, and country codes**: The supported language must be represented by a two- or three-letter code defined in the ISO 639 standard; the supported script must be represented by a four-letter code defined in the ISO 15924 standard; the supported country must be represented by a two-letter code defined in the ISO 3166 standard.
 
+## Usage<a name="section894511013511"></a>
 
-#### 特技
+Change the date and time formats \(such as the sequence of year, month, and day, month and week names, and 12-hour or 24-hour system\) following the system settings to adapt to the cultural habits of users in different locales. For details, see the API reference. The sample code is as follows:
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+```
+const date = new Date(2021, 11, 17, 3, 24, 0); // Create a Date object containing date and time information.
+fmt = new Intl.DateTimeFormat('en-US') // Create a DateTimeFormat instance.
+console.log(fmt.format(date)); // Format the date and time by using the DateTimeFormat instance.
+```
+
+## Repositories Involved<a name="section15583142420413"></a>
+
+Globalization subsystem
+
+**global\_i18n\_standard**
+
+global\_resmgr\_standard
+
