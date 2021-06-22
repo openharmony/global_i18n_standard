@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "date_time_format.h"
-#include <time64.h>
 #include "ohos/init_data.h"
 
 namespace OHOS {
@@ -53,30 +52,6 @@ DateTimeFormat::~DateTimeFormat()
 }
 
 bool DateTimeFormat::icuInitialized = DateTimeFormat::Init();
-
-std::string DateTimeFormat::Format(double timestamp)
-{
-    // The input time is millisecond needs to be converted to second.
-    time64_t time = timestamp / CONVERSION_RATE;
-    struct tm timeinfo = { 0 };
-    gmtime64_r(&time, &timeinfo);
-    // Year start from 1900.
-    int year = YEAR_START + timeinfo.tm_year;
-    int month = timeinfo.tm_mon;
-    int day = timeinfo.tm_mday;
-    int hour = timeinfo.tm_hour;
-    int minute = timeinfo.tm_min;
-    int second = timeinfo.tm_sec;
-    UErrorCode status = U_ZERO_ERROR;
-    std::string result;
-    UnicodeString dateString;
-    calendar->clear();
-    calendar->set(year, month, day, hour, minute, second);
-    dateString.remove();
-    dateFormat->format(calendar->getTime(status), dateString, status);
-    dateString.toUTF8String(result);
-    return result;
-}
 
 std::string DateTimeFormat::Format(int year, int month, int day, int hour, int minute, int second)
 {
