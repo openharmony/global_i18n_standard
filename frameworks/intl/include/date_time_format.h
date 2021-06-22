@@ -26,7 +26,6 @@ class DateTimeFormat {
 public:
     DateTimeFormat(std::string locale);
     virtual ~DateTimeFormat();
-    std::string Format(double timeStamp);
     std::string Format(int year, int month, int day, int hour, int minute, int second);
     static const int64_t CONVERSION_RATE = 1000;
     static const int64_t YEAR_START = 1900;
