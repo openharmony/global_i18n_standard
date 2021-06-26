@@ -32,6 +32,7 @@ ohos_shared_library("intl_util") {
   sources = [
     "src/date_time_format.cpp",
     "src/locale_info.cpp",
+    "src/number_format.cpp",
   ]
   cflags_cc = [
     "-Wall",

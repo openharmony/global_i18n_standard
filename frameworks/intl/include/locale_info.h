@@ -18,6 +18,7 @@
 #include "unicode/locid.h"
 #include "unicode/localebuilder.h"
 #include "unicode/stringpiece.h"
+#include <map>
 
 namespace OHOS {
 namespace Global {
@@ -25,11 +26,23 @@ namespace I18n {
 class LocaleInfo {
 public:
     LocaleInfo(std::string locale);
+    LocaleInfo(const std::string &localeTag, std::map<std::string, std::string> &configs);
     virtual ~LocaleInfo();
     std::string GetLanguage() const;
     std::string GetScript() const;
     std::string GetRegion() const;
     std::string GetBaseName() const;
+    std::string GetCalendar() const;
+    std::string GetCollation() const;
+    std::string GetHourCycle() const;
+    std::string GetNumberingSystem() const;
+    LocaleInfo *Maximize();
+    LocaleInfo *Minimize();
+    std::string GetNumeric() const;
+    std::string GetCaseFirst() const;
+    std::string ToString() const;
+    icu::Locale GetLocale() const;
+    icu::Locale GetLocaleTag() const;
     static const uint32_t SCRIPT_LEN = 4;
     static const uint32_t REGION_LEN = 2;
 private:
@@ -37,8 +50,28 @@ private:
     std::string region;
     std::string script;
     std::string baseName;
+    std::string calendar;
+    std::string collation;
+    std::string hourCycle;
+    std::string numberingSystem;
+    std::string numeric;
+    std::string caseFirst;
+    std::string finalLocaleTag;
+    std::string localeTag;
+    icu::Locale locale;
+    std::string calendarTag = "-ca-";
+    std::string collationTag = "-co-";
+    std::string hourCycleTag = "-hc-";
+    std::string numberingSystemTag = "-nu-";
+    std::string numericTag = "-kn-";
+    std::string caseFirstTag = "-kf-";
     static bool icuInitialized;
     static bool Init();
+    static const uint32_t CONFIG_TAG_LEN = 4;
+    std::map<std::string, std::string> configs;
+    void ComputeFinalLocaleTag(const std::string &localeTag);
+    void ParseConfigs();
+    void ParseLocaleTag(const std::string &localeTag);
 };
 } // namespace I18n
 } // namespace Global

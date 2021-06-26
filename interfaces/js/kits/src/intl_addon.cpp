@@ -56,6 +56,13 @@ napi_value IntlAddon::InitLocale(napi_env env, napi_value exports)
         DECLARE_NAPI_GETTER("baseName", GetBaseName),
         DECLARE_NAPI_GETTER("region", GetRegion),
         DECLARE_NAPI_GETTER("script", GetScript),
+        DECLARE_NAPI_GETTER("calendar", GetCalendar),
+        DECLARE_NAPI_GETTER("collation", GetCollation),
+        DECLARE_NAPI_GETTER("hourCycle", GetHourCycle),
+        DECLARE_NAPI_GETTER("numberingSystem", GetNumberingSystem),
+        DECLARE_NAPI_GETTER("numeric", GetNumeric),
+        DECLARE_NAPI_GETTER("caseFirst", GetCaseFirst),
+        DECLARE_NAPI_FUNCTION("toString", ToString),
     };
 
     napi_value constructor;
@@ -78,7 +85,8 @@ napi_value IntlAddon::InitDateTimeFormat(napi_env env, napi_value exports)
 {
     napi_status status;
     napi_property_descriptor properties[] = {
-        DECLARE_NAPI_FUNCTION("format", Format),
+        DECLARE_NAPI_FUNCTION("format", FormatDateTime),
+        DECLARE_NAPI_FUNCTION("resolvedOptions", GetDateTimeResolvedOptions)
     };
 
     napi_value constructor;
@@ -97,10 +105,88 @@ napi_value IntlAddon::InitDateTimeFormat(napi_env env, napi_value exports)
     return exports;
 }
 
+napi_value IntlAddon::InitNumberFormat(napi_env env, napi_value exports)
+{
+    napi_status status;
+    napi_property_descriptor properties[] = {
+        DECLARE_NAPI_FUNCTION("format", FormatNumber),
+        DECLARE_NAPI_FUNCTION("resolvedOptions", GetNumberResolvedOptions)
+    };
+
+    napi_value constructor;
+    status = napi_define_class(env, "NumberFormat", NAPI_AUTO_LENGTH, NumberFormatConstructor, nullptr,
+        sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Define class failed when InitNumberFormat");
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "NumberFormat", constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Set property failed when InitNumberFormat");
+        return nullptr;
+    }
+    return exports;
+}
+
+void GetOptionValue(napi_env env, napi_value options, const std::string &optionName,
+    std::map<std::string, std::string> &map)
+{
+    napi_value optionValue = nullptr;
+    bool hasProperty = false;
+    napi_has_named_property(env, options, optionName.c_str(), &hasProperty);
+    if (hasProperty) {
+        napi_status status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
+        if (status == napi_ok) {
+            size_t len;
+            napi_get_value_string_utf8(env, optionValue, nullptr, 0, &len);
+            std::vector<char> optionBuf(len + 1);
+            status = napi_get_value_string_utf8(env, optionValue, optionBuf.data(), len + 1, &len);
+            map.insert(make_pair(optionName, optionBuf.data()));
+        }
+    }
+}
+
+void GetBoolOptionValue(napi_env env, napi_value options, const std::string &optionName,
+    std::map<std::string, std::string> &map)
+{
+    napi_value optionValue = nullptr;
+    bool hasProperty = false;
+    napi_has_named_property(env, options, optionName.c_str(), &hasProperty);
+    if (hasProperty) {
+        napi_status status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
+        if (status == napi_ok) {
+            bool boolValue = false;
+            napi_get_value_bool(env, optionValue, &boolValue);
+            std::string value = boolValue ? "true" : "false";
+            map.insert(make_pair(optionName, value));
+        }
+    }
+}
+
+void GetDateOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "dateStyle", map);
+    GetOptionValue(env, options, "timeStyle", map);
+    GetOptionValue(env, options, "hourCycle", map);
+    GetOptionValue(env, options, "timeZone", map);
+    GetOptionValue(env, options, "timeZoneName", map);
+    GetOptionValue(env, options, "numberingSystem", map);
+    GetBoolOptionValue(env, options, "hour12", map);
+    GetOptionValue(env, options, "weekday", map);
+    GetOptionValue(env, options, "era", map);
+    GetOptionValue(env, options, "year", map);
+    GetOptionValue(env, options, "month", map);
+    GetOptionValue(env, options, "day", map);
+    GetOptionValue(env, options, "hour", map);
+    GetOptionValue(env, options, "minute", map);
+    GetOptionValue(env, options, "second", map);
+}
+
 napi_value IntlAddon::LocaleConstructor(napi_env env, napi_callback_info info)
 {
     // Need to get one parameter of a locale in string format to create Locale object.
-    GET_PARAMS(env, info, 1);
+    GET_PARAMS(env, info, 2);
     napi_valuetype valueType = napi_valuetype::napi_undefined;
     napi_typeof(env, argv[0], &valueType);
     if (valueType != napi_valuetype::napi_string) {
@@ -119,6 +205,15 @@ napi_value IntlAddon::LocaleConstructor(napi_env env, napi_callback_info info)
         HiLog::Error(LABEL, "Get locale tag failed");
         return nullptr;
     }
+    std::map<std::string, std::string> map = {};
+    if (argv[1] != nullptr) {
+        GetOptionValue(env, argv[1], "calendar", map);
+        GetOptionValue(env, argv[1], "collation", map);
+        GetOptionValue(env, argv[1], "hourCycle", map);
+        GetOptionValue(env, argv[1], "numberingSystem", map);
+        GetOptionValue(env, argv[1], "numeric", map);
+        GetBoolOptionValue(env, argv[1], "caseFirst", map);
+    }
 
     std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
     if (obj == nullptr) {
@@ -134,7 +229,7 @@ napi_value IntlAddon::LocaleConstructor(napi_env env, napi_callback_info info)
     }
 
     std::string localeTag = buf.data();
-    if (!obj->InitLocaleContext(env, info, localeTag)) {
+    if (!obj->InitLocaleContext(env, info, localeTag, map)) {
         return nullptr;
     }
 
@@ -143,7 +238,8 @@ napi_value IntlAddon::LocaleConstructor(napi_env env, napi_callback_info info)
     return thisVar;
 }
 
-bool IntlAddon::InitLocaleContext(napi_env env, napi_callback_info info, const std::string localeTag)
+bool IntlAddon::InitLocaleContext(napi_env env, napi_callback_info info, const std::string localeTag,
+    std::map<std::string, std::string> &map)
 {
     napi_value global;
     napi_status status = napi_get_global(env, &global);
@@ -152,48 +248,70 @@ bool IntlAddon::InitLocaleContext(napi_env env, napi_callback_info info, const s
         return false;
     }
     env_ = env;
-    locale_ = std::make_unique<LocaleInfo>(localeTag);
+    locale_ = std::make_unique<LocaleInfo>(localeTag, map);
 
     return locale_ != nullptr;
+}
+
+void GetLocaleTags(napi_env env, napi_value rawLocaleTag, std::vector<std::string> &localeTags)
+{
+    size_t len;
+    napi_status status = napi_get_value_string_utf8(env, rawLocaleTag, nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get locale tag length failed");
+        return;
+    }
+    std::vector<char> buf(len + 1);
+    status = napi_get_value_string_utf8(env, rawLocaleTag, buf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get locale tag failed");
+        return;
+    }
+    localeTags.push_back(buf.data());
 }
 
 napi_value IntlAddon::DateTimeFormatConstructor(napi_env env, napi_callback_info info)
 {
     // Need to get one parameter of a locale in string format to create DateTimeFormat object.
-    GET_PARAMS(env, info, 1);
+    GET_PARAMS(env, info, 2);
     napi_valuetype valueType = napi_valuetype::napi_undefined;
     napi_typeof(env, argv[0], &valueType);
-    if (valueType != napi_valuetype::napi_string) {
-        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+    std::vector<std::string> localeTags;
+    bool isArray = false;
+    napi_is_array(env, argv[0], &isArray);
+    if (valueType == napi_valuetype::napi_string) {
+        GetLocaleTags(env, argv[0], localeTags);
+    } else if (isArray) {
+        uint32_t arrayLength = 0;
+        napi_get_array_length(env, argv[0], &arrayLength);
+        napi_value element;
+        for(uint32_t i = 0; i < arrayLength; i++) {
+            napi_get_element(env, argv[0], i, &element);
+            GetLocaleTags(env, element, localeTags);
+        }
+    } else {
         return nullptr;
     }
-    size_t len;
-    napi_status status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
-    if (status != napi_ok) {
-        HiLog::Error(LABEL, "Get locale tag length failed");
-        return nullptr;
+
+    std::map<std::string, std::string> map = {};
+    if (argv[1] != nullptr) {
+        GetDateOptionValues(env, argv[1], map);
     }
-    std::vector<char> buf(len + 1);
-    status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
-    if (status != napi_ok) {
-        HiLog::Error(LABEL, "Get locale tag failed");
-        return nullptr;
-    }
+
     std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
     if (obj == nullptr) {
         HiLog::Error(LABEL, "Create IntlAddon failed");
         return nullptr;
     }
 
-    status =
+    napi_status status =
         napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), IntlAddon::Destructor, nullptr, &obj->wrapper_);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Wrap IntlAddon failed");
         return nullptr;
     }
 
-    std::string localeTag = buf.data();
-    if (!obj->InitDateTimeFormatContext(env, info, localeTag)) {
+    if (!obj->InitDateTimeFormatContext(env, info, localeTags, map)) {
         HiLog::Error(LABEL, "Init DateTimeFormat failed");
         return nullptr;
     }
@@ -202,7 +320,8 @@ napi_value IntlAddon::DateTimeFormatConstructor(napi_env env, napi_callback_info
     return thisVar;
 }
 
-bool IntlAddon::InitDateTimeFormatContext(napi_env env, napi_callback_info info, const std::string localeTag)
+bool IntlAddon::InitDateTimeFormatContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
+    std::map<std::string, std::string> &map)
 {
     napi_value global;
     napi_status status = napi_get_global(env, &global);
@@ -211,12 +330,12 @@ bool IntlAddon::InitDateTimeFormatContext(napi_env env, napi_callback_info info,
         return false;
     }
     env_ = env;
-    datefmt_ = std::make_unique<DateTimeFormat>(localeTag);
+    datefmt_ = std::make_unique<DateTimeFormat>(localeTags, map);
 
     return datefmt_ != nullptr;
 }
 
-napi_value IntlAddon::Format(napi_env env, napi_callback_info info)
+napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
 {
     GET_PARAMS(env, info, 1); // Need to get one parameter of a date object to format.
     int64_t year = GetYear(env, argv);
@@ -242,6 +361,77 @@ napi_value IntlAddon::Format(napi_env env, napi_callback_info info)
         return nullptr;
     }
     return result;
+}
+
+napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info info)
+{
+    // Need to get one parameter of a locale in string format to create DateTimeFormat object.
+    GET_PARAMS(env, info, 2);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    std::vector<std::string> localeTags;
+    bool isArray = false;
+    napi_is_array(env, argv[0], &isArray);
+    if (valueType == napi_valuetype::napi_string) {
+        GetLocaleTags(env, argv[0], localeTags);
+    } else if (isArray) {
+        uint32_t arrayLength = 0;
+        napi_get_array_length(env, argv[0], &arrayLength);
+        napi_value element;
+        for(uint32_t i = 0; i < arrayLength; i++) {
+            napi_get_element(env, argv[0], i, &element);
+            GetLocaleTags(env, element, localeTags);
+        }
+    } else {
+        return nullptr;
+    }
+
+    std::map<std::string, std::string> map = {};
+    if (argv[1] != nullptr) {
+        GetOptionValue(env, argv[1], "currency", map);
+        GetOptionValue(env, argv[1], "style", map);
+        GetOptionValue(env, argv[1], "numberingSystem", map);
+        GetBoolOptionValue(env, argv[1], "useGrouping", map);
+        GetOptionValue(env, argv[1], "minimumIntegerDigits", map);
+        GetOptionValue(env, argv[1], "minimumFractionDigits", map);
+        GetOptionValue(env, argv[1], "maximumFractionDigits", map);
+    }
+
+    std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
+    if (obj == nullptr) {
+        HiLog::Error(LABEL, "Create IntlAddon failed");
+        return nullptr;
+    }
+
+    napi_status status =
+        napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), IntlAddon::Destructor, nullptr, &obj->wrapper_);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Wrap IntlAddon failed");
+        return nullptr;
+    }
+
+    if (!obj->InitNumberFormatContext(env, info, localeTags, map)) {
+        HiLog::Error(LABEL, "Init DateTimeFormat failed");
+        return nullptr;
+    }
+
+    obj.release();
+    return thisVar;
+}
+
+bool IntlAddon::InitNumberFormatContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
+    std::map<std::string, std::string> &map)
+{
+    napi_value global;
+    napi_status status = napi_get_global(env, &global);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get global failed");
+        return false;
+    }
+    env_ = env;
+    numberfmt_ = std::make_unique<NumberFormat>(localeTags, map);
+
+    return numberfmt_ != nullptr;
 }
 
 int64_t IntlAddon::GetYear(napi_env env, napi_value *argv)
@@ -465,6 +655,270 @@ napi_value IntlAddon::GetBaseName(napi_env env, napi_callback_info info)
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create base name string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::GetCalendar(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the baseName.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string value = obj->locale_->GetCalendar();
+
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create base name string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::GetCollation(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the baseName.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string value = obj->locale_->GetCollation();
+
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create base name string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::GetHourCycle(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the baseName.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string value = obj->locale_->GetHourCycle();
+
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create base name string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::GetNumberingSystem(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the baseName.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string value = obj->locale_->GetNumberingSystem();
+
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create base name string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::GetNumeric(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the baseName.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string value = obj->locale_->GetNumeric();
+
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create base name string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::GetCaseFirst(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the baseName.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string value = obj->locale_->GetCaseFirst();
+
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create base name string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::ToString(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the language.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string value = obj->locale_->ToString();
+
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create language string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
+    std::string option)
+{
+    if (options.count(option) > 0) {
+        std::string optionValue = options[option];
+        napi_value optionJsValue;
+        napi_create_string_utf8(env, optionValue.c_str(), NAPI_AUTO_LENGTH, &optionJsValue);
+        napi_set_named_property(env, result, option.c_str(), optionJsValue);
+    } else {
+        napi_value undefined;
+        napi_get_undefined(env, &undefined);
+        napi_set_named_property(env, result, option.c_str(), undefined);
+    }
+}
+
+void SetBooleanOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
+    std::string option)
+{
+    if (options.count(option) > 0) {
+        std::string optionValue = options[option];
+        bool optionBoolValue = (optionValue == "true");
+        napi_value optionJsValue;
+        napi_get_boolean(env, optionBoolValue, &optionJsValue);
+        napi_set_named_property(env, result, option.c_str(), optionJsValue);
+    } else {
+        napi_value undefined;
+        napi_get_undefined(env, &undefined);
+        napi_set_named_property(env, result, option.c_str(), undefined);
+    }
+}
+
+napi_value IntlAddon::GetDateTimeResolvedOptions(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the baseName.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->datefmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get DateTimeFormat object failed");
+        return nullptr;
+    }
+    napi_value result;
+    napi_create_object(env, &result);
+    std::map<std::string, std::string> options = {};
+    obj->datefmt_->GetResolvedOptions(options);
+    SetOptionProperties(env, result, options, "dateStyle");
+    SetOptionProperties(env, result, options, "timeStyle");
+    SetOptionProperties(env, result, options, "hourCycle");
+    SetOptionProperties(env, result, options, "timeZone");
+    SetOptionProperties(env, result, options, "timeZoneName");
+    SetOptionProperties(env, result, options, "numberingSystem");
+    SetBooleanOptionProperties(env, result, options, "hour12");
+    SetOptionProperties(env, result, options, "weekday");
+    SetOptionProperties(env, result, options, "era");
+    SetOptionProperties(env, result, options, "year");
+    SetOptionProperties(env, result, options, "month");
+    SetOptionProperties(env, result, options, "day");
+    SetOptionProperties(env, result, options, "hour");
+    SetOptionProperties(env, result, options, "minute");
+    SetOptionProperties(env, result, options, "second");
+    return result;
+}
+
+napi_value IntlAddon::GetNumberResolvedOptions(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the baseName.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->numberfmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get DateTimeFormat object failed");
+        return nullptr;
+    }
+    napi_value result;
+    napi_create_object(env, &result);
+    std::map<std::string, std::string> options = {};
+    obj->datefmt_->GetResolvedOptions(options);
+    SetOptionProperties(env, result, options, "currency");
+    SetOptionProperties(env, result, options, "style");
+    SetOptionProperties(env, result, options, "numberingSystem");
+    SetBooleanOptionProperties(env, result, options, "useGrouping");
+    SetOptionProperties(env, result, options, "minimumIntegerDigits");
+    SetOptionProperties(env, result, options, "minimumFractionDigits");
+    SetOptionProperties(env, result, options, "maximumFractionDigits");
+    return result;
+}
+
+napi_value IntlAddon::FormatNumber(napi_env env, napi_callback_info info)
+{
+    GET_PARAMS(env, info, 1); // Need to get one parameter of a date object to format.
+    double number;
+    napi_get_value_double(env, argv[0], &number);
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->datefmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get DateTimeFormat object failed");
+        return nullptr;
+    }
+    std::string value = obj->numberfmt_->Format(number);
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create format string failed");
         return nullptr;
     }
     return result;
