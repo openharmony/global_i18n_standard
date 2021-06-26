@@ -15,9 +15,19 @@
 #ifndef OHOS_GLOBAL_I18N_DATE_TIME_FORMAT_H
 #define OHOS_GLOBAL_I18N_DATE_TIME_FORMAT_H
 
-#include "unicode/locid.h"
+#include "locale_info.h"
 #include "unicode/datefmt.h"
+#include "unicode/dtptngen.h"
 #include "unicode/localebuilder.h"
+#include "unicode/locid.h"
+#include "unicode/smpdtfmt.h"
+#include "unicode/timezone.h"
+#include "unicode/calendar.h"
+#include "unicode/numsys.h"
+#include <map>
+#include <vector>
+#include <climits>
+#include <set>
 
 namespace OHOS {
 namespace Global {
@@ -25,15 +35,88 @@ namespace I18n {
 class DateTimeFormat {
 public:
     DateTimeFormat(std::string locale);
+    DateTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs);
     virtual ~DateTimeFormat();
     std::string Format(int year, int month, int day, int hour, int minute, int second);
-    static const int64_t CONVERSION_RATE = 1000;
-    static const int64_t YEAR_START = 1900;
+    void GetResolvedOptions(std::map<std::string, std::string> &map);
+    std::string GetDateStyle() const;
+    std::string GetTimeStyle() const;
+    std::string GetHourCycle() const;
+    std::string GetTimeZone() const;
+    std::string GetTimeZoneName() const;
+    std::string GetNumberingSystem() const;
+    std::string GetHour12() const;
+    std::string GetWeekday() const;
+    std::string GetEra() const;
+    std::string GetYear() const;
+    std::string GetMonth() const;
+    std::string GetDay() const;
+    std::string GetHour() const;
+    std::string GetMinute() const;
+    std::string GetSecond() const;
+    std::string GetFractionalSecondDigits() const;
 private:
+    static std::map<std::string, icu::DateFormat::EStyle> dateTimeStyle;
+    std::set<std::string> allValidLocales;
+    std::string localeTag;
+    std::string dateStyle;
+    std::string timeStyle;
+    std::string hourCycle;
+    std::string timeZone;
+    std::string numberingSystem;
+    std::string hour12;
+    std::string weekday;
+    std::string era;
+    std::string year;
+    std::string month;
+    std::string day;
+    std::string hour;
+    std::string minute;
+    std::string second;
+    std::string fractionalSecondDigits;
+    std::string timeZoneName;
     icu::DateFormat *dateFormat;
     icu::Calendar *calendar;
+    LocaleInfo *localeInfo;
+    icu::Locale locale;
+    icu::UnicodeString pattern;
+    char16_t yearChar = 'Y';
+    char16_t monthChar = 'M';
+    char16_t dayChar = 'd';
+    char16_t hourChar = 'h';
+    char16_t minuteChar = 'm';
+    char16_t secondChar = 's';
+    char16_t fractionalSecondChar = 'S';
+    char16_t timeZoneChar = 'z';
+    char16_t weekdayChar = 'E';
+    char16_t eraChar = 'G';
+    char16_t amPmChar = 'a';
+    std::string hourTwoDigitString = "HH";
+    std::string hourNumericString = "H";
+    static const int32_t NUMERIC_LENGTH = 1;
+    static const int32_t TWO_DIGIT_LENGTH = 2;
+    static const int32_t SHORT_LENGTH = 3;
+    static const int32_t LONG_LENGTH = 4;
+    static const int32_t NARROW_LENGTH = 5;
+    static const int32_t SHORT_ERA_LENGTH = 1;
+    static const int32_t LONG_ERA_LENGTH = 4;
+    static const int HALF_HOUR = 30;
+    static const int HOURS_OF_A_DAY = 24;
     static bool icuInitialized;
     static bool Init();
+    void ParseConfigsPartOne(std::map<std::string, std::string> &configs);
+    void ParseConfigsPartTwo(std::map<std::string, std::string> &configs);
+    void AddOptions(std::string option, char16_t optionChar);
+    void ComputeSkeleton();
+    void ComputePattern();
+    void ComputePartOfPattern(std::string option, char16_t character, std::string twoDigitChar,
+        std::string numericChar);
+    void ComputeHourCycleChars();
+    void ComputeWeekdayOrEraOfPattern(std::string option, char16_t character, std::string longChar,
+        std::string shortChar, std::string narrowChar);
+    void GetValidLocales();
+    void InitDateFormat(UErrorCode &status);
+    void GetAdditionalResolvedOptions(std::map<std::string, std::string> &map);
 };
 } // namespace I18n
 } // namespace Global

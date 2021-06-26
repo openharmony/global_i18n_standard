@@ -57,6 +57,128 @@ export class Locale {
      * @since 6
      */
     baseName: string
+
+    /**
+     * Indicates whether it is case first.
+     */
+    caseFirst: string
+
+    /**
+     * Indicates the calendar.
+     */
+    calendar: string
+
+    /**
+     * Indicates the collation.
+     */
+    collation: string
+
+    /**
+     * Indicates the hour cycle.
+     */
+    hourCycle:  string
+
+    /**
+     * Indicates the numbering system.
+     */
+    numberingSystem: string
+
+    /**
+     * Indicates whether it is numeric.
+     */
+    numeric: string
+
+    /**
+     * Convert the locale information to string.
+     *
+     * @return Returns locale information in string form.
+     */
+    toString(): string;
+}
+
+/**
+ * Provides the options of date time format.
+ */
+export interface DateTimeOptions {
+    /**
+     * Indicates the locale.
+     */
+    locale: string
+
+    /**
+     * Indicates the date style.
+     */
+    dateStyle: string
+
+    /**
+     * Indicates the time style.
+     */
+    timeStyle: string
+
+    /**
+     * Indicates the hour cycle.
+     */
+    hourCycle: string
+
+    /**
+     * Indicates the timezone.
+     */
+    timeZone: string
+
+    /**
+     * Indicates the numbering system.
+     */
+    numberingSystem: string
+
+    /**
+     * Indicates whether is 12 hour or not.
+     */
+    hour12: boolean
+
+    /**
+     * Indicates the weekday style.
+     */
+    weekday: string
+
+    /**
+     * Indicates the era style.
+     */
+    era: string
+
+    /**
+     * Indicates the year style.
+     */
+    year: string
+
+    /**
+     * Indicates the month style.
+     */
+    month: string
+
+    /**
+     * Indicates the day style.
+     */
+    day: string
+
+    /**
+     * Indicates the hour style.
+     */
+    hour: string
+
+    /**
+     * Indicates the minute sty'.
+     */
+    minute: string
+
+    /**
+     * Indicates the second style.
+     */
+    second: string
+
+    /**
+     * Indicates the timezone name.
+     */
+    timeZoneName: string
 }
 
 /**
@@ -70,9 +192,20 @@ export class DateTimeFormat {
      *
      * @param locale Indicates a character string containing the locale information, including
      *               the language and optionally the script and region, for the DateTimeFormat object.
+     * @param options Indicates the options used to format the date.
      * @since 6
      */
-    constructor(locale?: string);
+    constructor(locale: string, options?: options);
+
+    /**
+     * A constructor used to create a DateTimeFormat object.
+     *
+     * @param locale Indicates an array of character string containing the locale information, including
+     *               the language and optionally the script and region, for the DateTimeFormat object.
+     * @param options Indicates the options used to format the date.
+     * @since 6
+     */
+    constructor(locale: string[], options?: options);
 
     /**
      * Obtains the formatted date strings.
@@ -82,6 +215,69 @@ export class DateTimeFormat {
      * @since 6
      */
     format(date: Date): string;
+
+    /**
+     * Obtains the options of the DateTimeFormat object.
+     *
+     * @return Returns the options of the DateTimeFormat object.
+     * @since 6
+     */
+    getResolvedOptions(): DateTimeOptions;
+}
+
+/**
+ * Provides the options of number format.
+ */
+export interface NumberOptions {
+    /**
+     * Indicates the locale.
+     */
+    locale: string
+
+    /**
+     * Indicates the currency.
+     */
+    currency: string
+
+    /**
+     * Indicates the style.
+     */
+    style: string
+
+    /**
+     * Indicates the numbering system.
+     */
+    numberingSystem: string
+
+    /**
+     * Indicates whether using grouping or not.
+     */
+    useGrouping: boolean
+
+    /**
+     * Indicates the minimum integer digits.
+     */
+    minimumIntegerDigits: string
+
+    /**
+     * Indicates the minimum fraction digits.
+     */
+    minimumFractionDigits: string
+
+    /**
+     * Indicates the maximum fraction digits.
+     */
+    maximumFractionDigits: string
+}
+
+/**
+ * Provides the API for formatting numebr strings.
+ */
+export class NumberFormat {
+    constructor(locale: string, options?: options);
+    constructor(locale: string[], options?: options);
+    format(date: number): string;
+    resolvedOptions(): Object;
 }
 }
 export default intl;

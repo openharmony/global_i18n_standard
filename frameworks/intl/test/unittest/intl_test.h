@@ -18,4 +18,7 @@
 
 int IntlFuncTest001();
 int IntlFuncTest002();
+int IntlFuncTest003();
+int IntlFuncTest004();
+int IntlFuncTest005();
 #endif
