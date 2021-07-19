@@ -15,11 +15,18 @@
 #ifndef OHOS_GLOBAL_I18N_NUMBER_FORMAT_H
 #define OHOS_GLOBAL_I18N_NUMBER_FORMAT_H
 
+#include "unicode/numberformatter.h"
 #include "unicode/locid.h"
 #include "unicode/numfmt.h"
 #include "unicode/unum.h"
+#include "unicode/decimfmt.h"
 #include "unicode/localebuilder.h"
 #include "unicode/numsys.h"
+#include "unicode/measfmt.h"
+#include "unicode/measunit.h"
+#include "unicode/measure.h"
+#include "unicode/currunit.h"
+#include "unicode/fmtable.h"
 #include "number_utils.h"
 #include "number_utypes.h"
 #include "locale_info.h"
@@ -36,34 +43,57 @@ public:
     virtual ~NumberFormat();
     std::string Format(double number);
     void GetResolvedOptions(std::map<std::string, std::string> &map);
-    std::string GetCurrency();
-    std::string GetCurrencySign();
-    std::string GetStyle();
-    std::string GetNumberingSystem();
-    std::string GetUseGrouping();
-    std::string GetMinimumIntegerDigits();
-    std::string GetMinimumFractionDigits();
-    std::string GetMaximumFractionDigits();
+    std::string GetCurrency() const;
+    std::string GetCurrencySign() const;
+    std::string GetStyle() const;
+    std::string GetNumberingSystem() const;
+    std::string GetUseGrouping() const;
+    std::string GetMinimumIntegerDigits() const;
+    std::string GetMinimumFractionDigits() const;
+    std::string GetMaximumFractionDigits() const;
+    std::string GetMinimumSignificantDigits() const;
+    std::string GetMaximumSignificantDigits() const;
+    std::string GetLocaleMatcher() const;
 
 private:
     icu::Locale locale;
     std::string currency;
     std::string currencySign;
+    std::string currencyDisplayString;
+    std::string unit;
+    std::string unitDisplayString;
     std::string styleString;
     std::string numberingSystem;
     std::string useGrouping;
+    std::string notationString;
+    std::string signDisplayString;
+    std::string compactDisplay;
     std::string minimumIntegerDigits;
     std::string minimumFractionDigits;
     std::string maximumFractionDigits;
+    std::string minimumSignificantDigits;
+    std::string maximumSignificantDigits;
     std::string localeBaseName;
+    std::string localeMatcher;
     LocaleInfo *localeInfo;
-    icu::NumberFormat *numberFormat;
-    UNumberFormatStyle style = UNumberFormatStyle::UNUM_DECIMAL;
-    static std::map<std::string, UNumberFormatStyle> formatStyle;
-    std::set<std::string> allValidLocales;
+    icu::number::LocalizedNumberFormatter numberFormat;
+    icu::number::Notation notation = icu::number::Notation::simple();
+    UNumberUnitWidth unitDisplay = UNumberUnitWidth::UNUM_UNIT_WIDTH_SHORT;
+    UNumberUnitWidth currencyDisplay = UNumberUnitWidth::UNUM_UNIT_WIDTH_SHORT;
+    UNumberSignDisplay signDisplay = UNumberSignDisplay::UNUM_SIGN_AUTO;
+    static const int MAX_UNIT_NUM = 500;
+    icu::MeasureUnit unitArray[MAX_UNIT_NUM];
+    static std::map<std::string, UNumberUnitWidth> unitStyle;
+    static std::map<std::string, UNumberUnitWidth> currencyStyle;
+    static std::map<std::string, UNumberSignDisplay> signAutoStyle;
+    static std::map<std::string, UNumberSignDisplay> signAccountingStyle;
+    static std::set<std::string> allValidLocales;
+    static std::set<std::string> GetValidLocales();
     void ParseConfigs(std::map<std::string, std::string> &configs);
-    void GetValidLocales();
+    void ParseDigitsConfigs(std::map<std::string, std::string> &configs);
+    void GetDigitsResolvedOptions(std::map<std::string, std::string> &map);
     void InitProperties();
+    void InitDigitsProperties();
     static bool icuInitialized;
     static bool Init();
 };

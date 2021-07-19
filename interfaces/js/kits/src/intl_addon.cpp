@@ -86,6 +86,7 @@ napi_value IntlAddon::InitDateTimeFormat(napi_env env, napi_value exports)
     napi_status status;
     napi_property_descriptor properties[] = {
         DECLARE_NAPI_FUNCTION("format", FormatDateTime),
+        DECLARE_NAPI_FUNCTION("formatRange", FormatDateTimeRange),
         DECLARE_NAPI_FUNCTION("resolvedOptions", GetDateTimeResolvedOptions)
     };
 
@@ -181,6 +182,9 @@ void GetDateOptionValues(napi_env env, napi_value options, std::map<std::string,
     GetOptionValue(env, options, "hour", map);
     GetOptionValue(env, options, "minute", map);
     GetOptionValue(env, options, "second", map);
+    GetOptionValue(env, options, "localeMatcher", map);
+    GetOptionValue(env, options, "formatMatcher", map);
+    GetOptionValue(env, options, "dayPeriod", map);
 }
 
 napi_value IntlAddon::LocaleConstructor(napi_env env, napi_callback_info info)
@@ -338,12 +342,12 @@ bool IntlAddon::InitDateTimeFormatContext(napi_env env, napi_callback_info info,
 napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
 {
     GET_PARAMS(env, info, 1); // Need to get one parameter of a date object to format.
-    int64_t year = GetYear(env, argv);
-    int64_t month = GetMonth(env, argv);
-    int64_t day = GetDay(env, argv);
-    int64_t hour = GetHour(env, argv);
-    int64_t minute = GetMinute(env, argv);
-    int64_t second = GetSecond(env, argv);
+    int64_t year = GetYear(env, argv, 0);
+    int64_t month = GetMonth(env, argv, 0);
+    int64_t day = GetDay(env, argv, 0);
+    int64_t hour = GetHour(env, argv, 0);
+    int64_t minute = GetMinute(env, argv, 0);
+    int64_t second = GetSecond(env, argv, 0);
     if (year == -1 || month == -1 || day == -1 || hour == -1 || minute == -1 || second == -1) {
         return nullptr;
     }
@@ -353,7 +357,8 @@ napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
         HiLog::Error(LABEL, "Get DateTimeFormat object failed");
         return nullptr;
     }
-    std::string value = obj->datefmt_->Format(year, month, day, hour, minute, second);
+    int64_t date[] = { year, month, day, hour, minute, second };
+    std::string value = obj->datefmt_->Format(date);
     napi_value result;
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
@@ -363,6 +368,42 @@ napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
     return result;
 }
 
+napi_value IntlAddon::FormatDateTimeRange(napi_env env, napi_callback_info info)
+{
+    GET_PARAMS(env, info, 2); // Need to get two parameter of date objects to format.
+    int64_t firstYear = GetYear(env, argv, 0);
+    int64_t firstMonth = GetMonth(env, argv, 0);
+    int64_t firstDay = GetDay(env, argv, 0);
+    int64_t firstHour = GetHour(env, argv, 0);
+    int64_t firstMinute = GetMinute(env, argv, 0);
+    int64_t firstSecond = GetSecond(env, argv, 0);
+    int64_t firstDate[] = { firstYear, firstMonth, firstDay, firstHour, firstMinute, firstSecond };
+    int64_t secondYear = GetYear(env, argv, 1);
+    int64_t secondMonth = GetMonth(env, argv, 1);
+    int64_t secondDay = GetDay(env, argv, 1);
+    int64_t secondHour = GetHour(env, argv, 1);
+    int64_t secondMinute = GetMinute(env, argv, 1);
+    int64_t secondSecond = GetSecond(env, argv, 1);
+    int64_t secondDate[] = { secondYear, secondMonth, secondDay, secondHour, secondMinute, secondSecond };
+    if (firstYear == -1 || firstMonth == -1 || firstDay == -1 || firstHour == -1 || firstMinute == -1 ||
+        firstSecond == -1) {
+        return nullptr;
+    }
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->datefmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get DateTimeFormat object failed");
+        return nullptr;
+    }
+    std::string value = obj->datefmt_->FormatRange(firstDate, secondDate);
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create format string failed");
+        return nullptr;
+    }
+    return result;
+}
 napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info info)
 {
     // Need to get one parameter of a locale in string format to create DateTimeFormat object.
@@ -389,12 +430,22 @@ napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info i
     std::map<std::string, std::string> map = {};
     if (argv[1] != nullptr) {
         GetOptionValue(env, argv[1], "currency", map);
+        GetOptionValue(env, argv[1], "currencySign", map);
+        GetOptionValue(env, argv[1], "currencyDisplay", map);
+        GetOptionValue(env, argv[1], "unit", map);
+        GetOptionValue(env, argv[1], "unitDisplay", map);
+        GetOptionValue(env, argv[1], "compactDisplay", map);
+        GetOptionValue(env, argv[1], "signDisplay", map);
+        GetOptionValue(env, argv[1], "localeMatcher", map);
         GetOptionValue(env, argv[1], "style", map);
         GetOptionValue(env, argv[1], "numberingSystem", map);
+        GetOptionValue(env, argv[1], "notation", map);
         GetBoolOptionValue(env, argv[1], "useGrouping", map);
         GetOptionValue(env, argv[1], "minimumIntegerDigits", map);
         GetOptionValue(env, argv[1], "minimumFractionDigits", map);
         GetOptionValue(env, argv[1], "maximumFractionDigits", map);
+        GetOptionValue(env, argv[1], "minimumSignificantDigits", map);
+        GetOptionValue(env, argv[1], "maximumSignificantDigits", map);
     }
 
     std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
@@ -434,16 +485,16 @@ bool IntlAddon::InitNumberFormatContext(napi_env env, napi_callback_info info, s
     return numberfmt_ != nullptr;
 }
 
-int64_t IntlAddon::GetYear(napi_env env, napi_value *argv)
+int64_t IntlAddon::GetYear(napi_env env, napi_value *argv, int index)
 {
     napi_value funcGetDateInfo;
-    napi_status status = napi_get_named_property(env, argv[0], "getFullYear", &funcGetDateInfo);
+    napi_status status = napi_get_named_property(env, argv[index], "getFullYear", &funcGetDateInfo);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get year property failed");
         return -1;
     }
     napi_value ret_value;
-    status = napi_call_function(env, argv[0], funcGetDateInfo, 0, nullptr, &ret_value);
+    status = napi_call_function(env, argv[index], funcGetDateInfo, 0, nullptr, &ret_value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get year function failed");
         return -1;
@@ -457,16 +508,16 @@ int64_t IntlAddon::GetYear(napi_env env, napi_value *argv)
     return year;
 }
 
-int64_t IntlAddon::GetMonth(napi_env env, napi_value *argv)
+int64_t IntlAddon::GetMonth(napi_env env, napi_value *argv, int index)
 {
     napi_value funcGetDateInfo;
-    napi_status status = napi_get_named_property(env, argv[0], "getMonth", &funcGetDateInfo);
+    napi_status status = napi_get_named_property(env, argv[index], "getMonth", &funcGetDateInfo);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get month property failed");
         return -1;
     }
     napi_value ret_value;
-    status = napi_call_function(env, argv[0], funcGetDateInfo, 0, nullptr, &ret_value);
+    status = napi_call_function(env, argv[index], funcGetDateInfo, 0, nullptr, &ret_value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get month function failed");
         return -1;
@@ -480,16 +531,16 @@ int64_t IntlAddon::GetMonth(napi_env env, napi_value *argv)
     return month;
 }
 
-int64_t IntlAddon::GetDay(napi_env env, napi_value *argv)
+int64_t IntlAddon::GetDay(napi_env env, napi_value *argv, int index)
 {
     napi_value funcGetDateInfo;
-    napi_status status = napi_get_named_property(env, argv[0], "getDate", &funcGetDateInfo);
+    napi_status status = napi_get_named_property(env, argv[index], "getDate", &funcGetDateInfo);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get day property failed");
         return -1;
     }
     napi_value ret_value;
-    status = napi_call_function(env, argv[0], funcGetDateInfo, 0, nullptr, &ret_value);
+    status = napi_call_function(env, argv[index], funcGetDateInfo, 0, nullptr, &ret_value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get day function failed");
         return -1;
@@ -503,16 +554,16 @@ int64_t IntlAddon::GetDay(napi_env env, napi_value *argv)
     return day;
 }
 
-int64_t IntlAddon::GetHour(napi_env env, napi_value *argv)
+int64_t IntlAddon::GetHour(napi_env env, napi_value *argv, int index)
 {
     napi_value funcGetDateInfo;
-    napi_status status = napi_get_named_property(env, argv[0], "getHours", &funcGetDateInfo);
+    napi_status status = napi_get_named_property(env, argv[index], "getHours", &funcGetDateInfo);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get hour property failed");
         return -1;
     }
     napi_value ret_value;
-    status = napi_call_function(env, argv[0], funcGetDateInfo, 0, nullptr, &ret_value);
+    status = napi_call_function(env, argv[index], funcGetDateInfo, 0, nullptr, &ret_value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get hour function failed");
         return -1;
@@ -526,16 +577,16 @@ int64_t IntlAddon::GetHour(napi_env env, napi_value *argv)
     return hour;
 }
 
-int64_t IntlAddon::GetMinute(napi_env env, napi_value *argv)
+int64_t IntlAddon::GetMinute(napi_env env, napi_value *argv, int index)
 {
     napi_value funcGetDateInfo;
-    napi_status status = napi_get_named_property(env, argv[0], "getMinutes", &funcGetDateInfo);
+    napi_status status = napi_get_named_property(env, argv[index], "getMinutes", &funcGetDateInfo);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get minute property failed");
         return -1;
     }
     napi_value ret_value;
-    status = napi_call_function(env, argv[0], funcGetDateInfo, 0, nullptr, &ret_value);
+    status = napi_call_function(env, argv[index], funcGetDateInfo, 0, nullptr, &ret_value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get minute function failed");
         return -1;
@@ -549,16 +600,16 @@ int64_t IntlAddon::GetMinute(napi_env env, napi_value *argv)
     return minute;
 }
 
-int64_t IntlAddon::GetSecond(napi_env env, napi_value *argv)
+int64_t IntlAddon::GetSecond(napi_env env, napi_value *argv, int index)
 {
     napi_value funcGetDateInfo;
-    napi_status status = napi_get_named_property(env, argv[0], "getSeconds", &funcGetDateInfo);
+    napi_status status = napi_get_named_property(env, argv[index], "getSeconds", &funcGetDateInfo);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get second property failed");
         return -1;
     }
     napi_value ret_value;
-    status = napi_call_function(env, argv[0], funcGetDateInfo, 0, nullptr, &ret_value);
+    status = napi_call_function(env, argv[index], funcGetDateInfo, 0, nullptr, &ret_value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get second function failed");
         return -1;
@@ -875,6 +926,9 @@ napi_value IntlAddon::GetDateTimeResolvedOptions(napi_env env, napi_callback_inf
     SetOptionProperties(env, result, options, "hour");
     SetOptionProperties(env, result, options, "minute");
     SetOptionProperties(env, result, options, "second");
+    SetOptionProperties(env, result, options, "dayPeriod");
+    SetOptionProperties(env, result, options, "localeMatcher");
+    SetOptionProperties(env, result, options, "formatMatcher");
     return result;
 }
 
@@ -894,12 +948,22 @@ napi_value IntlAddon::GetNumberResolvedOptions(napi_env env, napi_callback_info 
     std::map<std::string, std::string> options = {};
     obj->datefmt_->GetResolvedOptions(options);
     SetOptionProperties(env, result, options, "currency");
+    SetOptionProperties(env, result, options, "currencySign");
+    SetOptionProperties(env, result, options, "currencyDisplay");
+    SetOptionProperties(env, result, options, "unit");
+    SetOptionProperties(env, result, options, "unitDisplay");
+    SetOptionProperties(env, result, options, "signDisplay");
+    SetOptionProperties(env, result, options, "compactDisplay");
+    SetOptionProperties(env, result, options, "notation");
     SetOptionProperties(env, result, options, "style");
     SetOptionProperties(env, result, options, "numberingSystem");
     SetBooleanOptionProperties(env, result, options, "useGrouping");
     SetOptionProperties(env, result, options, "minimumIntegerDigits");
     SetOptionProperties(env, result, options, "minimumFractionDigits");
     SetOptionProperties(env, result, options, "maximumFractionDigits");
+    SetOptionProperties(env, result, options, "minimumSignificantDigits");
+    SetOptionProperties(env, result, options, "maximumSignificantDigits");
+    SetOptionProperties(env, result, options, "localeMatcher");
     return result;
 }
 

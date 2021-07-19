@@ -179,6 +179,21 @@ export interface DateTimeOptions {
      * Indicates the timezone name.
      */
     timeZoneName: string
+
+    /**
+     * Indicates the day period format.
+     */
+    dayPeriod: string
+
+    /**
+     * Indicates the locale matching algorithm.
+     */
+    localeMatcher: string
+
+    /**
+     * Indicates the format matching algorithm.
+     */
+    foramtMatcher: string
 }
 
 /**
@@ -217,6 +232,16 @@ export class DateTimeFormat {
     format(date: Date): string;
 
     /**
+     * Obtains the formatted date strings of a date range.
+     *
+     * @param startDate Indicates the start date of the date range.
+     * @param endDate Indicates the end date of the date range.
+     * @return Returns a date string formatted based on the specified locale.
+     * @since 6
+     */
+    formatRange(startDate: Date, endDate: Date): string;
+
+    /**
      * Obtains the options of the DateTimeFormat object.
      *
      * @return Returns the options of the DateTimeFormat object.
@@ -238,6 +263,46 @@ export interface NumberOptions {
      * Indicates the currency.
      */
     currency: string
+
+    /**
+     * Indicates the currency sign.
+     */
+    currencySign: string
+
+    /**
+     * Indicates the currency display format.
+     */
+    currencyDisplay: string
+
+    /**
+     * Indicates the unit.
+     */
+    unit: string
+
+    /**
+     * Indicates the unit display format.
+     */
+    unitDisplay: string
+
+    /**
+     * Indicates the sign display format.
+     */
+    signDisplay: string
+
+    /**
+     * Indicates the compact display format.
+     */
+    compactDisplay: string
+
+    /**
+     * Indicates the notation.
+     */
+    notation: string
+
+    /**
+     * Indicates the locale matching algorithm.
+     */
+    localeMatcher: string
 
     /**
      * Indicates the style.
@@ -268,6 +333,16 @@ export interface NumberOptions {
      * Indicates the maximum fraction digits.
      */
     maximumFractionDigits: string
+
+    /**
+     * Indicates the minimum siginificant digits.
+     */
+    minimumSiginificantDigits: string
+
+    /**
+     * Indicates the maximum siginificant digits.
+     */
+    maximumSiginificantDigits: string
 }
 
 /**

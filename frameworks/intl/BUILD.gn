@@ -22,7 +22,10 @@ config("intl_config") {
   ]
 }
 ohos_shared_library("intl_util") {
-  configs = [ ":intl_config" ]
+  configs = [
+    ":intl_config",
+    "//build/config/compiler:rtti"
+  ]
   include_dirs = [
     "//third_party/icu/icu4c/source",
     "//third_party/icu/icu4c/source/common",
@@ -37,6 +40,7 @@ ohos_shared_library("intl_util") {
   cflags_cc = [
     "-Wall",
     "-fPIC",
+    "-frtti",
   ]
   deps = [
     "//third_party/icu/icu4c:shared_icui18n",

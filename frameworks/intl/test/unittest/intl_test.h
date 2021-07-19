@@ -21,4 +21,18 @@ int IntlFuncTest002();
 int IntlFuncTest003();
 int IntlFuncTest004();
 int IntlFuncTest005();
+int IntlFuncTest006();
+int IntlFuncTest007();
+int IntlFuncTest008();
+int IntlFuncTest009();
+int IntlFuncTest0010();
+int IntlFuncTest0011();
+int IntlFuncTest0012();
+int IntlFuncTest0013();
+int IntlFuncTest0014();
+int IntlFuncTest0015();
+int IntlFuncTest0016();
+int IntlFuncTest0017();
+int IntlFuncTest0018();
+int IntlFuncTest0019();
 #endif

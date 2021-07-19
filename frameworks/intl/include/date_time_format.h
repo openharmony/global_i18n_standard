@@ -24,6 +24,7 @@
 #include "unicode/timezone.h"
 #include "unicode/calendar.h"
 #include "unicode/numsys.h"
+#include "unicode/dtitvfmt.h"
 #include <map>
 #include <vector>
 #include <climits>
@@ -37,7 +38,8 @@ public:
     DateTimeFormat(std::string locale);
     DateTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs);
     virtual ~DateTimeFormat();
-    std::string Format(int year, int month, int day, int hour, int minute, int second);
+    std::string Format(int64_t *date);
+    std::string FormatRange(int64_t *fromDate, int64_t *toDate);
     void GetResolvedOptions(std::map<std::string, std::string> &map);
     std::string GetDateStyle() const;
     std::string GetTimeStyle() const;
@@ -54,10 +56,12 @@ public:
     std::string GetHour() const;
     std::string GetMinute() const;
     std::string GetSecond() const;
+    std::string GetDayPeriod() const;
+    std::string GetLocaleMatcher() const;
+    std::string GetFormatMatcher() const;
     std::string GetFractionalSecondDigits() const;
 private:
     static std::map<std::string, icu::DateFormat::EStyle> dateTimeStyle;
-    std::set<std::string> allValidLocales;
     std::string localeTag;
     std::string dateStyle;
     std::string timeStyle;
@@ -73,9 +77,12 @@ private:
     std::string hour;
     std::string minute;
     std::string second;
-    std::string fractionalSecondDigits;
     std::string timeZoneName;
+    std::string dayPeriod;
+    std::string localeMatcher;
+    std::string formatMatcher;
     icu::DateFormat *dateFormat;
+    icu::DateIntervalFormat *dateIntvFormat;
     icu::Calendar *calendar;
     LocaleInfo *localeInfo;
     icu::Locale locale;
@@ -98,12 +105,20 @@ private:
     static const int32_t SHORT_LENGTH = 3;
     static const int32_t LONG_LENGTH = 4;
     static const int32_t NARROW_LENGTH = 5;
+    static const int32_t YEAR_INDEX = 0;
+    static const int32_t MONTH_INDEX = 1;
+    static const int32_t DAY_INDEX = 2;
+    static const int32_t HOUR_INDEX = 3;
+    static const int32_t MINUTE_INDEX = 4;
+    static const int32_t SECOND_INDEX = 5;
     static const int32_t SHORT_ERA_LENGTH = 1;
     static const int32_t LONG_ERA_LENGTH = 4;
     static const int HALF_HOUR = 30;
     static const int HOURS_OF_A_DAY = 24;
     static bool icuInitialized;
     static bool Init();
+    static std::set<std::string> allValidLocales;
+    static std::set<std::string> GetValidLocales();
     void ParseConfigsPartOne(std::map<std::string, std::string> &configs);
     void ParseConfigsPartTwo(std::map<std::string, std::string> &configs);
     void AddOptions(std::string option, char16_t optionChar);
@@ -114,7 +129,6 @@ private:
     void ComputeHourCycleChars();
     void ComputeWeekdayOrEraOfPattern(std::string option, char16_t character, std::string longChar,
         std::string shortChar, std::string narrowChar);
-    void GetValidLocales();
     void InitDateFormat(UErrorCode &status);
     void GetAdditionalResolvedOptions(std::map<std::string, std::string> &map);
 };
