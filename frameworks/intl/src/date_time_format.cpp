@@ -16,6 +16,7 @@
 #include "ohos/init_data.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 namespace OHOS {
 namespace Global {
@@ -47,13 +48,17 @@ DateTimeFormat::DateTimeFormat(std::string localeTag)
     dateFormat->setCalendar(*calendar);
 }
 
-void DateTimeFormat::GetValidLocales()
+std::set<std::string> DateTimeFormat::allValidLocales = GetValidLocales();
+
+std::set<std::string> DateTimeFormat::GetValidLocales()
 {
     int32_t validCount = 1;
     const Locale *validLocales = Locale::getAvailableLocales(validCount);
+    std::set<std::string> allValidLocales;
     for (int i = 0; i < validCount; i++) {
         allValidLocales.insert(validLocales[i].getLanguage());
     }
+    return allValidLocales;
 }
 
 DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs)
@@ -75,7 +80,11 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
             }
             ComputeHourCycleChars();
             ComputeSkeleton();
-            InitDateFormat(status);
+            if (configs.size() == 0) {
+                dateFormat = DateFormat::createDateInstance(DateFormat::SHORT, locale);
+            } else {
+                InitDateFormat(status);
+            }
             if (dateFormat == nullptr) {
                 continue;
             }
@@ -87,6 +96,9 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
         localeTag = locale.getBaseName();
         std::replace(localeTag.begin(), localeTag.end(), '_', '-');
         dateFormat = DateFormat::createInstance();
+    }
+    if (dateIntvFormat == nullptr) {
+        dateIntvFormat = DateIntervalFormat::createInstance(pattern, status);
     }
     calendar = Calendar::createInstance(locale, status);
 }
@@ -109,20 +121,28 @@ DateTimeFormat::~DateTimeFormat()
 
 void DateTimeFormat::InitDateFormat(UErrorCode &status)
 {
-    if (!dateStyle.empty() && timeStyle.empty()) {
-        dateFormat = DateFormat::createDateInstance(dateTimeStyle[dateStyle], locale);
-    } else if (dateStyle.empty() && !timeStyle.empty()) {
-        dateFormat = DateFormat::createTimeInstance(dateTimeStyle[timeStyle], locale);
-    } else if (!dateStyle.empty() && !timeStyle.empty()) {
-        dateFormat = DateFormat::createDateTimeInstance(dateTimeStyle[dateStyle], dateTimeStyle[timeStyle], locale);
+    if (!dateStyle.empty() || !timeStyle.empty()) {
+        DateFormat::EStyle dateStyleValue = DateFormat::EStyle::kNone;
+        DateFormat::EStyle timeStyleValue = DateFormat::EStyle::kNone;
+        if (!dateStyle.empty()) {
+            dateStyleValue = dateTimeStyle[dateStyle];
+        }
+        if (!timeStyle.empty()) {
+            timeStyleValue = dateTimeStyle[timeStyle];
+        }
+        dateFormat = DateFormat::createDateTimeInstance(dateStyleValue, timeStyleValue, locale);
+        auto simpleDateFormat = std::unique_ptr<SimpleDateFormat>(dynamic_cast<SimpleDateFormat*>(dateFormat));
+        simpleDateFormat->toPattern(pattern);
     } else {
         auto patternGenerator =
             std::unique_ptr<DateTimePatternGenerator>(DateTimePatternGenerator::createInstance(locale, status));
         ComputePattern();
-        pattern = patternGenerator->replaceFieldTypes(patternGenerator->getBestPattern(pattern, status), pattern, status);
+        pattern =
+            patternGenerator->replaceFieldTypes(patternGenerator->getBestPattern(pattern, status), pattern, status);
         pattern = patternGenerator->getBestPattern(pattern, status);
         dateFormat = new SimpleDateFormat(pattern, locale, status);
     }
+    dateIntvFormat = DateIntervalFormat::createInstance(pattern, locale, status);
 }
 
 void DateTimeFormat::ParseConfigsPartOne(std::map<std::string, std::string> &configs)
@@ -133,28 +153,6 @@ void DateTimeFormat::ParseConfigsPartOne(std::map<std::string, std::string> &con
     if (configs.count("timeStyle") > 0) {
         timeStyle = configs["timeStyle"];
     }
-    if (configs.count("hourCycle") > 0) {
-        hourCycle = configs["hourCycle"];
-    }
-    if (configs.count("timeZone") > 0) {
-        timeZone = configs["timeZone"];
-    }
-    if (configs.count("numberingSystem") > 0) {
-        numberingSystem = configs["numberingSystem"];
-    }
-    if (configs.count("hour12") > 0) {
-        hour12 = configs["hour12"];
-    }
-    if (configs.count("weekday") > 0) {
-        weekday = configs["weekday"];
-    }
-    if (configs.count("era") > 0) {
-        era = configs["era"];
-    }
-}
-
-void DateTimeFormat::ParseConfigsPartTwo(std::map<std::string, std::string> &configs)
-{
     if (configs.count("year") > 0) {
         year = configs["year"];
     }
@@ -173,26 +171,56 @@ void DateTimeFormat::ParseConfigsPartTwo(std::map<std::string, std::string> &con
     if (configs.count("second") > 0) {
         second = configs["second"];
     }
-    if (configs.count("fractionalSecondDigits") > 0) {
-        fractionalSecondDigits = configs["fractionalSecondDigits"];
+}
+
+void DateTimeFormat::ParseConfigsPartTwo(std::map<std::string, std::string> &configs)
+{
+    if (configs.count("hourCycle") > 0) {
+        hourCycle = configs["hourCycle"];
+    }
+    if (configs.count("timeZone") > 0) {
+        timeZone = configs["timeZone"];
+    }
+    if (configs.count("numberingSystem") > 0) {
+        numberingSystem = configs["numberingSystem"];
+    }
+    if (configs.count("hour12") > 0) {
+        hour12 = configs["hour12"];
+    }
+    if (configs.count("weekday") > 0) {
+        weekday = configs["weekday"];
+    }
+    if (configs.count("era") > 0) {
+        era = configs["era"];
     }
     if (configs.count("timeZoneName") > 0) {
         timeZoneName = configs["timeZoneName"];
+    }
+    if (configs.count("dayPeriod") > 0) {
+        dayPeriod = configs["dayPeriod"];
+    }
+    if (configs.count("localeMatcher") > 0) {
+        localeMatcher = configs["localeMatcher"];
+    }
+    if (configs.count("formatMatcher") > 0) {
+        formatMatcher = configs["formatMatcher"];
     }
 }
 
 void DateTimeFormat::ComputeSkeleton()
 {
+    if (year.empty() && month.empty() && day.empty() && hour.empty() && minute.empty() && second.empty()) {
+        pattern.append("yMd");
+    }
     AddOptions(year, yearChar);
     AddOptions(month, monthChar);
     AddOptions(day, dayChar);
     AddOptions(hour, hourChar);
     AddOptions(minute, minuteChar);
     AddOptions(second, secondChar);
-    if (hourCycle == "h12" || hourCycle == "h11" || hour12 == "true") {
+    if ((hourCycle == "h12" || hourCycle == "h11" || hour12 == "true") && !hour.empty()) {
         pattern.append(amPmChar);
     }
-    AddOptions(fractionalSecondDigits, fractionalSecondChar);
     AddOptions(timeZoneName, timeZoneChar);
     AddOptions(weekday, weekdayChar);
     AddOptions(era, eraChar);
@@ -299,11 +327,17 @@ void DateTimeFormat::ComputeWeekdayOrEraOfPattern(std::string option, char16_t c
 
 bool DateTimeFormat::icuInitialized = DateTimeFormat::Init();
 
-std::string DateTimeFormat::Format(int year, int month, int day, int hour, int minute, int second)
+std::string DateTimeFormat::Format(int64_t *date)
 {
     UErrorCode status = U_ZERO_ERROR;
     std::string result;
     UnicodeString dateString;
+    int64_t year = date[YEAR_INDEX];
+    int64_t month = date[MONTH_INDEX];
+    int64_t day = date[DAY_INDEX];
+    int64_t hour = date[HOUR_INDEX];
+    int64_t minute = date[MINUTE_INDEX];
+    int64_t second = date[SECOND_INDEX];
 
     calendar->clear();
     calendar->set(year, month, day, hour, minute, second);
@@ -315,6 +349,50 @@ std::string DateTimeFormat::Format(int year, int month, int day, int hour, int m
         calendar->setTime(timestamp, status);
     }
     dateFormat->format(calendar->getTime(status), dateString, status);
+    dateString.toUTF8String(result);
+    return result;
+}
+
+std::string DateTimeFormat::FormatRange(int64_t *fromDate, int64_t *toDate)
+{
+    UErrorCode status = U_ZERO_ERROR;
+    std::string result;
+    UnicodeString dateString;
+    int64_t year = fromDate[YEAR_INDEX];
+    int64_t month = fromDate[MONTH_INDEX];
+    int64_t day = fromDate[DAY_INDEX];
+    int64_t hour = fromDate[HOUR_INDEX];
+    int64_t minute = fromDate[MINUTE_INDEX];
+    int64_t second = fromDate[SECOND_INDEX];
+
+    calendar->clear();
+    calendar->set(year, month, day, hour, minute, second);
+    if (!timeZone.empty()) {
+        UDate timestamp = calendar->getTime(status);
+        auto zone = std::unique_ptr<TimeZone>(TimeZone::createTimeZone(timeZone.c_str()));
+        calendar->setTimeZone(*zone);
+        dateIntvFormat->setTimeZone(*zone);
+        calendar->setTime(timestamp, status);
+    }
+
+    year = toDate[YEAR_INDEX];
+    month = toDate[MONTH_INDEX];
+    day = toDate[DAY_INDEX];
+    hour = toDate[HOUR_INDEX];
+    minute = toDate[MINUTE_INDEX];
+    second = toDate[SECOND_INDEX];
+    auto toCalendar = std::unique_ptr<Calendar>(Calendar::createInstance(locale, status));
+    toCalendar->clear();
+    toCalendar->set(year, month, day, hour, minute, second);
+    if (!timeZone.empty()) {
+        UDate timestamp = toCalendar->getTime(status);
+        auto zone = std::unique_ptr<TimeZone>(TimeZone::createTimeZone(timeZone.c_str()));
+        toCalendar->setTimeZone(*zone);
+        dateIntvFormat->setTimeZone(*zone);
+        toCalendar->setTime(timestamp, status);
+    }
+    FieldPosition pos = 0;
+    dateIntvFormat->format(*calendar, *toCalendar, dateString, pos, status);
     dateString.toUTF8String(result);
     return result;
 }
@@ -355,9 +433,8 @@ void DateTimeFormat::GetResolvedOptions(std::map<std::string, std::string> &map)
     } else if (!(localeInfo->GetNumberingSystem()).empty()) {
         map.insert(std::make_pair("numberingSystem", localeInfo->GetNumberingSystem()));
     } else {
-        NumberingSystem *numSys = NumberingSystem::createInstance(locale, status);
+        auto numSys = std::unique_ptr<NumberingSystem>(NumberingSystem::createInstance(locale, status));
         map.insert(std::make_pair("numberingSystem", numSys->getName()));
-        delete numSys;
     }
     GetAdditionalResolvedOptions(map);
 }
@@ -391,8 +468,14 @@ void DateTimeFormat::GetAdditionalResolvedOptions(std::map<std::string, std::str
     if (!second.empty()) {
         map.insert(std::make_pair("second", second));
     }
-    if (!fractionalSecondDigits.empty()) {
-        map.insert(std::make_pair("fractionalSecondDigits", fractionalSecondDigits));
+    if (!dayPeriod.empty()) {
+        map.insert(std::make_pair("dayPeriod", dayPeriod));
+    }
+    if (!localeMatcher.empty()) {
+        map.insert(std::make_pair("localeMatcher", localeMatcher));
+    }
+    if (!formatMatcher.empty()) {
+        map.insert(std::make_pair("formatMatcher", formatMatcher));
     }
 }
 
@@ -469,11 +552,6 @@ std::string DateTimeFormat::GetMinute() const
 std::string DateTimeFormat::GetSecond() const
 {
     return second;
-}
-
-std::string DateTimeFormat::GetFractionalSecondDigits() const
-{
-    return fractionalSecondDigits;
 }
 
 bool DateTimeFormat::Init()
