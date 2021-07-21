@@ -142,7 +142,7 @@ void GetOptionValue(napi_env env, napi_value options, const std::string &optionN
     }
     bool hasProperty = false;
     napi_status propStatus = napi_has_named_property(env, options, optionName.c_str(), &hasProperty);
-    if (propStatus != napi_ok && hasProperty) {
+    if (propStatus == napi_ok && hasProperty) {
         status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
         if (status == napi_ok) {
             size_t len;
@@ -166,7 +166,7 @@ void GetBoolOptionValue(napi_env env, napi_value options, const std::string &opt
     }
     bool hasProperty = false;
     napi_status propStatus = napi_has_named_property(env, options, optionName.c_str(), &hasProperty);
-    if (propStatus != napi_ok && hasProperty) {
+    if (propStatus == napi_ok && hasProperty) {
         status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
         if (status == napi_ok) {
             bool boolValue = false;
