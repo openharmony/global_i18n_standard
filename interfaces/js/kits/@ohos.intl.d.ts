@@ -94,6 +94,8 @@ export class Locale {
      * @return Returns locale information in string form.
      */
     toString(): string;
+    maximize(): Locale;
+    minimize(): Locale;
 }
 
 /**
@@ -351,8 +353,8 @@ export interface NumberOptions {
 export class NumberFormat {
     constructor(locale: string, options?: options);
     constructor(locale: string[], options?: options);
-    format(date: number): string;
-    resolvedOptions(): Object;
+    format(number: number): string;
+    resolvedOptions(): NumberOptions;
 }
 }
 export default intl;
