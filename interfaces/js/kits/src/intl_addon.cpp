@@ -179,6 +179,7 @@ void GetBoolOptionValue(napi_env env, napi_value options, const std::string &opt
 
 void GetDateOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map)
 {
+    GetOptionValue(env, options, "calendar", map);
     GetOptionValue(env, options, "dateStyle", map);
     GetOptionValue(env, options, "timeStyle", map);
     GetOptionValue(env, options, "hourCycle", map);
@@ -424,6 +425,7 @@ napi_value IntlAddon::FormatDateTimeRange(napi_env env, napi_callback_info info)
     }
     return result;
 }
+
 napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info info)
 {
     // Need to get one parameter of a locale in string format to create DateTimeFormat object.
@@ -486,7 +488,7 @@ napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info i
     }
 
     if (!obj->InitNumberFormatContext(env, info, localeTags, map)) {
-        HiLog::Error(LABEL, "Init DateTimeFormat failed");
+        HiLog::Error(LABEL, "Init NumberFormat failed");
         return nullptr;
     }
 
@@ -935,6 +937,7 @@ napi_value IntlAddon::GetDateTimeResolvedOptions(napi_env env, napi_callback_inf
     napi_create_object(env, &result);
     std::map<std::string, std::string> options = {};
     obj->datefmt_->GetResolvedOptions(options);
+    SetOptionProperties(env, result, options, "calendar");
     SetOptionProperties(env, result, options, "dateStyle");
     SetOptionProperties(env, result, options, "timeStyle");
     SetOptionProperties(env, result, options, "hourCycle");
@@ -964,7 +967,7 @@ napi_value IntlAddon::GetNumberResolvedOptions(napi_env env, napi_callback_info 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
     if (status != napi_ok || obj == nullptr || obj->numberfmt_ == nullptr) {
-        HiLog::Error(LABEL, "Get DateTimeFormat object failed");
+        HiLog::Error(LABEL, "Get NumberFormat object failed");
         return nullptr;
     }
     napi_value result;
@@ -998,8 +1001,8 @@ napi_value IntlAddon::FormatNumber(napi_env env, napi_callback_info info)
     napi_get_value_double(env, argv[0], &number);
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->datefmt_ == nullptr) {
-        HiLog::Error(LABEL, "Get DateTimeFormat object failed");
+    if (status != napi_ok || obj == nullptr || obj->numberfmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get NumberFormat object failed");
         return nullptr;
     }
     std::string value = obj->numberfmt_->Format(number);
@@ -1015,7 +1018,8 @@ napi_value IntlAddon::FormatNumber(napi_env env, napi_callback_info info)
 napi_value Init(napi_env env, napi_value exports)
 {
     napi_value val = IntlAddon::InitLocale(env, exports);
-    return IntlAddon::InitDateTimeFormat(env, val);
+    val = IntlAddon::InitDateTimeFormat(env, val);
+    return IntlAddon::InitNumberFormat(env, val);
 }
 
 static napi_module g_intlModule = {
