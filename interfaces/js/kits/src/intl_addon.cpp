@@ -154,6 +154,30 @@ void GetOptionValue(napi_env env, napi_value options, const std::string &optionN
     }
 }
 
+void GetIntegerOptionValue(napi_env env, napi_value options, const std::string &optionName,
+    std::map<std::string, std::string> &map)
+{
+    napi_value optionValue = nullptr;
+    napi_valuetype type = napi_undefined;
+    napi_status status = napi_typeof(env, options, &type);
+    if (status != napi_ok && type != napi_object) {
+        HiLog::Error(LABEL, "Set option failed, option is not an object");
+        return;
+    }
+    bool hasProperty = false;
+    napi_status propStatus = napi_has_named_property(env, options, optionName.c_str(), &hasProperty);
+    if (propStatus == napi_ok && hasProperty) {
+        status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
+        if (status == napi_ok) {
+            int64_t integerValue = -1;
+            napi_get_value_int64(env, optionValue, &integerValue);
+            if (integerValue != -1) {
+                map.insert(make_pair(optionName, std::to_string(integerValue)));
+            }
+        }
+    }
+}
+
 void GetBoolOptionValue(napi_env env, napi_value options, const std::string &optionName,
     std::map<std::string, std::string> &map)
 {
@@ -232,7 +256,7 @@ napi_value IntlAddon::LocaleConstructor(napi_env env, napi_callback_info info)
         GetOptionValue(env, argv[1], "collation", map);
         GetOptionValue(env, argv[1], "hourCycle", map);
         GetOptionValue(env, argv[1], "numberingSystem", map);
-        GetOptionValue(env, argv[1], "numeric", map);
+        GetBoolOptionValue(env, argv[1], "numeric", map);
         GetBoolOptionValue(env, argv[1], "caseFirst", map);
     }
 
@@ -467,11 +491,11 @@ napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info i
         GetOptionValue(env, argv[1], "numberingSystem", map);
         GetOptionValue(env, argv[1], "notation", map);
         GetBoolOptionValue(env, argv[1], "useGrouping", map);
-        GetOptionValue(env, argv[1], "minimumIntegerDigits", map);
-        GetOptionValue(env, argv[1], "minimumFractionDigits", map);
-        GetOptionValue(env, argv[1], "maximumFractionDigits", map);
-        GetOptionValue(env, argv[1], "minimumSignificantDigits", map);
-        GetOptionValue(env, argv[1], "maximumSignificantDigits", map);
+        GetIntegerOptionValue(env, argv[1], "minimumIntegerDigits", map);
+        GetIntegerOptionValue(env, argv[1], "minimumFractionDigits", map);
+        GetIntegerOptionValue(env, argv[1], "maximumFractionDigits", map);
+        GetIntegerOptionValue(env, argv[1], "minimumSignificantDigits", map);
+        GetIntegerOptionValue(env, argv[1], "maximumSignificantDigits", map);
     }
 
     std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
@@ -859,11 +883,11 @@ napi_value IntlAddon::GetCaseFirst(napi_env env, napi_callback_info info)
         return nullptr;
     }
     std::string value = obj->locale_->GetCaseFirst();
-
+    bool optionBoolValue = (value == "true");
     napi_value result;
-    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    status = napi_get_boolean(env, optionBoolValue, &result);
     if (status != napi_ok) {
-        HiLog::Error(LABEL, "Create base name string failed");
+        HiLog::Error(LABEL, "Create case first boolean value failed");
         return nullptr;
     }
     return result;
@@ -906,6 +930,22 @@ void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string,
     }
 }
 
+void SetIntegerOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
+    std::string option)
+{
+    if (options.count(option) > 0) {
+        std::string optionValue = options[option];
+        napi_value optionJsValue;
+        int64_t integerValue = std::stoi(optionValue);
+        napi_create_int64(env, integerValue, &optionJsValue);
+        napi_set_named_property(env, result, option.c_str(), optionJsValue);
+    } else {
+        napi_value undefined;
+        napi_get_undefined(env, &undefined);
+        napi_set_named_property(env, result, option.c_str(), undefined);
+    }
+}
+
 void SetBooleanOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
     std::string option)
 {
@@ -937,6 +977,7 @@ napi_value IntlAddon::GetDateTimeResolvedOptions(napi_env env, napi_callback_inf
     napi_create_object(env, &result);
     std::map<std::string, std::string> options = {};
     obj->datefmt_->GetResolvedOptions(options);
+    SetOptionProperties(env, result, options, "locale");
     SetOptionProperties(env, result, options, "calendar");
     SetOptionProperties(env, result, options, "dateStyle");
     SetOptionProperties(env, result, options, "timeStyle");
@@ -973,7 +1014,8 @@ napi_value IntlAddon::GetNumberResolvedOptions(napi_env env, napi_callback_info 
     napi_value result;
     napi_create_object(env, &result);
     std::map<std::string, std::string> options = {};
-    obj->datefmt_->GetResolvedOptions(options);
+    obj->numberfmt_->GetResolvedOptions(options);
+    SetOptionProperties(env, result, options, "locale");
     SetOptionProperties(env, result, options, "currency");
     SetOptionProperties(env, result, options, "currencySign");
     SetOptionProperties(env, result, options, "currencyDisplay");
@@ -985,11 +1027,11 @@ napi_value IntlAddon::GetNumberResolvedOptions(napi_env env, napi_callback_info 
     SetOptionProperties(env, result, options, "style");
     SetOptionProperties(env, result, options, "numberingSystem");
     SetBooleanOptionProperties(env, result, options, "useGrouping");
-    SetOptionProperties(env, result, options, "minimumIntegerDigits");
-    SetOptionProperties(env, result, options, "minimumFractionDigits");
-    SetOptionProperties(env, result, options, "maximumFractionDigits");
-    SetOptionProperties(env, result, options, "minimumSignificantDigits");
-    SetOptionProperties(env, result, options, "maximumSignificantDigits");
+    SetIntegerOptionProperties(env, result, options, "minimumIntegerDigits");
+    SetIntegerOptionProperties(env, result, options, "minimumFractionDigits");
+    SetIntegerOptionProperties(env, result, options, "maximumFractionDigits");
+    SetIntegerOptionProperties(env, result, options, "minimumSignificantDigits");
+    SetIntegerOptionProperties(env, result, options, "maximumSignificantDigits");
     SetOptionProperties(env, result, options, "localeMatcher");
     return result;
 }
