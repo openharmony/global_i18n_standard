@@ -32,8 +32,12 @@ static void GetOptionValue(napi_env env, napi_value options, const std::string &
     std::map<std::string, std::string> &map);
 static void GetBoolOptionValue(napi_env env, napi_value options, const std::string &optionName,
     std::map<std::string, std::string> &map);
+static void GetIntegerOptionValue(napi_env env, napi_value options, const std::string &optionName,
+    std::map<std::string, std::string> &map);
 static void GetDateOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
 static void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
+    std::string option);
+static void SetIntegerOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
     std::string option);
 static void SetBooleanOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
     std::string option);

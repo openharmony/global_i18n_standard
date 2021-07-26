@@ -61,7 +61,7 @@ export class Locale {
     /**
      * Indicates whether it is case first.
      */
-    caseFirst: string
+    caseFirst: boolean
 
     /**
      * Indicates the calendar.
@@ -86,7 +86,7 @@ export class Locale {
     /**
      * Indicates whether it is numeric.
      */
-    numeric: string
+    numeric: boolean
 
     /**
      * Convert the locale information to string.
@@ -212,7 +212,7 @@ export class DateTimeFormat {
      * @param options Indicates the options used to format the date.
      * @since 6
      */
-    constructor(locale: string, options?: options);
+    constructor(locale: string, options?: DateTimeOptions);
 
     /**
      * A constructor used to create a DateTimeFormat object.
@@ -222,7 +222,7 @@ export class DateTimeFormat {
      * @param options Indicates the options used to format the date.
      * @since 6
      */
-    constructor(locale: string[], options?: options);
+    constructor(locale: string[], options?: DateTimeOptions);
 
     /**
      * Obtains the formatted date strings.
@@ -324,35 +324,35 @@ export interface NumberOptions {
     /**
      * Indicates the minimum integer digits.
      */
-    minimumIntegerDigits: string
+    minimumIntegerDigits: number
 
     /**
      * Indicates the minimum fraction digits.
      */
-    minimumFractionDigits: string
+    minimumFractionDigits: number
 
     /**
      * Indicates the maximum fraction digits.
      */
-    maximumFractionDigits: string
+    maximumFractionDigits: number
 
     /**
      * Indicates the minimum siginificant digits.
      */
-    minimumSiginificantDigits: string
+    minimumSiginificantDigits: number
 
     /**
      * Indicates the maximum siginificant digits.
      */
-    maximumSiginificantDigits: string
+    maximumSiginificantDigits: number
 }
 
 /**
  * Provides the API for formatting numebr strings.
  */
 export class NumberFormat {
-    constructor(locale: string, options?: options);
-    constructor(locale: string[], options?: options);
+    constructor(locale: string, options?: NumberOptions);
+    constructor(locale: string[], options?: NumberOptions);
     format(number: number): string;
     resolvedOptions(): NumberOptions;
 }
