@@ -82,6 +82,8 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
             ComputeSkeleton();
             if (configs.size() == 0) {
                 dateFormat = DateFormat::createDateInstance(DateFormat::SHORT, locale);
+                dynamic_cast<SimpleDateFormat*>(dateFormat)->toPattern(pattern);
+                dateIntvFormat = DateIntervalFormat::createInstance(pattern, locale, status);
             } else {
                 InitDateFormat(status);
             }
@@ -105,6 +107,10 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
 
 DateTimeFormat::~DateTimeFormat()
 {
+    if (dateIntvFormat != nullptr) {
+        delete dateIntvFormat;
+        dateIntvFormat = nullptr;
+    }
     if (calendar != nullptr) {
         delete calendar;
         calendar = nullptr;
@@ -131,8 +137,7 @@ void DateTimeFormat::InitDateFormat(UErrorCode &status)
             timeStyleValue = dateTimeStyle[timeStyle];
         }
         dateFormat = DateFormat::createDateTimeInstance(dateStyleValue, timeStyleValue, locale);
-        auto simpleDateFormat = std::unique_ptr<SimpleDateFormat>(dynamic_cast<SimpleDateFormat*>(dateFormat));
-        simpleDateFormat->toPattern(pattern);
+        dynamic_cast<SimpleDateFormat*>(dateFormat)->toPattern(pattern);
     } else {
         auto patternGenerator =
             std::unique_ptr<DateTimePatternGenerator>(DateTimePatternGenerator::createInstance(locale, status));
