@@ -71,6 +71,12 @@ void LocaleInfo::ComputeFinalLocaleTag(const std::string &localeTag)
         ParseLocaleTag(localeTag);
         ParseConfigs();
     }
+    if (!script.empty()) {
+        finalLocaleTag += "-" + script;
+    }
+    if (!region.empty()) {
+        finalLocaleTag += "-" + region;
+    }
     if (!hourCycle.empty() || !numberingSystem.empty() || !calendar.empty() || !collation.empty() ||
         !caseFirst.empty() || !numeric.empty()) {
         finalLocaleTag += "-u";
@@ -126,6 +132,12 @@ void LocaleInfo::ParseLocaleTag(const std::string &localeTag)
 
 void LocaleInfo::ParseConfigs()
 {
+    if (configs.count("script") > 0) {
+        script = configs["script"];
+    }
+    if (configs.count("region") > 0) {
+        region = configs["region"];
+    }
     if (configs.count("hourCycle") > 0) {
         hourCycle = configs["hourCycle"];
     }
