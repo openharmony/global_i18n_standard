@@ -83,6 +83,8 @@ private:
     UNumberSignDisplay signDisplay = UNumberSignDisplay::UNUM_SIGN_AUTO;
     static const int MAX_UNIT_NUM = 500;
     icu::MeasureUnit unitArray[MAX_UNIT_NUM];
+    static bool icuInitialized;
+    static bool Init();
     static std::map<std::string, UNumberUnitWidth> unitStyle;
     static std::map<std::string, UNumberUnitWidth> currencyStyle;
     static std::map<std::string, UNumberSignDisplay> signAutoStyle;
@@ -94,8 +96,6 @@ private:
     void GetDigitsResolvedOptions(std::map<std::string, std::string> &map);
     void InitProperties();
     void InitDigitsProperties();
-    static bool icuInitialized;
-    static bool Init();
 };
 } // namespace I18n
 } // namespace Global

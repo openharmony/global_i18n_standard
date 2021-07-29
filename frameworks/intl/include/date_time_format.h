@@ -61,7 +61,6 @@ public:
     std::string GetFormatMatcher() const;
     std::string GetFractionalSecondDigits() const;
 private:
-    static std::map<std::string, icu::DateFormat::EStyle> dateTimeStyle;
     std::string localeTag;
     std::string dateStyle;
     std::string timeStyle;
@@ -119,6 +118,7 @@ private:
     static bool Init();
     static std::set<std::string> allValidLocales;
     static std::set<std::string> GetValidLocales();
+    static std::map<std::string, icu::DateFormat::EStyle> dateTimeStyle;
     void ParseConfigsPartOne(std::map<std::string, std::string> &configs);
     void ParseConfigsPartTwo(std::map<std::string, std::string> &configs);
     void AddOptions(std::string option, char16_t optionChar);
