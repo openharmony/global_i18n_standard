@@ -22,6 +22,21 @@ namespace OHOS {
 namespace Global {
 namespace I18n {
 
+bool NumberFormat::icuInitialized = NumberFormat::Init();
+
+std::set<std::string> NumberFormat::allValidLocales = GetValidLocales();
+
+std::set<std::string> NumberFormat::GetValidLocales()
+{
+    int32_t validCount = 1;
+    const icu::Locale *validLocales = icu::Locale::getAvailableLocales(validCount);
+    std::set<std::string> allValidLocales;
+    for (int i = 0; i < validCount; i++) {
+        allValidLocales.insert(validLocales[i].getLanguage());
+    }
+    return allValidLocales;
+}
+
 std::map<std::string, UNumberUnitWidth> NumberFormat::unitStyle = {
     { "long", UNumberUnitWidth::UNUM_UNIT_WIDTH_FULL_NAME },
     { "short", UNumberUnitWidth::UNUM_UNIT_WIDTH_SHORT },
@@ -75,19 +90,6 @@ NumberFormat::~NumberFormat()
         delete localeInfo;
         localeInfo = nullptr;
     }
-}
-
-std::set<std::string> NumberFormat::allValidLocales = GetValidLocales();
-
-std::set<std::string> NumberFormat::GetValidLocales()
-{
-    int32_t validCount = 1;
-    const icu::Locale *validLocales = icu::Locale::getAvailableLocales(validCount);
-    std::set<std::string> allValidLocales;
-    for (int i = 0; i < validCount; i++) {
-        allValidLocales.insert(validLocales[i].getLanguage());
-    }
-    return allValidLocales;
 }
 
 void NumberFormat::InitProperties()
@@ -228,8 +230,6 @@ void NumberFormat::ParseDigitsConfigs(std::map<std::string, std::string> &config
         localeMatcher = configs["localeMatcher"];
     }
 }
-
-bool NumberFormat::icuInitialized = NumberFormat::Init();
 
 std::string NumberFormat::Format(double number)
 {
