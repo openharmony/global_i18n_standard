@@ -22,6 +22,22 @@ namespace OHOS {
 namespace Global {
 namespace I18n {
 using namespace icu;
+
+bool DateTimeFormat::icuInitialized = DateTimeFormat::Init();
+
+std::set<std::string> DateTimeFormat::allValidLocales = GetValidLocales();
+
+std::set<std::string> DateTimeFormat::GetValidLocales()
+{
+    int32_t validCount = 1;
+    const Locale *validLocales = Locale::getAvailableLocales(validCount);
+    std::set<std::string> allValidLocales;
+    for (int i = 0; i < validCount; i++) {
+        allValidLocales.insert(validLocales[i].getLanguage());
+    }
+    return allValidLocales;
+}
+
 std::map<std::string, DateFormat::EStyle> DateTimeFormat::dateTimeStyle = {
     { "full", DateFormat::EStyle::kFull },
     { "long", DateFormat::EStyle::kLong },
@@ -46,19 +62,6 @@ DateTimeFormat::DateTimeFormat(std::string localeTag)
         calendar = Calendar::createInstance(status);
     }
     dateFormat->setCalendar(*calendar);
-}
-
-std::set<std::string> DateTimeFormat::allValidLocales = GetValidLocales();
-
-std::set<std::string> DateTimeFormat::GetValidLocales()
-{
-    int32_t validCount = 1;
-    const Locale *validLocales = Locale::getAvailableLocales(validCount);
-    std::set<std::string> allValidLocales;
-    for (int i = 0; i < validCount; i++) {
-        allValidLocales.insert(validLocales[i].getLanguage());
-    }
-    return allValidLocales;
 }
 
 DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs)
@@ -329,8 +332,6 @@ void DateTimeFormat::ComputeWeekdayOrEraOfPattern(std::string option, char16_t c
         }
     }
 }
-
-bool DateTimeFormat::icuInitialized = DateTimeFormat::Init();
 
 std::string DateTimeFormat::Format(int64_t *date)
 {
