@@ -116,7 +116,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest003, TestSize.Leve
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     }
     average = total / 1000.0;
-    EXPECT_LT(average, 9000);
+    EXPECT_LT(average, 9300);
 }
 
 /**
@@ -139,7 +139,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest004, TestSize.Leve
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     }
     average = total / 1000.0;
-    EXPECT_LT(average, 9000);
+    EXPECT_LT(average, 9100);
 }
 
 /**
