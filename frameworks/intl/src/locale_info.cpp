@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 #include "locale_info.h"
-#include "ohos/init_data.h"
 #include <algorithm>
+#include "ohos/init_data.h"
 
 namespace OHOS {
 namespace Global {
@@ -227,7 +227,7 @@ LocaleInfo *LocaleInfo::Maximize()
     curLocale.addLikelySubtags(status);
     if (status == U_ZERO_ERROR) {
         std::string restConfigs = finalLocaleTag.substr(finalLocaleTag.find("-u-"));
-        std::string curBaseName = curLocale.getBaseName();
+        std::string curBaseName = (curLocale.getBaseName() == nullptr) ? "" : curLocale.getBaseName();
         std::replace(curBaseName.begin(), curBaseName.end(), '_', '-');
         std::string localeTag = curBaseName + restConfigs;
         return new LocaleInfo(localeTag, configs);
@@ -242,7 +242,7 @@ LocaleInfo *LocaleInfo::Minimize()
     curLocale.minimizeSubtags(status);
     if (status == U_ZERO_ERROR) {
         std::string restConfigs = finalLocaleTag.substr(finalLocaleTag.find("-u-"));
-        std::string curBaseName = curLocale.getBaseName();
+        std::string curBaseName = (curLocale.getBaseName() == nullptr) ? "" : curLocale.getBaseName();
         std::replace(curBaseName.begin(), curBaseName.end(), '_', '-');
         std::string localeTag = curBaseName + restConfigs;
         return new LocaleInfo(localeTag, configs);

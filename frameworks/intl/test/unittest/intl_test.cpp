@@ -15,11 +15,11 @@
 
 #include "intl_test.h"
 #include <gtest/gtest.h>
+#include <map>
+#include <vector>
 #include "date_time_format.h"
 #include "locale_info.h"
 #include "number_format.h"
-#include <map>
-#include <vector>
 
 using namespace OHOS::Global::I18n;
 using testing::ext::TestSize;
@@ -72,7 +72,7 @@ HWTEST_F(IntlTest, IntlFuncTest001, TestSize.Level1)
         return;
     }
     int64_t date[] = { 2021, 3, 14, 15, 5, 3 };
-    string out = dateFormat->Format(date);
+    string out = dateFormat->Format(date, 6);
     EXPECT_EQ(out, expects);
     EXPECT_EQ(dateFormat->GetYear(), "numeric");
     EXPECT_EQ(dateFormat->GetMonth(), "long");
@@ -110,7 +110,7 @@ HWTEST_F(IntlTest, IntlFuncTest002, TestSize.Level1)
     EXPECT_EQ(loc->GetHourCycle(), "h11");
     EXPECT_EQ(loc->GetNumberingSystem(), "jpan");
     EXPECT_EQ(loc->Minimize()->GetScript(), "");
-    EXPECT_EQ(loc->Minimize()->Maximize()->GetScript(), "Jpan");
+    EXPECT_EQ(loc->Maximize()->GetScript(), "Jpan");
     EXPECT_EQ(loc->GetNumeric(), "true");
     EXPECT_EQ(loc->GetCaseFirst(), "");
     delete loc;
@@ -162,7 +162,7 @@ HWTEST_F(IntlTest, IntlFuncTest004, TestSize.Level1)
     }
     int64_t date1[] = {2021, 3, 14, 15, 5, 3};
     int64_t date2[] = {2021, 4, 5, 10, 5, 3};
-    string out = dateFormat->FormatRange(date1, date2);
+    string out = dateFormat->FormatRange(date1, 6, date2, 6);
     EXPECT_EQ(out, expects);
     EXPECT_EQ(dateFormat->GetDateStyle(), dateStyle);
     EXPECT_EQ(dateFormat->GetTimeStyle(), timeStyle);
@@ -190,12 +190,12 @@ HWTEST_F(IntlTest, IntlFuncTest006, TestSize.Level1)
         return;
     }
     int64_t date[] = { 2021, 3, 14, 15, 5, 3 };
-    string out = dateFormat->Format(date);
+    string out = dateFormat->Format(date, 6);
     EXPECT_EQ(out, expects);
     int64_t date1[] = {2021, 3, 14, 15, 5, 3};
     int64_t date2[] = {2021, 4, 5, 10, 5, 3};
     expects = "2021/04/14水曜日～2021/05/05水曜日";
-    out = dateFormat->FormatRange(date1, date2);
+    out = dateFormat->FormatRange(date1, 6, date2, 6);
     EXPECT_EQ(out, expects);
     delete dateFormat;
 }
@@ -391,7 +391,7 @@ HWTEST_F(IntlTest, IntlFuncTest0012, TestSize.Level1)
         return;
     }
     int64_t date[] = {2021, 3, 14, 15, 5, 3};
-    string out = dateFormat->Format(date);
+    string out = dateFormat->Format(date, 6);
     EXPECT_EQ(out, expects);
     delete dateFormat;
 }
@@ -437,7 +437,7 @@ HWTEST_F(IntlTest, IntlFuncTest0014, TestSize.Level1)
         return;
     }
     int64_t date[] = { 2021, 3, 14, 15, 5, 3 };
-    string out = dateFormat->Format(date);
+    string out = dateFormat->Format(date, 6);
     EXPECT_TRUE(out.find(expects) != out.npos);
     delete dateFormat;
 }

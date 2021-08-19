@@ -35,11 +35,10 @@ namespace Global {
 namespace I18n {
 class DateTimeFormat {
 public:
-    DateTimeFormat(std::string locale);
     DateTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs);
     virtual ~DateTimeFormat();
-    std::string Format(int64_t *date);
-    std::string FormatRange(int64_t *fromDate, int64_t *toDate);
+    std::string Format(int64_t *date, int size);
+    std::string FormatRange(int64_t *fromDate, int fromDateSize, int64_t *toDate, int toDateSize);
     void GetResolvedOptions(std::map<std::string, std::string> &map);
     std::string GetDateStyle() const;
     std::string GetTimeStyle() const;
@@ -80,10 +79,10 @@ private:
     std::string dayPeriod;
     std::string localeMatcher;
     std::string formatMatcher;
-    icu::DateFormat *dateFormat;
-    icu::DateIntervalFormat *dateIntvFormat;
-    icu::Calendar *calendar;
-    LocaleInfo *localeInfo;
+    icu::DateFormat *dateFormat = nullptr;
+    icu::DateIntervalFormat *dateIntvFormat = nullptr;
+    icu::Calendar *calendar = nullptr;
+    LocaleInfo *localeInfo = nullptr;
     icu::Locale locale;
     icu::UnicodeString pattern;
     char16_t yearChar = 'Y';
@@ -129,6 +128,7 @@ private:
     void ComputeHourCycleChars();
     void ComputeWeekdayOrEraOfPattern(std::string option, char16_t character, std::string longChar,
         std::string shortChar, std::string narrowChar);
+    void InitDateFormatWithoutConfigs(UErrorCode &status);
     void InitDateFormat(UErrorCode &status);
     void GetAdditionalResolvedOptions(std::map<std::string, std::string> &map);
 };
