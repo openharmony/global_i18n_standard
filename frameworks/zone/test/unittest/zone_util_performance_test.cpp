@@ -67,7 +67,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest001, TestSize.Leve
         }
     }
     average = total / (1000.0 * 2);
-    EXPECT_LT(average, 9000);
+    EXPECT_LT(average, 9300);
 }
 
 /**
@@ -93,7 +93,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest002, TestSize.Leve
         }
     }
     average = total / (1000.0 * 2);
-    EXPECT_LT(average, 10500);
+    EXPECT_LT(average, 10800);
 }
 
 /**
@@ -139,7 +139,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest004, TestSize.Leve
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     }
     average = total / 1000.0;
-    EXPECT_LT(average, 9100);
+    EXPECT_LT(average, 9300);
 }
 
 /**
@@ -162,7 +162,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest005, TestSize.Leve
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     }
     average = total / 1000.0;
-    EXPECT_LT(average, 9000);
+    EXPECT_LT(average, 9300);
 }
 
 /**
@@ -185,6 +185,6 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest006, TestSize.Leve
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     }
     average = total / 1000.0;
-    EXPECT_LT(average, 10000);
+    EXPECT_LT(average, 10300);
 }
 }

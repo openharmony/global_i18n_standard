@@ -59,9 +59,9 @@ export class Locale {
     baseName: string
 
     /**
-     * Indicates whether it is case first.
+     * Indicates the case first style of the locale.
      */
-    caseFirst: boolean
+    caseFirst: string
 
     /**
      * Indicates the calendar.
@@ -94,7 +94,19 @@ export class Locale {
      * @return Returns locale information in string form.
      */
     toString(): string;
+
+    /**
+     * Maximize the locale's base information.
+     *
+     * @return Returns maximized locale.
+     */
     maximize(): Locale;
+
+    /**
+     * Minimize the locale's base information.
+     *
+     * @return Returns minimized locale.
+     */
     minimize(): Locale;
 }
 
@@ -168,7 +180,7 @@ export interface DateTimeOptions {
     hour: string
 
     /**
-     * Indicates the minute sty'.
+     * Indicates the minute style.
      */
     minute: string
 
@@ -195,7 +207,7 @@ export interface DateTimeOptions {
     /**
      * Indicates the format matching algorithm.
      */
-    foramtMatcher: string
+    formatMatcher: string
 }
 
 /**
@@ -337,23 +349,55 @@ export interface NumberOptions {
     maximumFractionDigits: number
 
     /**
-     * Indicates the minimum siginificant digits.
+     * Indicates the minimum significant digits.
      */
-    minimumSiginificantDigits: number
+    minimumSignificantDigits: number
 
     /**
-     * Indicates the maximum siginificant digits.
+     * Indicates the maximum significant digits.
      */
-    maximumSiginificantDigits: number
+    maximumSignificantDigits: number
 }
 
 /**
- * Provides the API for formatting numebr strings.
+ * Provides the API for formatting number strings.
  */
 export class NumberFormat {
+    /**
+     * A constructor used to create a NumberFormat object.
+     *
+     * @param locale Indicates a character string containing the locale information, including
+     *               the language and optionally the script and region, for the NumberFormat object.
+     * @param options Indicates the options used to format the number.
+     * @since 6
+     */
     constructor(locale: string, options?: NumberOptions);
+
+    /**
+     * A constructor used to create a NumberFormat object.
+     *
+     * @param locale Indicates an array of character string containing the locale information, including
+     *               the language and optionally the script and region, for the NumberFormat object.
+     * @param options Indicates the options used to format the number.
+     * @since 6
+     */
     constructor(locale: string[], options?: NumberOptions);
+
+    /**
+     * Obtains the formatted number string.
+     *
+     * @param number Indicates the number to be formatted.
+     * @return Returns a number string formatted based on the specified locale.
+     * @since 6
+     */
     format(number: number): string;
+
+    /**
+     * Obtains the options of the NumberFormat object.
+     *
+     * @return Returns the options of the NumberFormat object.
+     * @since 6
+     */
     resolvedOptions(): NumberOptions;
 }
 }
