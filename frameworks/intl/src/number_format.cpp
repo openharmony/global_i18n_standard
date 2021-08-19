@@ -13,10 +13,9 @@
  * limitations under the License.
  */
 #include "number_format.h"
-#include "ohos/init_data.h"
 #include <locale>
 #include <codecvt>
-#include <iostream>
+#include "ohos/init_data.h"
 
 namespace OHOS {
 namespace Global {
@@ -81,6 +80,13 @@ NumberFormat::NumberFormat(const std::vector<std::string> &localeTags, std::map<
             break;
         }
     }
+    if (localeInfo == nullptr) {
+        localeInfo = new LocaleInfo(icu::Locale::getDefault().getBaseName(), configs);
+        locale = localeInfo->GetLocale();
+        localeBaseName = localeInfo->GetBaseName();
+        numberFormat = icu::number::NumberFormatter::withLocale(locale);
+        icu::MeasureUnit::getAvailable(unitArray, MAX_UNIT_NUM, status);
+    }
     InitProperties();
 }
 
@@ -114,7 +120,7 @@ void NumberFormat::InitProperties()
         numberFormat = numberFormat.unitWidth(unitDisplay);
     }
     if (!useGrouping.empty()) {
-        numberFormat.grouping(useGrouping == "true" ?
+        numberFormat.grouping((useGrouping == "true") ?
             UNumberGroupingStrategy::UNUM_GROUPING_AUTO : UNumberGroupingStrategy::UNUM_GROUPING_OFF);
     }
     if (!currencySign.empty() || !signDisplayString.empty()) {
@@ -130,12 +136,12 @@ void NumberFormat::InitDigitsProperties()
 {
     if (!maximumSignificantDigits.empty() || !minimumSignificantDigits.empty()) {
         if (!maximumSignificantDigits.empty()) {
-            numberFormat =
-                numberFormat.precision(icu::number::Precision::maxSignificantDigits(std::stoi(maximumSignificantDigits)));
+            int32_t maxSignificantDigits = std::stoi(maximumSignificantDigits);
+            numberFormat = numberFormat.precision(icu::number::Precision::maxSignificantDigits(maxSignificantDigits));
         }
         if (!minimumSignificantDigits.empty()) {
-            numberFormat =
-                numberFormat.precision(icu::number::Precision::minSignificantDigits(std::stoi(minimumSignificantDigits)));
+            int32_t minSignificantDigits = std::stoi(minimumSignificantDigits);
+            numberFormat = numberFormat.precision(icu::number::Precision::minSignificantDigits(minSignificantDigits));
         }
     } else {
         if (!minimumIntegerDigits.empty() && std::stoi(minimumIntegerDigits) > 1) {
@@ -184,6 +190,11 @@ void NumberFormat::ParseConfigs(std::map<std::string, std::string> &configs)
             currencyDisplay = currencyStyle[currencyDisplayString];
         }
     }
+    ParseDigitsConfigs(configs);
+}
+
+void NumberFormat::ParseDigitsConfigs(std::map<std::string, std::string> &configs)
+{
     if (configs.count("notation") > 0) {
         notationString = configs["notation"];
         if (notationString == "scientific") {
@@ -200,11 +211,6 @@ void NumberFormat::ParseConfigs(std::map<std::string, std::string> &configs)
             }
         }
     }
-    ParseDigitsConfigs(configs);
-}
-
-void NumberFormat::ParseDigitsConfigs(std::map<std::string, std::string> &configs)
-{
     if (configs.count("minimumIntegerDigits") > 0) {
         minimumIntegerDigits = configs["minimumIntegerDigits"];
     }

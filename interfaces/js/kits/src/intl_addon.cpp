@@ -257,7 +257,7 @@ napi_value IntlAddon::LocaleConstructor(napi_env env, napi_callback_info info)
         GetOptionValue(env, argv[1], "hourCycle", map);
         GetOptionValue(env, argv[1], "numberingSystem", map);
         GetBoolOptionValue(env, argv[1], "numeric", map);
-        GetBoolOptionValue(env, argv[1], "caseFirst", map);
+        GetOptionValue(env, argv[1], "caseFirst", map);
     }
 
     std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
@@ -334,7 +334,7 @@ napi_value IntlAddon::DateTimeFormatConstructor(napi_env env, napi_callback_info
         uint32_t arrayLength = 0;
         napi_get_array_length(env, argv[0], &arrayLength);
         napi_value element;
-        for(uint32_t i = 0; i < arrayLength; i++) {
+        for (uint32_t i = 0; i < arrayLength; i++) {
             napi_get_element(env, argv[0], i, &element);
             GetLocaleTags(env, element, localeTags);
         }
@@ -403,7 +403,7 @@ napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
         return nullptr;
     }
     int64_t date[] = { year, month, day, hour, minute, second };
-    std::string value = obj->datefmt_->Format(date);
+    std::string value = obj->datefmt_->Format(date, std::end(date) - std::begin(date));
     napi_value result;
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
@@ -440,7 +440,8 @@ napi_value IntlAddon::FormatDateTimeRange(napi_env env, napi_callback_info info)
         HiLog::Error(LABEL, "Get DateTimeFormat object failed");
         return nullptr;
     }
-    std::string value = obj->datefmt_->FormatRange(firstDate, secondDate);
+    std::string value = obj->datefmt_->FormatRange(firstDate, std::end(firstDate) - std::begin(firstDate),
+        secondDate, std::end(secondDate) - std::begin(secondDate));
     napi_value result;
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
@@ -448,6 +449,27 @@ napi_value IntlAddon::FormatDateTimeRange(napi_env env, napi_callback_info info)
         return nullptr;
     }
     return result;
+}
+
+void GetNumberOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "currency", map);
+    GetOptionValue(env, options, "currencySign", map);
+    GetOptionValue(env, options, "currencyDisplay", map);
+    GetOptionValue(env, options, "unit", map);
+    GetOptionValue(env, options, "unitDisplay", map);
+    GetOptionValue(env, options, "compactDisplay", map);
+    GetOptionValue(env, options, "signDisplay", map);
+    GetOptionValue(env, options, "localeMatcher", map);
+    GetOptionValue(env, options, "style", map);
+    GetOptionValue(env, options, "numberingSystem", map);
+    GetOptionValue(env, options, "notation", map);
+    GetBoolOptionValue(env, options, "useGrouping", map);
+    GetIntegerOptionValue(env, options, "minimumIntegerDigits", map);
+    GetIntegerOptionValue(env, options, "minimumFractionDigits", map);
+    GetIntegerOptionValue(env, options, "maximumFractionDigits", map);
+    GetIntegerOptionValue(env, options, "minimumSignificantDigits", map);
+    GetIntegerOptionValue(env, options, "maximumSignificantDigits", map);
 }
 
 napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info info)
@@ -469,7 +491,7 @@ napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info i
         uint32_t arrayLength = 0;
         napi_get_array_length(env, argv[0], &arrayLength);
         napi_value element;
-        for(uint32_t i = 0; i < arrayLength; i++) {
+        for (uint32_t i = 0; i < arrayLength; i++) {
             napi_get_element(env, argv[0], i, &element);
             GetLocaleTags(env, element, localeTags);
         }
@@ -479,23 +501,7 @@ napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info i
 
     std::map<std::string, std::string> map = {};
     if (argv[1] != nullptr) {
-        GetOptionValue(env, argv[1], "currency", map);
-        GetOptionValue(env, argv[1], "currencySign", map);
-        GetOptionValue(env, argv[1], "currencyDisplay", map);
-        GetOptionValue(env, argv[1], "unit", map);
-        GetOptionValue(env, argv[1], "unitDisplay", map);
-        GetOptionValue(env, argv[1], "compactDisplay", map);
-        GetOptionValue(env, argv[1], "signDisplay", map);
-        GetOptionValue(env, argv[1], "localeMatcher", map);
-        GetOptionValue(env, argv[1], "style", map);
-        GetOptionValue(env, argv[1], "numberingSystem", map);
-        GetOptionValue(env, argv[1], "notation", map);
-        GetBoolOptionValue(env, argv[1], "useGrouping", map);
-        GetIntegerOptionValue(env, argv[1], "minimumIntegerDigits", map);
-        GetIntegerOptionValue(env, argv[1], "minimumFractionDigits", map);
-        GetIntegerOptionValue(env, argv[1], "maximumFractionDigits", map);
-        GetIntegerOptionValue(env, argv[1], "minimumSignificantDigits", map);
-        GetIntegerOptionValue(env, argv[1], "maximumSignificantDigits", map);
+        GetNumberOptionValues(env, argv[1], map);
     }
 
     std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
@@ -915,8 +921,8 @@ napi_value IntlAddon::ToString(napi_env env, napi_callback_info info)
     return result;
 }
 
-void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
-    std::string option)
+void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> &options,
+    const std::string &option)
 {
     if (options.count(option) > 0) {
         std::string optionValue = options[option];
@@ -930,8 +936,8 @@ void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string,
     }
 }
 
-void SetIntegerOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
-    std::string option)
+void SetIntegerOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> &options,
+    const std::string &option)
 {
     if (options.count(option) > 0) {
         std::string optionValue = options[option];
@@ -946,8 +952,8 @@ void SetIntegerOptionProperties(napi_env env, napi_value &result, std::map<std::
     }
 }
 
-void SetBooleanOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> options,
-    std::string option)
+void SetBooleanOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> &options,
+    const std::string &option)
 {
     if (options.count(option) > 0) {
         std::string optionValue = options[option];
