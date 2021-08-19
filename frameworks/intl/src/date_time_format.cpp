@@ -13,10 +13,9 @@
  * limitations under the License.
  */
 #include "date_time_format.h"
-#include "ohos/init_data.h"
 #include <algorithm>
 #include <cmath>
-#include <iostream>
+#include "ohos/init_data.h"
 
 namespace OHOS {
 namespace Global {
@@ -45,25 +44,6 @@ std::map<std::string, DateFormat::EStyle> DateTimeFormat::dateTimeStyle = {
     { "short", DateFormat::EStyle::kShort }
 };
 
-DateTimeFormat::DateTimeFormat(std::string localeTag)
-{
-    UErrorCode status = U_ZERO_ERROR;
-    auto builder = std::make_unique<LocaleBuilder>();
-    locale = builder->setLanguageTag(StringPiece(localeTag)).build(status);
-    if (status != U_ZERO_ERROR) {
-        locale = Locale::getDefault();
-    }
-    dateFormat = DateFormat::createDateInstance(DateFormat::DEFAULT, locale);
-    if (dateFormat == nullptr) {
-        dateFormat = DateFormat::createDateInstance();
-    }
-    calendar = Calendar::createInstance(locale, status);
-    if (status != U_ZERO_ERROR) {
-        calendar = Calendar::createInstance(status);
-    }
-    dateFormat->setCalendar(*calendar);
-}
-
 DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs)
 {
     UErrorCode status = U_ZERO_ERROR;
@@ -84,9 +64,7 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
             ComputeHourCycleChars();
             ComputeSkeleton();
             if (configs.size() == 0) {
-                dateFormat = DateFormat::createDateInstance(DateFormat::SHORT, locale);
-                dynamic_cast<SimpleDateFormat*>(dateFormat)->toPattern(pattern);
-                dateIntvFormat = DateIntervalFormat::createInstance(pattern, locale, status);
+                InitDateFormatWithoutConfigs(status);
             } else {
                 InitDateFormat(status);
             }
@@ -96,8 +74,9 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
             break;
         }
     }
-    if (dateFormat == nullptr) {
-        locale = Locale::getDefault();
+    if (localeInfo == nullptr || dateFormat == nullptr) {
+        localeInfo = new LocaleInfo(icu::Locale::getDefault().getBaseName(), configs);
+        locale = localeInfo->GetLocale();
         localeTag = locale.getBaseName();
         std::replace(localeTag.begin(), localeTag.end(), '_', '-');
         dateFormat = DateFormat::createInstance();
@@ -128,6 +107,16 @@ DateTimeFormat::~DateTimeFormat()
     }
 }
 
+void DateTimeFormat::InitDateFormatWithoutConfigs(UErrorCode &status)
+{
+    dateFormat = DateFormat::createDateInstance(DateFormat::SHORT, locale);
+    SimpleDateFormat* simDateFormat = dynamic_cast<SimpleDateFormat*>(dateFormat);
+    if (simDateFormat != nullptr) {
+        simDateFormat->toPattern(pattern);
+    }
+    dateIntvFormat = DateIntervalFormat::createInstance(pattern, locale, status);
+}
+
 void DateTimeFormat::InitDateFormat(UErrorCode &status)
 {
     if (!dateStyle.empty() || !timeStyle.empty()) {
@@ -140,7 +129,10 @@ void DateTimeFormat::InitDateFormat(UErrorCode &status)
             timeStyleValue = dateTimeStyle[timeStyle];
         }
         dateFormat = DateFormat::createDateTimeInstance(dateStyleValue, timeStyleValue, locale);
-        dynamic_cast<SimpleDateFormat*>(dateFormat)->toPattern(pattern);
+        SimpleDateFormat* simDateFormat = dynamic_cast<SimpleDateFormat*>(dateFormat);
+        if (simDateFormat != nullptr) {
+            simDateFormat->toPattern(pattern);
+        }
     } else {
         auto patternGenerator =
             std::unique_ptr<DateTimePatternGenerator>(DateTimePatternGenerator::createInstance(locale, status));
@@ -333,7 +325,7 @@ void DateTimeFormat::ComputeWeekdayOrEraOfPattern(std::string option, char16_t c
     }
 }
 
-std::string DateTimeFormat::Format(int64_t *date)
+std::string DateTimeFormat::Format(int64_t *date, int size)
 {
     UErrorCode status = U_ZERO_ERROR;
     std::string result;
@@ -359,7 +351,7 @@ std::string DateTimeFormat::Format(int64_t *date)
     return result;
 }
 
-std::string DateTimeFormat::FormatRange(int64_t *fromDate, int64_t *toDate)
+std::string DateTimeFormat::FormatRange(int64_t *fromDate, int fromDateSize, int64_t *toDate, int toDateSize)
 {
     UErrorCode status = U_ZERO_ERROR;
     std::string result;
