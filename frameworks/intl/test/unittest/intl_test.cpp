@@ -109,11 +109,15 @@ HWTEST_F(IntlTest, IntlFuncTest002, TestSize.Level1)
     EXPECT_EQ(loc->GetCalendar(), "japanese");
     EXPECT_EQ(loc->GetHourCycle(), "h11");
     EXPECT_EQ(loc->GetNumberingSystem(), "jpan");
-    EXPECT_EQ(loc->Minimize()->GetScript(), "");
-    EXPECT_EQ(loc->Maximize()->GetScript(), "Jpan");
+    LocaleInfo *minLoc = loc->Minimize();
+    EXPECT_EQ(minLoc->GetScript(), "");
+    LocaleInfo *maxLoc = loc->Maximize();
+    EXPECT_EQ(maxLoc->GetScript(), "Jpan");
     EXPECT_EQ(loc->GetNumeric(), "true");
     EXPECT_EQ(loc->GetCaseFirst(), "");
     delete loc;
+    delete minLoc;
+    delete maxLoc;
 }
 
 /**
