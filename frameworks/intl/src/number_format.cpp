@@ -20,7 +20,6 @@
 namespace OHOS {
 namespace Global {
 namespace I18n {
-
 bool NumberFormat::icuInitialized = NumberFormat::Init();
 
 std::set<std::string> NumberFormat::allValidLocales = GetValidLocales();
