@@ -13,25 +13,101 @@
  * limitations under the License.
  */
 
- declare namespace i18n {
- export function getDisplayCountry(locale: string, displayLocale: string): Promise<string>;
- export function getDisplayCountry(locale: string, displayLocale: string, callback: AsyncCallback<string>);
- export function getDisplayLanguage(locale: string, displayLocale: string, sentenceCase: boolean): Promise<string>;
- export function getDisplayLanguage(locale: string, displayLocale: string, sentenceCase: boolean,
-    callback: AsyncCallback<string>);
- export function getSystemLanguages(): Promise<Array<string>>;
- export function getSystemLanguages(callback: AsyncCallback<Array<string>>);
- export function getSystemCountries(language: string): Promise<Array<string>>;
- export function getSystemCountries(language: string, callback: AsyncCallback<Array<string>>);
- export function isSuggested(language: string, region: string): Promise<boolean>;
- export function isSuggested(language: string, region: string, callback: AsyncCallback<boolean>);
- export function getSystemLanguage(): Promise<string>;
- export function getSystemLanguage(callback: AsyncCallback<string>);
- export function setSystemLanguage(language: string);
- export function getSystemRegion(): Promise<string>;
- export function getSystemRegion(callback: AsyncCallback<string>);
- export function setSystemRegion(language: string);
- export function getSystemLocale(): Promise<string>;
- export function getSystemLocale(callback: AsyncCallback<string>);
- export function setSystemLocale(language: string);
- }
+declare namespace i18n {
+/**
+ * Obtains the country or region name localized for display on a given locale.
+ *
+ * @param locale The locale whose country or region name will be displayed.
+ * @param displayLocale The locale used to display the country or region.
+ * @param sentenceCase Specifies whether the country or region name is displayed in sentence case.
+ * @return Returns the country or region name localized for display on a given locale.
+ * @since 7
+ */
+export function getDisplayCountry(locale: string, displayLocale: string, sentenceCase?: boolean): string;
+
+/**
+ * Obtains the language name localized for display on a given locale.
+ *
+ * @param locale The locale whose language name will be displayed.
+ * @param displayLocale The locale used to display the language.
+ * @param sentenceCase Specifies whether the language name is displayed in sentence case.
+ * @return Returns the language name localized for display on a given locale.
+ * @since 7
+ */
+export function getDisplayLanguage(locale: string, displayLocale: string, sentenceCase?: boolean): string;
+
+/**
+ * Obtain all regions supported by the system.
+ *
+ * @return Returns all languages supported by the system.
+ * @since 7
+ */
+export function getSystemLanguages(): Array<string>;
+
+/**
+ * Obtain all regions supported by the system in the language.
+ *
+ * @param language The language used to get the list of regions.
+ * @return Returns all regions supported by the system in the language.
+ * @since 7
+ */
+export function getSystemCountries(language: string): Array<string>;
+
+/**
+ * Determine whether the current language or region is recommended.
+ *
+ * @param language The language code.
+ * @param region The region code.
+ * @return Returns whether the current language or region is recommended.
+ * @since 7
+ */
+export function isSuggested(language: string, region?: string): boolean;
+
+/**
+ * Obtain the language currently used by the system.
+ *
+ * @return Returns the language currently used by the system.
+ * @since 7
+ */
+export function getSystemLanguage(): string;
+
+/**
+ * Set the language currently used by the system.
+ *
+ * @param language The language to be used.
+ * @since 7
+ */
+export function setSystemLanguage(language: string);
+
+/**
+ * Obtain the region currently used by the system.
+ *
+ * @return Returns the region currently used by the system.
+ * @since 7
+ */
+export function getSystemRegion(): string;
+
+/**
+ * Set the region currently used by the system.
+ *
+ * @param region The region to be used.
+ * @since 7
+ */
+export function setSystemRegion(region: string);
+
+/**
+ * Obtain the locale currently used by the system.
+ *
+ * @return Returns the locale currently used by the system.
+ * @since 7
+ */
+export function getSystemLocale(): string;
+
+/**
+ * Set the locale currently used by the system.
+ *
+ * @param locale The locale to be used.
+ * @since 7
+ */
+export function setSystemLocale(locale: string);
+}
