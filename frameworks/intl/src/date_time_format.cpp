@@ -69,6 +69,7 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
                 InitDateFormat(status);
             }
             if (dateFormat == nullptr) {
+                delete localeInfo;
                 continue;
             }
             break;
