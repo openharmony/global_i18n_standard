@@ -38,11 +38,14 @@ const char *LocaleConfig::DEFAULT_LANGUAGE = "zh-Hans";
 const char *LocaleConfig::DEFAULT_REGION = "CN";
 const char *LocaleConfig::SUPPORTED_LOCALES_NAME = "supported_locales";
 const char *LocaleConfig::SUPPORTED_REGIONS_NAME = "supported_regions";
+const char *LocaleConfig::WHITE_LANGUAGE_NAME = "white_language";
 const char *LocaleConfig::SUPPORTED_LOCALES_PATH = "/system/usr/ohos_locale_config/supported_locales.xml";
 const char *LocaleConfig::SUPPORTED_REGIONS_PATH = "/system/usr/ohos_locale_config/supported_regions.xml";
+const char *LocaleConfig::WHILTE_LANGUAGES_PATH = "/system/usr/ohos_locale_config/white_languages.xml";
 unordered_set<string> LocaleConfig::forbiddenRegions;
 unordered_set<string> LocaleConfig::supportedLocales;
 unordered_set<string> LocaleConfig::supportedRegions;
+unordered_set<string> LocaleConfig::whiteLanguages;
 
 bool LocaleConfig::listsInitialized = LocaleConfig::InitializeLists();
 
@@ -102,7 +105,7 @@ bool LocaleConfig::SetSystemRegion(const string &region)
         if (newLocale == "") {
             return false;
         }
-    } else { // 从区域扩展到locale
+    } else {
         icu::Locale temp("", region.c_str());
         UErrorCode status = U_ZERO_ERROR;
         temp.addLikelySubtags(status);
@@ -173,21 +176,10 @@ bool LocaleConfig::IsValidTag(const string &tag)
 {
     vector<string> splits;
     Split(tag, "-", splits);
-    auto size = splits.size();
-    if ((size > LOCALE_ITEM_COUNT) || !IsValidLanguage(splits[0])) {
+    if (!IsValidLanguage(splits[0])) {
         return false;
     }
-    if (size == 1) {
-        return true;
-    } else if (size == SCRIPT_OFFSET && ((IsValidScript(splits[1])) ||
-        IsValidRegion(splits[1]))) {
-        return true;
-    } else if (size == LOCALE_ITEM_COUNT && (IsValidScript(splits[1])) &&
-        IsValidRegion(splits[SCRIPT_OFFSET])) {
-        return true;
-    } else {
-        return false;
-    }
+    return true;
 }
 
 void LocaleConfig::Split(const string &src, const string &sep, vector<string> &dest)
@@ -263,6 +255,9 @@ void LocaleConfig::GetRelatedLocales(unordered_set<string> &relatedLocales)
     }
     const unordered_set<string> &locales = GetSupportedLocales();
     for (auto item : locales) {
+        if (whiteLanguages.find(item) == whiteLanguages.end()) {
+            continue;
+        }
         UErrorCode status = U_ZERO_ERROR;
         icu::Locale locale = icu::Locale::forLanguageTag(item, status);
         if (status != U_ZERO_ERROR) {
@@ -350,6 +345,7 @@ bool LocaleConfig::InitializeLists()
             ++iter;
         }
     }
+    GetListFromFile(WHILTE_LANGUAGES_PATH, WHITE_LANGUAGE_NAME, whiteLanguages);
     return true;
 }
 
