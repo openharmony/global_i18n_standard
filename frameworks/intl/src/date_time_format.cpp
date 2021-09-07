@@ -69,16 +69,24 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
                 InitDateFormat(status);
             }
             if (dateFormat == nullptr) {
+                delete localeInfo;
+                localeInfo = nullptr;
                 continue;
             }
             break;
         }
     }
     if (localeInfo == nullptr || dateFormat == nullptr) {
+        if (localeInfo != nullptr) {
+            delete localeInfo;
+        }
         localeInfo = new LocaleInfo(icu::Locale::getDefault().getBaseName(), configs);
         locale = localeInfo->GetLocale();
         localeTag = locale.getBaseName();
         std::replace(localeTag.begin(), localeTag.end(), '_', '-');
+        if (dateFormat != nullptr) {
+            delete dateFormat;
+        }
         dateFormat = DateFormat::createInstance();
     }
     if (dateIntvFormat == nullptr) {
