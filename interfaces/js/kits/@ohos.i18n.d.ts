@@ -77,7 +77,7 @@ export function getSystemLanguage(): string;
  * @param language The language to be used.
  * @since 7
  */
-export function setSystemLanguage(language: string);
+export function setSystemLanguage(language: string): boolean;
 
 /**
  * Obtain the region currently used by the system.
@@ -93,7 +93,7 @@ export function getSystemRegion(): string;
  * @param region The region to be used.
  * @since 7
  */
-export function setSystemRegion(region: string);
+export function setSystemRegion(region: string): boolean;
 
 /**
  * Obtain the locale currently used by the system.
@@ -109,5 +109,5 @@ export function getSystemLocale(): string;
  * @param locale The locale to be used.
  * @since 7
  */
-export function setSystemLocale(locale: string);
+export function setSystemLocale(locale: string): boolean;
 }
