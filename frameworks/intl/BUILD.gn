@@ -30,22 +30,52 @@ ohos_shared_library("intl_util") {
     "//third_party/icu/icu4c/source",
     "//third_party/icu/icu4c/source/common",
     "//third_party/icu/icu4c/source/i18n",
+    "//third_party/icu/icu4c/source/common/unicode",
     "//base/global/i18n_standard/frameworks/intl/include",
+    "//base/telephony/core_service/interfaces/innerkits/common",
+    "//base/telephony/ril_adapter/interfaces/innerkits",
+    "//base/telephony/core_service/common/log/include",
+    "//utils/native/base/include",
+    "//third_party/libxml2/include",
   ]
   sources = [
     "src/date_time_format.cpp",
     "src/locale_info.cpp",
     "src/number_format.cpp",
+    "src/locale_config.cpp",
   ]
   cflags_cc = [
     "-Wall",
     "-fPIC",
-    "-frtti",
   ]
   deps = [
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//base/telephony/core_service:tel_core_service",
+    "//utils/native/base:utils",
+    "//foundation/appexecfwk/standard/interfaces/innerkits/libeventhandler:libeventhandler",
+    "//third_party/libxml2:xml2",
+    ":config_locales_xml",
+    ":config_regions_xml"
+  ]
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
   ]
   subsystem_name = "global"
   part_name = "i18n_standard"
+}
+
+ohos_prebuilt_etc("config_locales_xml") {
+  source = "//base/global/i18n_standard/frameworks/intl/src/supported_locales.xml"
+  module_install_dir = "usr/ohos_locale_config/"
+  part_name = "i18n_standard"
+  subsystem_name = "global"
+}
+
+ohos_prebuilt_etc("config_regions_xml") {
+  source = "//base/global/i18n_standard/frameworks/intl/src/supported_regions.xml"
+  module_install_dir = "usr/ohos_locale_config/"
+  part_name = "i18n_standard"
+  subsystem_name = "global"
 }
