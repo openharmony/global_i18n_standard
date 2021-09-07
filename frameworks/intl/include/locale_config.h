@@ -60,6 +60,8 @@ private:
     static constexpr int CONFIG_LEN = 128;
     static const char *SUPPORTED_LOCALES_NAME;
     static const char *SUPPORTED_REGIONS_NAME;
+    static const char *WHITE_LANGUAGE_NAME;
+    static const char *WHILTE_LANGUAGES_PATH;
     static const std::unordered_set<std::string>& GetSupportedLocales();
     static const std::unordered_set<std::string>& GetForbiddenRegions();
     static const std::unordered_set<std::string>& GetSupportedRegions();
@@ -70,6 +72,7 @@ private:
     static std::unordered_set<std::string> supportedLocales;
     static std::unordered_set<std::string> forbiddenRegions;
     static std::unordered_set<std::string> supportedRegions;
+    static std::unordered_set<std::string> whiteLanguages;
     static bool listsInitialized;
     static bool InitializeLists();
 };
