@@ -6,6 +6,7 @@
         "//base/global/i18n_standard/frameworks/zone:zone_util",
         "//base/global/i18n_standard/frameworks/intl:intl_util",
         "//base/global/i18n_standard/interfaces/js/kits:intl",
+        "//base/global/i18n_standard/interfaces/js/kits:i18n",
         "//third_party/icu/icu4c:shared_icuuc",
         "//third_party/icu/icu4c:shared_icui18n",
         "//third_party/icu/icu4c:ohos_icudat",
