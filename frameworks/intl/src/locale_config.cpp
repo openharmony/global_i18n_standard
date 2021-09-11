@@ -13,15 +13,17 @@
  * limitations under the License.
  */
 #include <algorithm>
+#include <memory.h>
 #include <unordered_set>
 #include "locale_config.h"
+#include "core_manager.h"
 #include "libxml/parser.h"
 #include "locale_info.h"
 #include "localebuilder.h"
 #include "locid.h"
 #include "ohos/init_data.h"
 #include "parameter.h"
-#include "phone_manager.h"
+#include "sim_card_manager.h"
 #include "string_ex.h"
 #include "ucase.h"
 #include "unistr.h"
@@ -276,17 +278,9 @@ void LocaleConfig::GetRelatedLocales(unordered_set<string> &relatedLocales)
 void LocaleConfig::GetCountriesFromSim(vector<string> &simCountries)
 {
     simCountries.push_back(GetSystemRegion());
-    const PhoneManager& phoneManager = PhoneManager::GetInstance();
-    for (auto iter = phoneManager.phone_.begin(); iter != phoneManager.phone_.end(); ++iter) {
-        auto phone = iter->second;
-        if (phone == nullptr) {
-            continue;
-        }
-        auto sim = phone->simFileManager_;
-        if (sim != nullptr) {
-            simCountries.push_back(Str16ToStr8(sim->GetIsoCountryCode(0)));
-        }
-    }
+    Telephony::SimCardManager simCardManager;
+    simCardManager.ConnectService();
+    simCountries.push_back(Str16ToStr8(simCardManager.GetIsoCountryCodeForSim(0)));
 }
 
 void LocaleConfig::GetListFromFile(const char *path, const char *resourceName, unordered_set<string> &ret)
