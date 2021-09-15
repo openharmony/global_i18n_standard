@@ -68,6 +68,8 @@ private:
     static napi_value GetNumeric(napi_env env, napi_callback_info info);
     static napi_value GetCaseFirst(napi_env env, napi_callback_info info);
     static napi_value ToString(napi_env env, napi_callback_info info);
+    static napi_value Maximize(napi_env env, napi_callback_info info);
+    static napi_value Minimize(napi_env env, napi_callback_info info);
 
     static napi_value FormatDateTime(napi_env env, napi_callback_info info);
     static napi_value FormatDateTimeRange(napi_env env, napi_callback_info info);
