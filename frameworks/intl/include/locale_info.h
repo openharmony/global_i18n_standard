@@ -36,8 +36,8 @@ public:
     std::string GetCollation() const;
     std::string GetHourCycle() const;
     std::string GetNumberingSystem() const;
-    LocaleInfo *Maximize();
-    LocaleInfo *Minimize();
+    std::string Maximize();
+    std::string Minimize();
     std::string GetNumeric() const;
     std::string GetCaseFirst() const;
     std::string ToString() const;

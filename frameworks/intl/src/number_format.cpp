@@ -260,7 +260,7 @@ void NumberFormat::GetResolvedOptions(std::map<std::string, std::string> &map)
         map.insert(std::make_pair("currencyDisplay", currencyDisplayString));
     }
     if (!signDisplayString.empty()) {
-        map.insert(std::make_pair("signDisplaysignDisplay", signDisplayString));
+        map.insert(std::make_pair("signDisplay", signDisplayString));
     }
     if (!compactDisplay.empty()) {
         map.insert(std::make_pair("compactDisplay", compactDisplay));

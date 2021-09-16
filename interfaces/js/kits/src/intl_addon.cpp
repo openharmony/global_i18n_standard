@@ -32,6 +32,7 @@ namespace I18n {
 
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "IntlJs" };
 using namespace OHOS::HiviewDFX;
+static napi_ref *g_constructor = nullptr;
 
 IntlAddon::IntlAddon() : env_(nullptr), wrapper_(nullptr) {}
 
@@ -63,6 +64,8 @@ napi_value IntlAddon::InitLocale(napi_env env, napi_value exports)
         DECLARE_NAPI_GETTER("numeric", GetNumeric),
         DECLARE_NAPI_GETTER("caseFirst", GetCaseFirst),
         DECLARE_NAPI_FUNCTION("toString", ToString),
+        DECLARE_NAPI_FUNCTION("minimize", Minimize),
+        DECLARE_NAPI_FUNCTION("maximize", Maximize),
     };
 
     napi_value constructor;
@@ -76,6 +79,16 @@ napi_value IntlAddon::InitLocale(napi_env env, napi_value exports)
     status = napi_set_named_property(env, exports, "Locale", constructor);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Set property failed when InitLocale");
+        return nullptr;
+    }
+    g_constructor = new (std::nothrow) napi_ref;
+    if (g_constructor == nullptr) {
+        HiLog::Error(LABEL, "Failed to create ref at init");
+        return nullptr;
+    }
+    status = napi_create_reference(env, constructor, 1, g_constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create reference at init");
         return nullptr;
     }
     return exports;
@@ -137,7 +150,7 @@ void GetOptionValue(napi_env env, napi_value options, const std::string &optionN
     napi_valuetype type = napi_undefined;
     napi_status status = napi_typeof(env, options, &type);
     if (status != napi_ok && type != napi_object) {
-        HiLog::Error(LABEL, "Set option failed, option is not an object");
+        HiLog::Error(LABEL, "Get option failed, option is not an object");
         return;
     }
     bool hasProperty = false;
@@ -867,11 +880,11 @@ napi_value IntlAddon::GetNumeric(napi_env env, napi_callback_info info)
         return nullptr;
     }
     std::string value = obj->locale_->GetNumeric();
-
+    bool optionBoolValue = (value == "true");
     napi_value result;
-    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    status = napi_get_boolean(env, optionBoolValue, &result);
     if (status != napi_ok) {
-        HiLog::Error(LABEL, "Create base name string failed");
+        HiLog::Error(LABEL, "Create numeric boolean value failed");
         return nullptr;
     }
     return result;
@@ -889,11 +902,10 @@ napi_value IntlAddon::GetCaseFirst(napi_env env, napi_callback_info info)
         return nullptr;
     }
     std::string value = obj->locale_->GetCaseFirst();
-    bool optionBoolValue = (value == "true");
     napi_value result;
-    status = napi_get_boolean(env, optionBoolValue, &result);
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
-        HiLog::Error(LABEL, "Create case first boolean value failed");
+        HiLog::Error(LABEL, "Create caseFirst string failed");
         return nullptr;
     }
     return result;
@@ -916,6 +928,74 @@ napi_value IntlAddon::ToString(napi_env env, napi_callback_info info)
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create language string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::Maximize(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the language.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string localeTag = obj->locale_->Maximize();
+
+    napi_value constructor;
+    status = napi_get_reference_value(env, *g_constructor, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get locale constructor reference failed");
+        return nullptr;
+    }
+    napi_value result = nullptr;
+    napi_value arg = nullptr;
+    status = napi_create_string_utf8(env, localeTag.c_str(), NAPI_AUTO_LENGTH, &arg);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create localeTag string failed");
+        return nullptr;
+    }
+    status = napi_new_instance(env, constructor, 1, &arg, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create new locale instance failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value IntlAddon::Minimize(napi_env env, napi_callback_info info)
+{
+    // No parameters are needed to get the language.
+    GET_PARAMS(env, info, 0);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->locale_ == nullptr) {
+        HiLog::Error(LABEL, "Get Locale object failed");
+        return nullptr;
+    }
+    std::string localeTag = obj->locale_->Minimize();
+
+    napi_value constructor;
+    status = napi_get_reference_value(env, *g_constructor, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get locale constructor reference failed");
+        return nullptr;
+    }
+    napi_value result = nullptr;
+    napi_value arg = nullptr;
+    status = napi_create_string_utf8(env, localeTag.c_str(), NAPI_AUTO_LENGTH, &arg);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create localeTag string failed");
+        return nullptr;
+    }
+    status = napi_new_instance(env, constructor, 1, &arg, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create new locale instance failed");
         return nullptr;
     }
     return result;

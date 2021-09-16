@@ -220,7 +220,7 @@ Locale LocaleInfo::GetLocale() const
     return locale;
 }
 
-LocaleInfo *LocaleInfo::Maximize()
+std::string LocaleInfo::Maximize()
 {
     UErrorCode status = U_ZERO_ERROR;
     Locale curLocale = locale;
@@ -230,12 +230,12 @@ LocaleInfo *LocaleInfo::Maximize()
         std::string curBaseName = (curLocale.getBaseName() == nullptr) ? "" : curLocale.getBaseName();
         std::replace(curBaseName.begin(), curBaseName.end(), '_', '-');
         std::string localeTag = curBaseName + restConfigs;
-        return new LocaleInfo(localeTag, configs);
+        return localeTag;
     }
-    return this;
+    return finalLocaleTag;
 }
 
-LocaleInfo *LocaleInfo::Minimize()
+std::string LocaleInfo::Minimize()
 {
     UErrorCode status = U_ZERO_ERROR;
     Locale curLocale = locale;
@@ -245,9 +245,9 @@ LocaleInfo *LocaleInfo::Minimize()
         std::string curBaseName = (curLocale.getBaseName() == nullptr) ? "" : curLocale.getBaseName();
         std::replace(curBaseName.begin(), curBaseName.end(), '_', '-');
         std::string localeTag = curBaseName + restConfigs;
-        return new LocaleInfo(localeTag, configs);
+        return localeTag;
     }
-    return this;
+    return finalLocaleTag;
 }
 
 bool LocaleInfo::Init()
