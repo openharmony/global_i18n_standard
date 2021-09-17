@@ -91,7 +91,7 @@ HWTEST_F(IntlTest, IntlFuncTest001, TestSize.Level1)
  * @tc.desc: Test Intl LocaleInfo
  * @tc.type: FUNC
  */
-HWTEST_F(IntlTest, IntlFuncTest002, TestSize.Level1)
+HWTEST_F(IntlTest, IntlFuncTest002, TestSize.Level0)
 {
     string locale = "ja-Jpan-JP-u-ca-japanese-hc-h12-co-emoji";
     map<string, string> options = { { "hourCycle", "h11" },
