@@ -41,6 +41,7 @@ export function getDisplayLanguage(locale: string, displayLocale: string, senten
  *
  * @return Returns all languages supported by the system.
  * @since 7
+ * @systemapi Hide this for inner system use.
  */
 export function getSystemLanguages(): Array<string>;
 
@@ -50,6 +51,7 @@ export function getSystemLanguages(): Array<string>;
  * @param language The language used to get the list of regions.
  * @return Returns all regions supported by the system in the language.
  * @since 7
+ * @systemapi Hide this for inner system use.
  */
 export function getSystemCountries(language: string): Array<string>;
 
@@ -60,6 +62,7 @@ export function getSystemCountries(language: string): Array<string>;
  * @param region The region code.
  * @return Returns whether the current language or region is recommended.
  * @since 7
+ * @systemapi Hide this for inner system use.
  */
 export function isSuggested(language: string, region?: string): boolean;
 
@@ -76,6 +79,7 @@ export function getSystemLanguage(): string;
  *
  * @param language The language to be used.
  * @since 7
+ * @systemapi Hide this for inner system use.
  */
 export function setSystemLanguage(language: string): boolean;
 
@@ -92,6 +96,7 @@ export function getSystemRegion(): string;
  *
  * @param region The region to be used.
  * @since 7
+ * @systemapi Hide this for inner system use.
  */
 export function setSystemRegion(region: string): boolean;
 
@@ -108,6 +113,7 @@ export function getSystemLocale(): string;
  *
  * @param locale The locale to be used.
  * @since 7
+ * @systemapi Hide this for inner system use.
  */
 export function setSystemLocale(locale: string): boolean;
 }
