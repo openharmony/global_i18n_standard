@@ -161,15 +161,16 @@ bool LocaleConfig::SetSystemLocale(const string &locale)
 
 bool LocaleConfig::IsValidLanguage(const string &language)
 {
-    const char * const *langs = uloc_getISOLanguages();
-    uint32_t i = 0;
-    while (*(langs + i) != nullptr) {
-        if (language == *(langs + i)) {
-            return true;
-        }
-        ++i;
+    string::size_type size = language.size();
+    if ((size != LANGUAGE_LEN) && (size != LANGUAGE_LEN + 1)) {
+        return false;
     }
-    return false;
+    for (size_t i = 0; i < size; ++i) {
+        if ((language[i] > 'z') || (language[i] < 'a')) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool LocaleConfig::IsValidScript(const string &script)
@@ -192,15 +193,16 @@ bool LocaleConfig::IsValidScript(const string &script)
 
 bool LocaleConfig::IsValidRegion(const string &region)
 {
-    const char * const *countries = uloc_getISOCountries();
-    uint32_t i = 0;
-    while (*(countries + i) != nullptr) {
-        if (region == *(countries + i)) {
-            return true;
-        }
-        ++i;
+    string::size_type size = region.size();
+    if (size != LocaleInfo::REGION_LEN) {
+        return false;
     }
-    return false;
+    for (size_t i = 0; i < LocaleInfo::REGION_LEN; ++i) {
+        if ((region[i] > 'Z') || (region[i] < 'A')) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool LocaleConfig::IsValidTag(const string &tag)
