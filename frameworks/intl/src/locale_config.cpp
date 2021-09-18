@@ -16,7 +16,6 @@
 #include <memory.h>
 #include <unordered_set>
 #include "locale_config.h"
-#include "core_manager.h"
 #include "libxml/parser.h"
 #include "locale_info.h"
 #include "localebuilder.h"
@@ -40,14 +39,43 @@ const char *LocaleConfig::DEFAULT_LANGUAGE = "zh-Hans";
 const char *LocaleConfig::DEFAULT_REGION = "CN";
 const char *LocaleConfig::SUPPORTED_LOCALES_NAME = "supported_locales";
 const char *LocaleConfig::SUPPORTED_REGIONS_NAME = "supported_regions";
-const char *LocaleConfig::WHITE_LANGUAGE_NAME = "white_language";
+const char *LocaleConfig::WHITE_LANGUAGES_NAME = "white_languages";
+const char *LocaleConfig::FORBIDDEN_LANGUAGES_NAME = "forbidden_languages";
+const char *LocaleConfig::FORBIDDEN_REGIONS_NAME = "forbidden_regions";
+const char *LocaleConfig::FORBIDDEN_LANGUAGES_PATH = "/system/usr/ohos_locale_config/forbidden_languages.xml";
+const char *LocaleConfig::FORBIDDEN_REGIONS_PATH = "/system/usr/ohos_locale_config/forbidden_regions.xml";
 const char *LocaleConfig::SUPPORTED_LOCALES_PATH = "/system/usr/ohos_locale_config/supported_locales.xml";
 const char *LocaleConfig::SUPPORTED_REGIONS_PATH = "/system/usr/ohos_locale_config/supported_regions.xml";
-const char *LocaleConfig::WHILTE_LANGUAGES_PATH = "/system/usr/ohos_locale_config/white_languages.xml";
-unordered_set<string> LocaleConfig::forbiddenRegions;
+const char *LocaleConfig::WHITE_LANGUAGES_PATH = "/system/usr/ohos_locale_config/white_languages.xml";
 unordered_set<string> LocaleConfig::supportedLocales;
 unordered_set<string> LocaleConfig::supportedRegions;
 unordered_set<string> LocaleConfig::whiteLanguages;
+unordered_map<string, string> LocaleConfig::dialectMap {
+    { "es-Latn-419", "es-Latn-419" },
+    { "es-Latn-BO", "es-Latn-419" },
+    { "es-Latn-BR", "es-Latn-419" },
+    { "es-Latn-BZ", "es-Latn-419" },
+    { "es-Latn-CL", "es-Latn-419" },
+    { "es-Latn-CO", "es-Latn-419" },
+    { "es-Latn-CR", "es-Latn-419" },
+    { "es-Latn-CU", "es-Latn-419" },
+    { "es-Latn-DO", "es-Latn-419" },
+    { "es-Latn-EC", "es-Latn-419" },
+    { "es-Latn-GT", "es-Latn-419" },
+    { "es-Latn-HN", "es-Latn-419" },
+    { "es-Latn-MX", "es-Latn-419" },
+    { "es-Latn-NI", "es-Latn-419" },
+    { "es-Latn-PA", "es-Latn-419" },
+    { "es-Latn-PE", "es-Latn-419" },
+    { "es-Latn-PR", "es-Latn-419" },
+    { "es-Latn-PY", "es-Latn-419" },
+    { "es-Latn-SV", "es-Latn-419" },
+    { "es-Latn-US", "es-Latn-419" },
+    { "es-Latn-UY", "es-Latn-419" },
+    { "es-Latn-VE", "es-Latn-419" },
+    { "pt-Latn-PT", "pt-Latn-PT" },
+    { "en-Latn-US", "en-Latn-US" }
+};
 
 bool LocaleConfig::listsInitialized = LocaleConfig::InitializeLists();
 
@@ -88,7 +116,7 @@ string LocaleConfig::GetSystemLocale()
 
 bool LocaleConfig::SetSystemLanguage(const string &language)
 {
-    if ((language != "") && !IsValidTag(language)) {
+    if (!IsValidTag(language)) {
         return false;
     }
     return SetParameter(LANGUAGE_KEY, language.data()) == 0;
@@ -96,14 +124,15 @@ bool LocaleConfig::SetSystemLanguage(const string &language)
 
 bool LocaleConfig::SetSystemRegion(const string &region)
 {
-    if ((region != "") && !IsValidRegion(region)) {
+    if (!IsValidRegion(region)) {
         return false;
     }
     char value[CONFIG_LEN];
     int code = GetParameter(LOCALE_KEY, "", value, CONFIG_LEN);
     string newLocale;
     if (code > 0) {
-        newLocale = GetRegionChangeLocale(value, region);
+        string tag(value, code);
+        newLocale = GetRegionChangeLocale(tag, region);
         if (newLocale == "") {
             return false;
         }
@@ -124,7 +153,7 @@ bool LocaleConfig::SetSystemRegion(const string &region)
 
 bool LocaleConfig::SetSystemLocale(const string &locale)
 {
-    if ((locale != "") && !IsValidTag(locale)) {
+    if (!IsValidTag(locale)) {
         return false;
     }
     return SetParameter(LOCALE_KEY, locale.data()) == 0;
@@ -132,15 +161,16 @@ bool LocaleConfig::SetSystemLocale(const string &locale)
 
 bool LocaleConfig::IsValidLanguage(const string &language)
 {
-    const char * const *langs = uloc_getISOLanguages();
-    uint32_t i = 0;
-    while (*(langs + i) != nullptr) {
-        if (language == *(langs + i)) {
-            return true;
-        }
-        ++i;
+    string::size_type size = language.size();
+    if ((size != LANGUAGE_LEN) && (size != LANGUAGE_LEN + 1)) {
+        return false;
     }
-    return false;
+    for (size_t i = 0; i < size; ++i) {
+        if ((language[i] > 'z') || (language[i] < 'a')) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool LocaleConfig::IsValidScript(const string &script)
@@ -163,15 +193,16 @@ bool LocaleConfig::IsValidScript(const string &script)
 
 bool LocaleConfig::IsValidRegion(const string &region)
 {
-    const char * const *countries = uloc_getISOCountries();
-    uint32_t i = 0;
-    while (*(countries + i) != nullptr) {
-        if (region == *(countries + i)) {
-            return true;
-        }
-        ++i;
+    string::size_type size = region.size();
+    if (size != LocaleInfo::REGION_LEN) {
+        return false;
     }
-    return false;
+    for (size_t i = 0; i < LocaleInfo::REGION_LEN; ++i) {
+        if ((region[i] > 'Z') || (region[i] < 'A')) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool LocaleConfig::IsValidTag(const string &tag)
@@ -198,13 +229,11 @@ void LocaleConfig::Split(const string &src, const string &sep, vector<string> &d
     }
 }
 
+// language in white languages should have script.
 void LocaleConfig::GetSystemLanguages(vector<string> &ret)
 {
-    const unordered_set<string> &supported = GetSupportedLocales();
-    for (auto item : supported) {
-        if (supported.find(item) != supported.end()) {
-            ret.push_back(item);
-        }
+    for (auto item : whiteLanguages) {
+        ret.push_back(item);
     }
 }
 
@@ -228,49 +257,62 @@ void LocaleConfig::GetSystemCountries(vector<string> &ret)
 bool LocaleConfig::IsSuggested(const string &language)
 {
     unordered_set<string> relatedLocales;
-    GetRelatedLocales(relatedLocales);
-    return relatedLocales.find(language) != relatedLocales.end();
+    vector<string> simCountries;
+    GetCountriesFromSim(simCountries);
+    GetRelatedLocales(relatedLocales, simCountries);
+    for (auto iter = relatedLocales.begin(); iter != relatedLocales.end();) {
+        if (whiteLanguages.find(*iter) == whiteLanguages.end()) {
+            iter = relatedLocales.erase(iter);
+        } else {
+            ++iter;
+        }
+    }
+    string mainLanguage = GetMainLanguage(language);
+    return relatedLocales.find(mainLanguage) != relatedLocales.end();
 }
 
 bool LocaleConfig::IsSuggested(const std::string &language, const std::string &region)
 {
     unordered_set<string> relatedLocales;
-    GetRelatedLocales(relatedLocales);
-    if (relatedLocales.find(language) == relatedLocales.end()) {
-        return false;
+    vector<string> countries { region };
+    GetRelatedLocales(relatedLocales, countries);
+    for (auto iter = relatedLocales.begin(); iter != relatedLocales.end();) {
+        if (whiteLanguages.find(*iter) == whiteLanguages.end()) {
+            iter = relatedLocales.erase(iter);
+        } else {
+            ++iter;
+        }
     }
-    string temp = GetRegionChangeLocale(language, region);
-    return relatedLocales.find(temp) != relatedLocales.end();
+    string mainLanguage = GetMainLanguage(language);
+    return relatedLocales.find(mainLanguage) != relatedLocales.end();
 }
 
-void LocaleConfig::GetRelatedLocales(unordered_set<string> &relatedLocales)
+void LocaleConfig::GetRelatedLocales(unordered_set<string> &relatedLocales, vector<string> countries)
 {
-    vector<string> simCountries;
-    GetCountriesFromSim(simCountries);
+    // remove unsupported countries
     const unordered_set<string> &regions = GetSupportedRegions();
-    for (auto iter = simCountries.begin(); iter != simCountries.end();) {
+    for (auto iter = countries.begin(); iter != countries.end();) {
         if (regions.find(*iter) == regions.end()) {
-            iter = simCountries.erase(iter);
+            iter = countries.erase(iter);
         } else {
             ++iter;
         }
     }
     const unordered_set<string> &locales = GetSupportedLocales();
-    for (auto item : locales) {
-        if (whiteLanguages.find(item) == whiteLanguages.end()) {
+    for (string locale : locales) {
+        bool find = false;
+        for (string country : countries) {
+            if (locale.find(country) != string::npos) {
+                find = true;
+                break;
+            }
+        }
+        if (!find) {
             continue;
         }
-        UErrorCode status = U_ZERO_ERROR;
-        icu::Locale locale = icu::Locale::forLanguageTag(item, status);
-        if (status != U_ZERO_ERROR) {
-            continue;
-        }
-        const char *region = locale.getCountry();
-        if (region == nullptr) {
-            continue;
-        }
-        if (find(simCountries.begin(), simCountries.end(), region) != simCountries.end()) {
-            relatedLocales.insert(item);
+        string mainLanguage = GetMainLanguage(locale);
+        if (mainLanguage != "") {
+            relatedLocales.insert(mainLanguage);
         }
     }
 }
@@ -295,58 +337,54 @@ void LocaleConfig::GetListFromFile(const char *path, const char *resourceName, u
     }
     xmlNodePtr cur = xmlDocGetRootElement(doc);
     if (cur == nullptr || (xmlStrcmp(cur->name, reinterpret_cast<const xmlChar *>(resourceName))) != 0) {
+        xmlFreeDoc(doc);
         return;
     }
     cur = cur->xmlChildrenNode;
-    xmlChar *content;
+    xmlChar *content = nullptr;
     while (cur != nullptr) {
         content = xmlNodeGetContent(cur);
-        ret.insert(reinterpret_cast<const char*>(content));
-        xmlFree(content);
-        cur = cur->next;
+        if (content != nullptr) {
+            ret.insert(reinterpret_cast<const char*>(content));
+            xmlFree(content);
+            cur = cur->next;
+        } else {
+            break;
+        }
     }
     xmlFreeDoc(doc);
 }
 
-const unordered_set<string>& LocaleConfig::GetForbiddenRegions()
+void LocaleConfig::Expunge(unordered_set<string> &src, const unordered_set<string> &another)
 {
-    return forbiddenRegions;
+    for (auto iter = src.begin(); iter != src.end();) {
+        if (another.find(*iter) != another.end()) {
+            iter = src.erase(iter);
+        } else {
+            ++iter;
+        }
+    }
 }
 
 bool LocaleConfig::InitializeLists()
 {
     SetHwIcuDirectory();
-    GetListFromFile(SUPPORTED_LOCALES_PATH, SUPPORTED_LOCALES_NAME, supportedLocales);
-    for (auto iter = supportedLocales.begin(); iter != supportedLocales.end();) {
-        bool find = false;
-        for (auto item : forbiddenRegions) {
-            if (iter->find(item)) {
-                find = true;
-                break;
-            }
-        }
-        if (find) {
-            iter = supportedLocales.erase(iter);
-        } else {
-            ++iter;
-        }
-    }
     GetListFromFile(SUPPORTED_REGIONS_PATH, SUPPORTED_REGIONS_NAME, supportedRegions);
-    for (auto iter = supportedRegions.begin(); iter != supportedRegions.end();) {
-        if (forbiddenRegions.find(*iter) != forbiddenRegions.end()) {
-            iter = supportedRegions.erase(iter);
-        } else {
-            ++iter;
-        }
-    }
-    GetListFromFile(WHILTE_LANGUAGES_PATH, WHITE_LANGUAGE_NAME, whiteLanguages);
+    unordered_set<string> forbiddenRegions;
+    GetListFromFile(FORBIDDEN_REGIONS_PATH, FORBIDDEN_REGIONS_NAME, forbiddenRegions);
+    Expunge(supportedRegions, forbiddenRegions);
+    GetListFromFile(WHITE_LANGUAGES_PATH, WHITE_LANGUAGES_NAME, whiteLanguages);
+    unordered_set<string> forbiddenLanguages;
+    GetListFromFile(FORBIDDEN_LANGUAGES_PATH, FORBIDDEN_LANGUAGES_NAME, forbiddenLanguages);
+    Expunge(whiteLanguages, forbiddenLanguages);
+    GetListFromFile(SUPPORTED_LOCALES_PATH, SUPPORTED_LOCALES_NAME, supportedLocales);
     return true;
 }
 
 string LocaleConfig::GetRegionChangeLocale(const string &languageTag, const string &region)
 {
     UErrorCode status = U_ZERO_ERROR;
-    icu::Locale origin = icu::Locale::forLanguageTag(languageTag, status);
+    const icu::Locale origin = icu::Locale::forLanguageTag(languageTag, status);
     if (status != U_ZERO_ERROR) {
         return "";
     }
@@ -360,10 +398,41 @@ string LocaleConfig::GetRegionChangeLocale(const string &languageTag, const stri
     return (status != U_ZERO_ERROR) ? "" : ret;
 }
 
+string LocaleConfig::GetMainLanguage(const string &language)
+{
+    UErrorCode status = U_ZERO_ERROR;
+    icu::Locale origin = icu::Locale::forLanguageTag(language, status);
+    if (status != U_ZERO_ERROR) {
+        return "";
+    }
+    origin.addLikelySubtags(status);
+    if (status != U_ZERO_ERROR) {
+        return "";
+    }
+    icu::LocaleBuilder builder = icu::LocaleBuilder().setLanguage(origin.getLanguage()).
+        setScript(origin.getScript()).setRegion(origin.getCountry());
+    icu::Locale temp = builder.setExtension('u', "").build(status);
+    string fullLanguage = temp.toLanguageTag<string>(status);
+    if (status != U_ZERO_ERROR) {
+        return "";
+    }
+    if (dialectMap.find(fullLanguage) != dialectMap.end()) {
+        return dialectMap[fullLanguage];
+    }
+    builder.setRegion("");
+    temp = builder.build(status);
+    fullLanguage = temp.toLanguageTag<string>(status);
+    if (status != U_ZERO_ERROR) {
+        return "";
+    }
+    return fullLanguage;
+}
+
 string LocaleConfig::GetDisplayLanguage(const string &language, const string &displayLocale, bool sentenceCase)
 {
     UErrorCode status = U_ZERO_ERROR;
-    const icu::Locale originLocale = icu::Locale::forLanguageTag(language, status);
+    icu::Locale originLocale = icu::Locale::forLanguageTag(language, status);
+    originLocale.addLikelySubtags(status);
     if (status != U_ZERO_ERROR) {
         return "";
     }
@@ -385,7 +454,8 @@ string LocaleConfig::GetDisplayLanguage(const string &language, const string &di
 string LocaleConfig::GetDisplayRegion(const string &region, const string &displayLocale, bool sentenceCase)
 {
     UErrorCode status = U_ZERO_ERROR;
-    const icu::Locale originLocale = icu::Locale::forLanguageTag(region, status);
+    icu::LocaleBuilder builder = icu::LocaleBuilder().setRegion(region);
+    icu::Locale originLocale = builder.build(status);
     if (status != U_ZERO_ERROR) {
         return "";
     }
