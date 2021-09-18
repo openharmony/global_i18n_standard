@@ -17,24 +17,24 @@ declare namespace i18n {
 /**
  * Obtains the country or region name localized for display on a given locale.
  *
- * @param locale The locale whose country or region name will be displayed.
- * @param displayLocale The locale used to display the country or region.
+ * @param country The locale whose country or region name will be displayed.
+ * @param locale The locale used to display the country or region.
  * @param sentenceCase Specifies whether the country or region name is displayed in sentence case.
  * @return Returns the country or region name localized for display on a given locale.
  * @since 7
  */
-export function getDisplayCountry(locale: string, displayLocale: string, sentenceCase?: boolean): string;
+export function getDisplayCountry(country: string, locale: string, sentenceCase?: boolean): string;
 
 /**
  * Obtains the language name localized for display on a given locale.
  *
- * @param locale The locale whose language name will be displayed.
- * @param displayLocale The locale used to display the language.
+ * @param language The locale whose language name will be displayed.
+ * @param locale The locale used to display the language.
  * @param sentenceCase Specifies whether the language name is displayed in sentence case.
  * @return Returns the language name localized for display on a given locale.
  * @since 7
  */
-export function getDisplayLanguage(locale: string, displayLocale: string, sentenceCase?: boolean): string;
+export function getDisplayLanguage(language: string, locale: string, sentenceCase?: boolean): string;
 
 /**
  * Obtain all regions supported by the system.
