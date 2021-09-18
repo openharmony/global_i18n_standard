@@ -91,7 +91,7 @@ HWTEST_F(IntlTest, IntlFuncTest001, TestSize.Level1)
  * @tc.desc: Test Intl LocaleInfo
  * @tc.type: FUNC
  */
-HWTEST_F(IntlTest, IntlFuncTest002, TestSize.Level1)
+HWTEST_F(IntlTest, IntlFuncTest002, TestSize.Level0)
 {
     string locale = "ja-Jpan-JP-u-ca-japanese-hc-h12-co-emoji";
     map<string, string> options = { { "hourCycle", "h11" },
@@ -109,15 +109,11 @@ HWTEST_F(IntlTest, IntlFuncTest002, TestSize.Level1)
     EXPECT_EQ(loc->GetCalendar(), "japanese");
     EXPECT_EQ(loc->GetHourCycle(), "h11");
     EXPECT_EQ(loc->GetNumberingSystem(), "jpan");
-    LocaleInfo *minLoc = loc->Minimize();
-    EXPECT_EQ(minLoc->GetScript(), "");
-    LocaleInfo *maxLoc = loc->Maximize();
-    EXPECT_EQ(maxLoc->GetScript(), "Jpan");
+    EXPECT_EQ(loc->Minimize(), "ja-u-hc-h11-nu-jpan-ca-japanese-co-emoji-kn-true");
+    EXPECT_EQ(loc->Maximize(), "ja-Jpan-JP-u-hc-h11-nu-jpan-ca-japanese-co-emoji-kn-true");
     EXPECT_EQ(loc->GetNumeric(), "true");
     EXPECT_EQ(loc->GetCaseFirst(), "");
     delete loc;
-    delete minLoc;
-    delete maxLoc;
 }
 
 /**

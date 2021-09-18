@@ -16,6 +16,7 @@
 #include <memory.h>
 #include <unordered_set>
 #include "locale_config.h"
+#include "core_manager.h"
 #include "libxml/parser.h"
 #include "locale_info.h"
 #include "localebuilder.h"
