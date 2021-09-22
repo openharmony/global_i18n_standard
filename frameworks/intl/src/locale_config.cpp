@@ -207,6 +207,9 @@ bool LocaleConfig::IsValidRegion(const string &region)
 
 bool LocaleConfig::IsValidTag(const string &tag)
 {
+    if (tag.size() == 0) {
+        return false;
+    }
     vector<string> splits;
     Split(tag, "-", splits);
     if (!IsValidLanguage(splits[0])) {
@@ -454,8 +457,7 @@ string LocaleConfig::GetDisplayLanguage(const string &language, const string &di
 string LocaleConfig::GetDisplayRegion(const string &region, const string &displayLocale, bool sentenceCase)
 {
     UErrorCode status = U_ZERO_ERROR;
-    icu::LocaleBuilder builder = icu::LocaleBuilder().setRegion(region);
-    icu::Locale originLocale = builder.build(status);
+    icu::Locale originLocale = icu::Locale::forLanguageTag(region, status);
     if (status != U_ZERO_ERROR) {
         return "";
     }
