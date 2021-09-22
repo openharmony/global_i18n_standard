@@ -226,7 +226,10 @@ std::string LocaleInfo::Maximize()
     Locale curLocale = locale;
     curLocale.addLikelySubtags(status);
     if (status == U_ZERO_ERROR) {
-        std::string restConfigs = finalLocaleTag.substr(finalLocaleTag.find("-u-"));
+        std::string restConfigs = "";
+        if (finalLocaleTag.find("-u-") != std::string::npos) {
+            restConfigs = finalLocaleTag.substr(finalLocaleTag.find("-u-"));
+        }
         std::string curBaseName = (curLocale.getBaseName() == nullptr) ? "" : curLocale.getBaseName();
         std::replace(curBaseName.begin(), curBaseName.end(), '_', '-');
         std::string localeTag = curBaseName + restConfigs;
@@ -241,7 +244,10 @@ std::string LocaleInfo::Minimize()
     Locale curLocale = locale;
     curLocale.minimizeSubtags(status);
     if (status == U_ZERO_ERROR) {
-        std::string restConfigs = finalLocaleTag.substr(finalLocaleTag.find("-u-"));
+        std::string restConfigs = "";
+        if (finalLocaleTag.find("-u-") != std::string::npos) {
+            restConfigs = finalLocaleTag.substr(finalLocaleTag.find("-u-"));
+        }
         std::string curBaseName = (curLocale.getBaseName() == nullptr) ? "" : curLocale.getBaseName();
         std::replace(curBaseName.begin(), curBaseName.end(), '_', '-');
         std::string localeTag = curBaseName + restConfigs;
