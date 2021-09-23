@@ -95,8 +95,9 @@ string LocaleConfig::GetSystemRegion()
     char value[CONFIG_LEN];
     int code = GetParameter(LOCALE_KEY, "", value, CONFIG_LEN);
     if (code > 0) {
+        string tag(value, code);
         UErrorCode status = U_ZERO_ERROR;
-        icu::Locale origin = icu::Locale::forLanguageTag(value, status);
+        icu::Locale origin = icu::Locale::forLanguageTag(tag, status);
         if (status == U_ZERO_ERROR) {
             return origin.getCountry();
         }
