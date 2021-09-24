@@ -106,6 +106,7 @@ HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest005, TestSize.Level1)
     bool ret = LocaleConfig::SetSystemLocale(locale);
     EXPECT_EQ(ret, true);
     EXPECT_EQ(locale, LocaleConfig::GetSystemLocale());
+    EXPECT_EQ(false, LocaleConfig::SetSystemLanguage(""));
 }
 
 /**
@@ -152,6 +153,36 @@ HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest008, TestSize.Level1)
  */
 HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest009, TestSize.Level1)
 {
-    EXPECT_EQ(LocaleConfig::GetDisplayRegion("jp", "zh-Hans-CN", false), "日本");
+    EXPECT_EQ(LocaleConfig::GetDisplayRegion("JP", "zh-Hans-CN", false), "日本");
+}
+
+/**
+ * @tc.name: LocaleConfigFuncTest010
+ * @tc.desc: Test LocaleConfig GetDisplayRegion
+ * @tc.type: FUNC
+ */
+HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest010, TestSize.Level1)
+{
+    EXPECT_EQ(LocaleConfig::GetDisplayRegion("zh-Hans-CN", "en-US", true), "China");
+}
+
+/**
+ * @tc.name: LocaleConfigFuncTest011
+ * @tc.desc: Test LocaleConfig GetDisplayRegion
+ * @tc.type: FUNC
+ */
+HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest011, TestSize.Level1)
+{
+    EXPECT_EQ(LocaleConfig::GetDisplayRegion("zh", "en-US", true), "China");
+}
+
+/**
+ * @tc.name: LocaleConfigFuncTest012
+ * @tc.desc: Test LocaleConfig GetDisplayRegion
+ * @tc.type: FUNC
+ */
+HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest012, TestSize.Level1)
+{
+    EXPECT_EQ(LocaleConfig::GetDisplayRegion("zh-Hans", "en-US", true), "China");
 }
 } // namespace

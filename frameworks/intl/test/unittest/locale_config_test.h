@@ -25,4 +25,7 @@ int LocaleConfigFuncTest006(void);
 int LocaleConfigFuncTest007(void);
 int LocaleConfigFuncTest008(void);
 int LocaleConfigFuncTest009(void);
+int LocaleConfigFuncTest010(void);
+int LocaleConfigFuncTest011(void);
+int LocaleConfigFuncTest012(void);
 #endif
