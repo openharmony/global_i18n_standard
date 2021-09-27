@@ -13,17 +13,11 @@
  * limitations under the License.
  */
 
-/**
- * Provides internationalization related APIs.
- *
- * @since 7
- * @devices phone, table, tv, wearable, car
- */
 declare namespace intl {
 /**
  * Provides APIs for obtaining locale information.
  *
- * @since 7
+ * @since 6
  */
 export class Locale {
     /**
@@ -31,28 +25,28 @@ export class Locale {
      *
      * @param locale Indicates a character string containing the locale information, including
      *               the language and optionally the script and region.
-     * @since 7
+     * @since 6
      */
    constructor(locale?: string);
 
     /**
      * Indicates the language of the locale.
      *
-     * @since 7
+     * @since 6
      */
     language: string
 
     /**
      * Indicates the script of the locale.
      *
-     * @since 7
+     * @since 6
      */
     script: string
 
     /**
      * Indicates the region of the locale.
      *
-     * @since 7
+     * @since 6
      */
     region: string
 
@@ -60,7 +54,7 @@ export class Locale {
      * Indicates the basic locale information, which is returned as a substring of
      * a complete locale string.
      *
-     * @since 7
+     * @since 6
      */
     baseName: string
 
@@ -219,7 +213,7 @@ export interface DateTimeOptions {
 /**
  * Provides the API for formatting date strings.
  *
- * @since 7
+ * @since 6
  */
 export class DateTimeFormat {
     /**
@@ -228,7 +222,7 @@ export class DateTimeFormat {
      * @param locale Indicates a character string containing the locale information, including
      *               the language and optionally the script and region, for the DateTimeFormat object.
      * @param options Indicates the options used to format the date.
-     * @since 7
+     * @since 6
      */
     constructor(locale: string, options?: DateTimeOptions);
 
@@ -238,7 +232,7 @@ export class DateTimeFormat {
      * @param locale Indicates an array of character string containing the locale information, including
      *               the language and optionally the script and region, for the DateTimeFormat object.
      * @param options Indicates the options used to format the date.
-     * @since 7
+     * @since 6
      */
     constructor(locale: string[], options?: DateTimeOptions);
 
@@ -247,7 +241,7 @@ export class DateTimeFormat {
      *
      * @param date Indicates the Date object to be formatted.
      * @return Returns a date string formatted based on the specified locale.
-     * @since 7
+     * @since 6
      */
     format(date: Date): string;
 
@@ -257,7 +251,7 @@ export class DateTimeFormat {
      * @param startDate Indicates the start date of the date range.
      * @param endDate Indicates the end date of the date range.
      * @return Returns a date string formatted based on the specified locale.
-     * @since 7
+     * @since 6
      */
     formatRange(startDate: Date, endDate: Date): string;
 
@@ -265,7 +259,7 @@ export class DateTimeFormat {
      * Obtains the options of the DateTimeFormat object.
      *
      * @return Returns the options of the DateTimeFormat object.
-     * @since 7
+     * @since 6
      */
     getResolvedOptions(): DateTimeOptions;
 }
@@ -375,7 +369,7 @@ export class NumberFormat {
      * @param locale Indicates a character string containing the locale information, including
      *               the language and optionally the script and region, for the NumberFormat object.
      * @param options Indicates the options used to format the number.
-     * @since 7
+     * @since 6
      */
     constructor(locale: string, options?: NumberOptions);
 
@@ -385,7 +379,7 @@ export class NumberFormat {
      * @param locale Indicates an array of character string containing the locale information, including
      *               the language and optionally the script and region, for the NumberFormat object.
      * @param options Indicates the options used to format the number.
-     * @since 7
+     * @since 6
      */
     constructor(locale: string[], options?: NumberOptions);
 
@@ -394,7 +388,7 @@ export class NumberFormat {
      *
      * @param number Indicates the number to be formatted.
      * @return Returns a number string formatted based on the specified locale.
-     * @since 7
+     * @since 6
      */
     format(number: number): string;
 
@@ -402,7 +396,7 @@ export class NumberFormat {
      * Obtains the options of the NumberFormat object.
      *
      * @return Returns the options of the NumberFormat object.
-     * @since 7
+     * @since 6
      */
     resolvedOptions(): NumberOptions;
 }

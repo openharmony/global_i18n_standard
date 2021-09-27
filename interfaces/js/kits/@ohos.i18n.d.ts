@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 
-/**
- * Provides international settings related APIs.
- *
- * @since 7
- * @devices phone, table, tv, wearable, car
- */
 declare namespace i18n {
 /**
  * Obtains the country or region name localized for display on a given locale.
