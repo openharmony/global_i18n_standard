@@ -118,7 +118,7 @@ DateTimeFormat::~DateTimeFormat()
 void DateTimeFormat::InitDateFormatWithoutConfigs(UErrorCode &status)
 {
     dateFormat = DateFormat::createDateInstance(DateFormat::SHORT, locale);
-    SimpleDateFormat* simDateFormat = dynamic_cast<SimpleDateFormat*>(dateFormat);
+    SimpleDateFormat *simDateFormat = static_cast<SimpleDateFormat*>(dateFormat);
     if (simDateFormat != nullptr) {
         simDateFormat->toPattern(pattern);
     }
@@ -137,7 +137,7 @@ void DateTimeFormat::InitDateFormat(UErrorCode &status)
             timeStyleValue = dateTimeStyle[timeStyle];
         }
         dateFormat = DateFormat::createDateTimeInstance(dateStyleValue, timeStyleValue, locale);
-        SimpleDateFormat* simDateFormat = dynamic_cast<SimpleDateFormat*>(dateFormat);
+        SimpleDateFormat *simDateFormat = static_cast<SimpleDateFormat*>(dateFormat);
         if (simDateFormat != nullptr) {
             simDateFormat->toPattern(pattern);
         }
