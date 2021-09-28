@@ -22,10 +22,7 @@ config("intl_config") {
   ]
 }
 ohos_shared_library("intl_util") {
-  configs = [
-    ":intl_config",
-    "//build/config/compiler:rtti",
-  ]
+  configs = [ ":intl_config" ]
   include_dirs = [
     "//third_party/icu/icu4c/source",
     "//third_party/icu/icu4c/source/common",
