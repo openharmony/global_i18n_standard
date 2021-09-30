@@ -19,6 +19,8 @@ config("intl_config") {
     "//third_party/icu/icu4c/source/common",
     "//third_party/icu/icu4c/source/i18n",
     "//base/global/i18n_standard/frameworks/intl/include",
+    "//third_party/libphonenumber/cpp/src",
+    "//third_party/protobuf/src",
   ]
 }
 ohos_shared_library("intl_util") {
@@ -39,12 +41,16 @@ ohos_shared_library("intl_util") {
     "//base/telephony/core_service/interfaces/kits/include",
     "//utils/native/base/include",
     "//third_party/libxml2/include",
+    "//third_party/libphonenumber/cpp/src",
+    "//third_party/libphonenumber",
+    "//third_party/protobuf/src",
   ]
   sources = [
     "src/date_time_format.cpp",
     "src/locale_config.cpp",
     "src/locale_info.cpp",
     "src/number_format.cpp",
+    "src/phone_number_format.cpp",
   ]
   cflags_cc = [
     "-Wall",
@@ -58,6 +64,7 @@ ohos_shared_library("intl_util") {
     "//foundation/appexecfwk/standard/interfaces/innerkits/libeventhandler:libeventhandler",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
+    "//third_party/libphonenumber/cpp:phonenumber_standard",
     "//third_party/libxml2:xml2",
     "//utils/native/base:utils",
   ]

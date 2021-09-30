@@ -19,6 +19,7 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "locale_config.h"
+#include "phone_number_format.h"
 
 namespace OHOS {
 namespace Global {
@@ -40,6 +41,18 @@ public:
     static napi_value SetSystemLanguage(napi_env env, napi_callback_info info);
     static napi_value SetSystemRegion(napi_env env, napi_callback_info info);
     static napi_value SetSystemLocale(napi_env env, napi_callback_info info);
+    static napi_value InitPhoneNumberFormat(napi_env env, napi_value exports);
+
+private:
+    static napi_value PhoneNumberFormatConstructor(napi_env env, napi_callback_info info);
+    static napi_value IsValidPhoneNumber(napi_env env, napi_callback_info info);
+    static napi_value FormatPhoneNumber(napi_env env, napi_callback_info info);
+    bool InitPhoneNumberFormatContext(napi_env env, napi_callback_info info, const std::string &country,
+                                      const std::map<std::string, std::string> &options);
+
+    napi_env env_;
+    napi_ref wrapper_;
+    std::unique_ptr<PhoneNumberFormat> phonenumberfmt_;
 };
 } // namespace I18n
 } // namespace Global

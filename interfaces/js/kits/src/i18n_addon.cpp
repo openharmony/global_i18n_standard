@@ -23,10 +23,11 @@ namespace I18n {
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "I18nJs" };
 using namespace OHOS::HiviewDFX;
 
-I18nAddon::I18nAddon() {}
+I18nAddon::I18nAddon() : env_(nullptr), wrapper_(nullptr) {}
 
 I18nAddon::~I18nAddon()
 {
+    napi_delete_reference(env_, wrapper_);
 }
 
 void I18nAddon::Destructor(napi_env env, void *nativeObject, void *hint)
@@ -55,7 +56,8 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
     };
 
     status = napi_define_properties(env, exports,
-        sizeof(properties) / sizeof(napi_property_descriptor), properties);
+                                    sizeof(properties) / sizeof(napi_property_descriptor),
+                                    properties);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to set properties at init");
         return nullptr;
@@ -354,9 +356,219 @@ napi_value I18nAddon::SetSystemLocale(napi_env env, napi_callback_info info)
     return result;
 }
 
+napi_value I18nAddon::InitPhoneNumberFormat(napi_env env, napi_value exports)
+{
+    napi_status status;
+    napi_property_descriptor properties[] = {
+        DECLARE_NAPI_FUNCTION("isValidNumber", IsValidPhoneNumber),
+        DECLARE_NAPI_FUNCTION("format", FormatPhoneNumber)
+    };
+
+    napi_value constructor;
+    status = napi_define_class(env, "PhoneNumberFormat", NAPI_AUTO_LENGTH, PhoneNumberFormatConstructor, nullptr,
+                               sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Define class failed when InitPhoneNumberFormat");
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "PhoneNumberFormat", constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Set property failed when InitPhoneNumberFormat");
+        return nullptr;
+    }
+    return exports;
+}
+
+void GetOptionValue(napi_env env, napi_value options, const std::string &optionName,
+                    std::map<std::string, std::string> &map)
+{
+    napi_value optionValue = nullptr;
+    napi_valuetype type = napi_undefined;
+    napi_status status = napi_typeof(env, options, &type);
+    if (status != napi_ok && type != napi_object) {
+        HiLog::Error(LABEL, "Get option failed, option is not an object");
+        return;
+    }
+    bool hasProperty = false;
+    napi_status propStatus = napi_has_named_property(env, options, optionName.c_str(), &hasProperty);
+    if (propStatus == napi_ok && hasProperty) {
+        status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
+        if (status == napi_ok) {
+            size_t len;
+            napi_get_value_string_utf8(env, optionValue, nullptr, 0, &len);
+            std::vector<char> optionBuf(len + 1);
+            status = napi_get_value_string_utf8(env, optionValue, optionBuf.data(), len + 1, &len);
+            map.insert(make_pair(optionName, optionBuf.data()));
+        }
+    }
+}
+
+napi_value I18nAddon::PhoneNumberFormatConstructor(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = {0};
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+
+    size_t len;
+    status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get country tag length failed");
+        return nullptr;
+    }
+
+    std::vector<char> country (len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], country.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get country tag failed");
+        return nullptr;
+    }
+
+    std::map<std::string, std::string> options;
+    GetOptionValue(env, argv[1], "type", options);
+
+    std::unique_ptr<I18nAddon> obj = std::make_unique<I18nAddon>();
+    if (obj == nullptr) {
+        HiLog::Error(LABEL, "Create IntlAddon failed");
+        return nullptr;
+    }
+
+    status = napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()),
+                       I18nAddon::Destructor, nullptr, &obj->wrapper_);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Wrap IntlAddon failed");
+        return nullptr;
+    }
+
+    if (!obj->InitPhoneNumberFormatContext(env, info, country.data(), options)) {
+        return nullptr;
+    }
+
+    obj.release();
+
+    return thisVar;
+}
+
+bool I18nAddon::InitPhoneNumberFormatContext(napi_env env, napi_callback_info info, const std::string &country,
+                                             const std::map<std::string, std::string> &options)
+{
+    napi_value global;
+    napi_status status = napi_get_global(env, &global);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get global failed");
+        return false;
+    }
+    env_ = env;
+    phonenumberfmt_ = std::make_unique<PhoneNumberFormat>(country, options);
+
+    return phonenumberfmt_ != nullptr;
+}
+
+napi_value I18nAddon::IsValidPhoneNumber(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+
+    size_t len;
+    napi_status status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get phone number length failed");
+        return nullptr;
+    }
+    std::vector<char> buf(len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get phone number failed");
+        return nullptr;
+    }
+
+    I18nAddon *obj = nullptr;
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->phonenumberfmt_ == nullptr) {
+        HiLog::Error(LABEL, "GetPhoneNumberFormat object failed");
+        return nullptr;
+    }
+
+    bool isValid = obj->phonenumberfmt_->isValidPhoneNumber(buf.data());
+
+    napi_value result;
+    status = napi_get_boolean(env, isValid, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create boolean failed");
+        return nullptr;
+    }
+
+    return result;
+}
+
+napi_value I18nAddon::FormatPhoneNumber(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+
+    size_t len;
+    napi_status status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get phone number length failed");
+        return nullptr;
+    }
+    std::vector<char> buf(len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get phone number failed");
+        return nullptr;
+    }
+
+    I18nAddon *obj = nullptr;
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->phonenumberfmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get PhoneNumberFormat object failed");
+        return nullptr;
+    }
+
+    std::string formattedPhoneNumber = obj->phonenumberfmt_->format(buf.data());
+
+    napi_value result;
+    status = napi_create_string_utf8(env, formattedPhoneNumber.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create format phone number failed");
+        return nullptr;
+    }
+    return result;
+}
+
+
 napi_value Init(napi_env env, napi_value exports)
 {
-    return I18nAddon::Init(env, exports);
+    napi_value val = I18nAddon::Init(env, exports);
+    return I18nAddon::InitPhoneNumberFormat(env, val);
 }
 
 static napi_module g_i18nModule = {
