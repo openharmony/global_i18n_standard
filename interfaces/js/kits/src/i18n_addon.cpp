@@ -522,7 +522,7 @@ napi_value I18nAddon::IsValidPhoneNumber(napi_env env, napi_callback_info info)
 napi_value I18nAddon::FormatPhoneNumber(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[1];
+    napi_value argv[1] = {0};
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
