@@ -47,6 +47,7 @@ ohos_shared_library("intl_util") {
   ]
   sources = [
     "src/date_time_format.cpp",
+    "src/i18n_calendar.cpp",
     "src/locale_config.cpp",
     "src/locale_info.cpp",
     "src/number_format.cpp",
