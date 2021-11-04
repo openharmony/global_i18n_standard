@@ -16,6 +16,7 @@
 #include "intl_addon.h"
 
 #include <vector>
+#include <set>
 
 #include "hilog/log.h"
 #include "node_api.h"
@@ -23,13 +24,6 @@
 namespace OHOS {
 namespace Global {
 namespace I18n {
-#define GET_PARAMS(env, info, num)      \
-    size_t argc = num;                  \
-    napi_value argv[num];               \
-    napi_value thisVar = nullptr;       \
-    void *data = nullptr;               \
-    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data)
-
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "IntlJs" };
 using namespace OHOS::HiviewDFX;
 static napi_ref *g_constructor = nullptr;
@@ -183,8 +177,8 @@ void GetIntegerOptionValue(napi_env env, napi_value options, const std::string &
         status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
         if (status == napi_ok) {
             int64_t integerValue = -1;
-            napi_get_value_int64(env, optionValue, &integerValue);
-            if (integerValue != -1) {
+            status = napi_get_value_int64(env, optionValue, &integerValue);
+            if (status == napi_ok) {
                 map.insert(make_pair(optionName, std::to_string(integerValue)));
             }
         }
@@ -399,7 +393,11 @@ bool IntlAddon::InitDateTimeFormatContext(napi_env env, napi_callback_info info,
 
 napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
 {
-    GET_PARAMS(env, info, 1); // Need to get one parameter of a date object to format.
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     int64_t year = GetYear(env, argv, 0);
     int64_t month = GetMonth(env, argv, 0);
     int64_t day = GetDay(env, argv, 0);
@@ -428,7 +426,11 @@ napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::FormatDateTimeRange(napi_env env, napi_callback_info info)
 {
-    GET_PARAMS(env, info, 2); // Need to get two parameter of date objects to format.
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     int64_t firstYear = GetYear(env, argv, 0);
     int64_t firstMonth = GetMonth(env, argv, 0);
     int64_t firstDay = GetDay(env, argv, 0);
@@ -694,8 +696,11 @@ int64_t IntlAddon::GetSecond(napi_env env, napi_value *argv, int index)
 
 napi_value IntlAddon::GetLanguage(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the language.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -716,8 +721,11 @@ napi_value IntlAddon::GetLanguage(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetScript(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the script.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -738,8 +746,11 @@ napi_value IntlAddon::GetScript(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetRegion(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the region.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -760,8 +771,11 @@ napi_value IntlAddon::GetRegion(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetBaseName(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -782,8 +796,11 @@ napi_value IntlAddon::GetBaseName(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetCalendar(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -804,8 +821,11 @@ napi_value IntlAddon::GetCalendar(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetCollation(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -826,8 +846,11 @@ napi_value IntlAddon::GetCollation(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetHourCycle(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -848,8 +871,11 @@ napi_value IntlAddon::GetHourCycle(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetNumberingSystem(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -870,8 +896,11 @@ napi_value IntlAddon::GetNumberingSystem(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetNumeric(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -892,8 +921,11 @@ napi_value IntlAddon::GetNumeric(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::GetCaseFirst(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -913,8 +945,11 @@ napi_value IntlAddon::GetCaseFirst(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::ToString(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the language.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -935,8 +970,11 @@ napi_value IntlAddon::ToString(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::Maximize(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the language.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -969,8 +1007,11 @@ napi_value IntlAddon::Maximize(napi_env env, napi_callback_info info)
 
 napi_value IntlAddon::Minimize(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the language.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -1050,8 +1091,11 @@ void SetBooleanOptionProperties(napi_env env, napi_value &result, std::map<std::
 
 napi_value IntlAddon::GetDateTimeResolvedOptions(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -1088,8 +1132,11 @@ napi_value IntlAddon::GetDateTimeResolvedOptions(napi_env env, napi_callback_inf
 
 napi_value IntlAddon::GetNumberResolvedOptions(napi_env env, napi_callback_info info)
 {
-    // No parameters are needed to get the baseName.
-    GET_PARAMS(env, info, 0);
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
 
     IntlAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
@@ -1124,7 +1171,11 @@ napi_value IntlAddon::GetNumberResolvedOptions(napi_env env, napi_callback_info 
 
 napi_value IntlAddon::FormatNumber(napi_env env, napi_callback_info info)
 {
-    GET_PARAMS(env, info, 1); // Need to get one parameter of a date object to format.
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     double number;
     napi_get_value_double(env, argv[0], &number);
     IntlAddon *obj = nullptr;
@@ -1143,11 +1194,524 @@ napi_value IntlAddon::FormatNumber(napi_env env, napi_callback_info info)
     return result;
 }
 
+void GetCollatorLocaleMatcher(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "localeMatcher", map);
+    auto it = map.find("localeMatcher");
+    if (it != map.end()) {
+        std::string localeMatcher = it->second;
+        if (localeMatcher != "lookup" && localeMatcher != "best fit") {
+            HiLog::Error(LABEL, "invalid localeMatcher");
+            return;
+        }
+    } else {
+        map.insert(std::make_pair("localeMatcher", "best fit"));
+    }
+}
+
+void GetCollatorUsage(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "usage", map);
+    auto it = map.find("usage");
+    if (it != map.end()) {
+        std::string usage = it->second;
+        if (usage != "sort" && usage != "search") {
+            HiLog::Error(LABEL, "invalid usage");
+            return;
+        }
+    } else {
+        map.insert(std::make_pair("usage", "sort"));
+    }
+}
+
+void GetCollatorSensitivity(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "sensitivity", map);
+    auto it = map.find("sensitivity");
+    if (it != map.end()) {
+        std::string sensitivity = it->second;
+        if (sensitivity != "base" && sensitivity != "accent" && sensitivity != "case" && sensitivity != "variant") {
+            HiLog::Error(LABEL, "invalid sensitivity");
+            return;
+        }
+    } else {
+        map.insert(std::make_pair("sensitivity", "variant"));
+    }
+}
+
+void GetCollatorIgnorePunctuation(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetBoolOptionValue(env, options, "ignorePunctuation", map);
+    auto it = map.find("ignorePunctuation");
+    if (it != map.end()) {
+        std::string ignorePunctuation = it->second;
+        if (ignorePunctuation != "true" && ignorePunctuation != "false") {
+            HiLog::Error(LABEL, "invalid ignorePunctuation");
+            return;
+        }
+    } else {
+        map.insert(std::make_pair("ignorePunctuation", "false"));
+    }
+}
+
+void GetCollatorNumeric(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetBoolOptionValue(env, options, "numeric", map);
+    auto it = map.find("numeric");
+    if (it != map.end()) {
+        std::string numeric = it->second;
+        if (numeric != "true" && numeric != "false") {
+            HiLog::Error(LABEL, "invalid numeric");
+            return;
+        }
+    }
+}
+
+void GetCollatorCaseFirst(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "caseFirst", map);
+    auto it = map.find("caseFirst");
+    if (it != map.end()) {
+        std::string caseFirst = it->second;
+        if (caseFirst != "upper" && caseFirst != "lower" && caseFirst != "false") {
+            HiLog::Error(LABEL, "invalid caseFirst");
+            return;
+        }
+    }
+}
+
+void GetCollatorCollation(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "collation", map);
+    auto it = map.find("collation");
+    if (it != map.end()) {
+        std::string collation = it->second;
+        std::set<std::string> validCollation(
+            { "big5han", "compat", "dict", "direct", "ducet", "eor", "gb2312",
+            "phonebk", "phonetic", "pinyin", "reformed", "searchjl", "stroke",
+            "trad", "unihan", "zhuyin" }
+        );
+        if (validCollation.find(collation) == validCollation.end()) {
+            map["collation"] = "default";
+        }
+    }
+}
+
+void GetCollatorOptionValue(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetCollatorLocaleMatcher(env, options, map);
+    GetCollatorUsage(env, options, map);
+    GetCollatorSensitivity(env, options, map);
+    GetCollatorIgnorePunctuation(env, options, map);
+    GetCollatorNumeric(env, options, map);
+    GetCollatorCaseFirst(env, options, map);
+    GetCollatorCollation(env, options, map);
+}
+
+napi_value IntlAddon::InitCollator(napi_env env, napi_value exports)
+{
+    napi_status status = napi_ok;
+    napi_property_descriptor properties[] = {
+        DECLARE_NAPI_FUNCTION("compare", CompareString),
+        DECLARE_NAPI_FUNCTION("resolvedOptions", GetCollatorResolvedOptions)
+    };
+
+    napi_value constructor;
+    status = napi_define_class(env, "Collator", NAPI_AUTO_LENGTH, CollatorConstructor, nullptr,
+        sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Define class failed when InitCollator");
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "Collator", constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Set property failed when InitCollator");
+        return nullptr;
+    }
+    return exports;
+}
+
+napi_value IntlAddon::CollatorConstructor(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    std::vector<std::string> localeTags;
+    if (argv[0] != nullptr) {
+        napi_valuetype valueType = napi_valuetype::napi_undefined;
+        napi_typeof(env, argv[0], &valueType);
+        bool isArray = false;
+        napi_is_array(env, argv[0], &isArray);
+        if (valueType == napi_valuetype::napi_string) {
+            GetLocaleTags(env, argv[0], localeTags);
+        } else if (isArray) {
+            uint32_t arrayLength = 0;
+            napi_get_array_length(env, argv[0], &arrayLength);
+            napi_value element;
+            for (uint32_t i = 0; i < arrayLength; i++) {
+                napi_get_element(env, argv[0], i, &element);
+                GetLocaleTags(env, element, localeTags);
+            }
+        }
+    }
+
+    std::map<std::string, std::string> map = {};
+    if (argv[1] != nullptr) {
+        GetCollatorOptionValue(env, argv[1], map);
+    }
+
+    std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
+    if (obj == nullptr) {
+        HiLog::Error(LABEL, "Create IntlAddon failed");
+        return nullptr;
+    }
+    status =
+        napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), IntlAddon::Destructor, nullptr, &obj->wrapper_);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Wrap IntlAddon failed");
+        return nullptr;
+    }
+    if (!obj->InitCollatorContext(env, info, localeTags, map)) {
+        HiLog::Error(LABEL, "Init DateTimeFormat failed");
+        return nullptr;
+    }
+    obj.release();
+    return thisVar;
+}
+
+bool IntlAddon::InitCollatorContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
+    std::map<std::string, std::string> &map)
+{
+    napi_value global;
+    napi_status status = napi_get_global(env, &global);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get global failed");
+        return false;
+    }
+    env_ = env;
+    collator_ = std::make_unique<Collator>(localeTags, map);
+
+    return collator_ != nullptr;
+}
+
+bool GetStringParameter(napi_env env, napi_value value, std::vector<char> &buf)
+{
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, value, &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return false;
+    }
+    size_t len;
+    napi_status status = napi_get_value_string_utf8(env, value, nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get first length failed");
+        return false;
+    }
+    buf.resize(len + 1);
+    status = napi_get_value_string_utf8(env, value, buf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get first failed");
+        return false;
+    }
+
+    return true;
+}
+
+napi_value IntlAddon::CompareString(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    std::vector<char> first;
+    if (!GetStringParameter(env, argv[0], first)) {
+        return nullptr;
+    }
+
+    std::vector<char> second;
+    if (!GetStringParameter(env, argv[1], second)) {
+        return nullptr;
+    }
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->collator_ == nullptr) {
+        HiLog::Error(LABEL, "Get Collator object failed");
+        return nullptr;
+    }
+
+    int32_t compareResult = obj->collator_->Compare(first.data(), second.data());
+    napi_value result;
+    status = napi_create_int32(env, compareResult, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create compare result failed");
+        return nullptr;
+    }
+
+    return result;
+}
+
+napi_value IntlAddon::GetCollatorResolvedOptions(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->collator_ == nullptr) {
+        HiLog::Error(LABEL, "Get Collator object failed");
+        return nullptr;
+    }
+    napi_value result;
+    napi_create_object(env, &result);
+    std::map<std::string, std::string> options = {};
+    obj->collator_->ResolvedOptions(options);
+    SetOptionProperties(env, result, options, "locale");
+    SetOptionProperties(env, result, options, "usage");
+    SetOptionProperties(env, result, options, "sensitivity");
+    SetBooleanOptionProperties(env, result, options, "ignorePunctuation");
+    SetBooleanOptionProperties(env, result, options, "numeric");
+    SetOptionProperties(env, result, options, "caseFirst");
+    SetOptionProperties(env, result, options, "collation");
+    return result;
+}
+
+void GetPluralRulesType(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "type", map);
+    auto it = map.find("type");
+    if (it != map.end()) {
+        std::string type = it->second;
+        if (type != "cardinal" && type != "ordinal") {
+            HiLog::Error(LABEL, "invalid type");
+            return;
+        }
+    } else {
+        map.insert(std::make_pair("type", "cardinal"));
+    }
+}
+
+void GetPluralRulesInteger(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetIntegerOptionValue(env, options, "minimumIntegerDigits", map);
+    auto it = map.find("minimumIntegerDigits");
+    if (it != map.end()) {
+        std::string minimumIntegerDigits = it->second;
+        int n = std::stoi(minimumIntegerDigits);
+        if (n < 1 || n > 21) {  // the valid range of minimumIntegerDigits is [1, 21]
+            HiLog::Error(LABEL, "invalid minimumIntegerDigits");
+            return;
+        }
+    } else {
+        map.insert(std::make_pair("minimumIntegerDigits", std::to_string(1)));
+    }
+}
+
+void GetPluralRulesFractions(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetIntegerOptionValue(env, options, "minimumFractionDigits", map);
+    auto it = map.find("minimumFractionDigits");
+    if (it != map.end()) {
+        std::string minimumFractionDigits = it->second;
+        int n = std::stoi(minimumFractionDigits);
+        if (n < 0 || n > 20) {  // the valid range of minimumFractionDigits is [0, 20]
+            HiLog::Error(LABEL, "invalid minimumFractionDigits");
+            return;
+        }
+    }
+
+    GetIntegerOptionValue(env, options, "maximumFractionDigits", map);
+    it = map.find("maximumFractionDigits");
+    if (it != map.end()) {
+        std::string maximumFractionDigits = it->second;
+        int n = std::stoi(maximumFractionDigits);
+        if (n < 0 || n > 20) {  // the valid range of maximumFractionDigits is [0, 20]
+            HiLog::Error(LABEL, "invalid maximumFractionDigits");
+            return;
+        }
+    }
+}
+
+void GetPluralRulesSignificant(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    int minSignificant = -1;
+    GetIntegerOptionValue(env, options, "minimumSignificantDigits", map);
+    auto it = map.find("minimumSignificantDigits");
+    if (it != map.end()) {
+        std::string minSignificantStr = it->second;
+        int minSignificantInt = std::stoi(minSignificantStr);
+        // the valid range of minSignificantInt is [1, 21]
+        if (minSignificantInt < 1 || minSignificantInt > 21) {
+            HiLog::Error(LABEL, "invalid minimumSignificantDigits");
+            return;
+        }
+        minSignificant = minSignificantInt;
+    } else {
+        minSignificant = 1;
+    }
+
+    GetIntegerOptionValue(env, options, "maximumSignificantDigits", map);
+    it = map.find("maximumSignificantDigits");
+    if (it != map.end()) {
+        std::string maxSignificantStr = it->second;
+        int maxSignificant = std::stoi(maxSignificantStr);
+        // the valid range of minSignificant is [minSignificant, 21]
+        if (maxSignificant < minSignificant || maxSignificant > 21) {
+            HiLog::Error(LABEL, "invalid maximumSignificantDigits");
+            return;
+        }
+    }
+}
+
+void GetPluralRulesOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetCollatorLocaleMatcher(env, options, map);
+    GetPluralRulesType(env, options, map);
+    GetPluralRulesInteger(env, options, map);
+    GetPluralRulesFractions(env, options, map);
+    GetPluralRulesSignificant(env, options, map);
+}
+
+napi_value IntlAddon::InitPluralRules(napi_env env, napi_value exports)
+{
+    napi_status status = napi_ok;
+    napi_property_descriptor properties[] = {
+        DECLARE_NAPI_FUNCTION("select", Select)
+    };
+
+    napi_value constructor;
+    status = napi_define_class(env, "PluralRules", NAPI_AUTO_LENGTH, PluralRulesConstructor, nullptr,
+        sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Define class failed when InitPluralRules");
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "PluralRules", constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Set property failed when InitPluralRules");
+        return nullptr;
+    }
+    return exports;
+}
+
+napi_value IntlAddon::PluralRulesConstructor(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    std::vector<std::string> localeTags;
+    if (argv[0] != nullptr) {
+        napi_typeof(env, argv[0], &valueType);
+        bool isArray = false;
+        napi_is_array(env, argv[0], &isArray);
+        if (valueType == napi_valuetype::napi_string) {
+            GetLocaleTags(env, argv[0], localeTags);
+        } else if (isArray) {
+            uint32_t arrayLength = 0;
+            napi_get_array_length(env, argv[0], &arrayLength);
+            napi_value element;
+            for (uint32_t i = 0; i < arrayLength; i++) {
+                napi_get_element(env, argv[0], i, &element);
+                GetLocaleTags(env, element, localeTags);
+            }
+        }
+    }
+    std::map<std::string, std::string> map = {};
+    if (argv[1] != nullptr) {
+        GetPluralRulesOptionValues(env, argv[1], map);
+    }
+    std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
+    if (obj == nullptr) {
+        HiLog::Error(LABEL, "Create IntlAddon failed");
+        return nullptr;
+    }
+    status =
+        napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), IntlAddon::Destructor, nullptr, &obj->wrapper_);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Wrap IntlAddon failed");
+        return nullptr;
+    }
+    if (!obj->InitPluralRulesContext(env, info, localeTags, map)) {
+        HiLog::Error(LABEL, "Init DateTimeFormat failed");
+        return nullptr;
+    }
+    obj.release();
+    return thisVar;
+}
+
+bool IntlAddon::InitPluralRulesContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
+    std::map<std::string, std::string> &map)
+{
+    napi_value global;
+    napi_status status = napi_get_global(env, &global);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get global failed");
+        return false;
+    }
+    env_ = env;
+    pluralrules_ = std::make_unique<PluralRules>(localeTags, map);
+
+    return pluralrules_ != nullptr;
+}
+
+napi_value IntlAddon::Select(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_number) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+
+    double number;
+    napi_status status = napi_get_value_double(env, argv[0], &number);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get number failed");
+        return nullptr;
+    }
+
+    IntlAddon *obj = nullptr;
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->pluralrules_ == nullptr) {
+        HiLog::Error(LABEL, "Get PluralRules object failed");
+        return nullptr;
+    }
+
+    std::string res = obj->pluralrules_->Select(number);
+    napi_value result;
+    status = napi_create_string_utf8(env, res.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "get select result failed");
+        return nullptr;
+    }
+    return result;
+}
+
 napi_value Init(napi_env env, napi_value exports)
 {
     napi_value val = IntlAddon::InitLocale(env, exports);
     val = IntlAddon::InitDateTimeFormat(env, val);
-    return IntlAddon::InitNumberFormat(env, val);
+    val = IntlAddon::InitNumberFormat(env, val);
+    val = IntlAddon::InitCollator(env, val);
+    return IntlAddon::InitPluralRules(env, val);
 }
 
 static napi_module g_intlModule = {

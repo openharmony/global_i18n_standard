@@ -46,11 +46,13 @@ ohos_shared_library("intl_util") {
     "//third_party/protobuf/src",
   ]
   sources = [
+    "src/collator.cpp",
     "src/date_time_format.cpp",
     "src/locale_config.cpp",
     "src/locale_info.cpp",
     "src/number_format.cpp",
     "src/phone_number_format.cpp",
+    "src/plural_rules.cpp",
   ]
   cflags_cc = [
     "-Wall",
