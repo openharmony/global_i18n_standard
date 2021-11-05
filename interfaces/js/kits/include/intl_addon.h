@@ -23,6 +23,8 @@
 #include "locale_info.h"
 #include "date_time_format.h"
 #include "number_format.h"
+#include "collator.h"
+#include "plural_rules.h"
 
 namespace OHOS {
 namespace Global {
@@ -36,6 +38,8 @@ static void GetIntegerOptionValue(napi_env env, napi_value options, const std::s
     std::map<std::string, std::string> &map);
 static void GetDateOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
 static void GetNumberOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
+static void GetCollatorOptionValue(napi_env env, napi_value options, std::map<std::string, std::string> &map);
+static void GetPluralRulesOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
 static void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> &options,
     const std::string &option);
 static void SetIntegerOptionProperties(napi_env env, napi_value &result,
@@ -48,6 +52,8 @@ public:
     static napi_value InitLocale(napi_env env, napi_value exports);
     static napi_value InitDateTimeFormat(napi_env env, napi_value exports);
     static napi_value InitNumberFormat(napi_env env, napi_value exports);
+    static napi_value InitCollator(napi_env env, napi_value exports);
+    static napi_value InitPluralRules(napi_env env, napi_value exports);
     static void Destructor(napi_env env, void *nativeObject, void *finalize_hint);
 
     IntlAddon();
@@ -78,6 +84,13 @@ private:
     static napi_value GetNumberResolvedOptions(napi_env env, napi_callback_info info);
     static napi_value FormatNumber(napi_env env, napi_callback_info info);
 
+    static napi_value CollatorConstructor(napi_env env, napi_callback_info info);
+    static napi_value CompareString(napi_env env, napi_callback_info info);
+    static napi_value GetCollatorResolvedOptions(napi_env env, napi_callback_info info);
+
+    static napi_value PluralRulesConstructor(napi_env env, napi_callback_info info);
+    static napi_value Select(napi_env env, napi_callback_info info);
+
     static int64_t GetYear(napi_env env, napi_value *argv, int index);
     static int64_t GetMonth(napi_env env, napi_value *argv, int index);
     static int64_t GetDay(napi_env env, napi_value *argv, int index);
@@ -90,12 +103,18 @@ private:
         std::map<std::string, std::string> &map);
     bool InitNumberFormatContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
         std::map<std::string, std::string> &map);
+    bool InitCollatorContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
+        std::map<std::string, std::string> &map);
+    bool InitPluralRulesContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
+        std::map<std::string, std::string> &map);
 
     napi_env env_;
     napi_ref wrapper_;
     std::unique_ptr<LocaleInfo> locale_;
     std::unique_ptr<DateTimeFormat> datefmt_;
     std::unique_ptr<NumberFormat> numberfmt_;
+    std::unique_ptr<Collator> collator_;
+    std::unique_ptr<PluralRules> pluralrules_;
 };
 } // namespace I18n
 } // namespace Global
