@@ -246,11 +246,14 @@ std::string I18nCalendar::GetDisplayName(std::string &displayLocale)
     if (buffer == 0 || calendar_ == nullptr) {
         return "";
     }
-    std::string type = calendar_->getType();
+    const char *type = calendar_->getType();
+    if (type == nullptr) {
+        return "";
+    }
     int32_t length;
     UErrorCode status = U_ZERO_ERROR;
     const UChar *str = uloc_getTableStringWithFallback(U_ICUDATA_LANG, displayLocale.c_str(), "Types", "calendar",
-        type.c_str(), &length, &status);
+        type, &length, &status);
     int32_t len;
     if (status == U_ZERO_ERROR) {
         len = (length < destCapacity) ? length : destCapacity;
