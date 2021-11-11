@@ -43,6 +43,7 @@ public:
     static napi_value SetSystemLanguage(napi_env env, napi_callback_info info);
     static napi_value SetSystemRegion(napi_env env, napi_callback_info info);
     static napi_value SetSystemLocale(napi_env env, napi_callback_info info);
+    static napi_value IsRTL(napi_env env, napi_callback_info info);
     static napi_value InitPhoneNumberFormat(napi_env env, napi_value exports);
     static napi_value InitI18nCalendar(napi_env env, napi_value exports);
 

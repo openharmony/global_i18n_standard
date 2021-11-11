@@ -16,6 +16,7 @@
 #include <locale>
 #include <codecvt>
 #include "ohos/init_data.h"
+#include "locale_config.h"
 
 namespace OHOS {
 namespace Global {
@@ -80,7 +81,7 @@ NumberFormat::NumberFormat(const std::vector<std::string> &localeTags, std::map<
         }
     }
     if (localeInfo == nullptr) {
-        localeInfo = new LocaleInfo(icu::Locale::getDefault().getBaseName(), configs);
+        localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), configs);
         locale = localeInfo->GetLocale();
         localeBaseName = localeInfo->GetBaseName();
         numberFormat = icu::number::NumberFormatter::withLocale(locale);

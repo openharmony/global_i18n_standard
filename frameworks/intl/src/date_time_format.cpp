@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cmath>
 #include "ohos/init_data.h"
+#include "locale_config.h"
 
 namespace OHOS {
 namespace Global {
@@ -80,7 +81,7 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
         if (localeInfo != nullptr) {
             delete localeInfo;
         }
-        localeInfo = new LocaleInfo(icu::Locale::getDefault().getBaseName(), configs);
+        localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), configs);
         locale = localeInfo->GetLocale();
         localeTag = locale.getBaseName();
         std::replace(localeTag.begin(), localeTag.end(), '_', '-');

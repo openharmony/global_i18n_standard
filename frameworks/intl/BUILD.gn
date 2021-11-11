@@ -31,6 +31,7 @@ ohos_shared_library("intl_util") {
     "//third_party/icu/icu4c/source/i18n",
     "//third_party/icu/icu4c/source/common/unicode",
     "//base/global/i18n_standard/frameworks/intl/include",
+    "//base/global/i18n_standard/interfaces/native/innerkits/i18n/include",
     "//base/telephony/core_service/interfaces/innerkits/common",
     "//base/telephony/core_service/interfaces/innerkits/network_search/include",
     "//base/telephony/core_service/interfaces/innerkits/api",

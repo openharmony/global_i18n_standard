@@ -14,6 +14,7 @@
  */
 #include <algorithm>
 #include <memory.h>
+#include <regex>
 #include <unordered_set>
 #include "locale_config.h"
 #include "libxml/parser.h"
@@ -75,6 +76,74 @@ unordered_map<string, string> LocaleConfig::dialectMap {
     { "es-Latn-VE", "es-Latn-419" },
     { "pt-Latn-PT", "pt-Latn-PT" },
     { "en-Latn-US", "en-Latn-US" }
+};
+
+set<std::string> LocaleConfig::validCaTag {
+    "buddhist",
+    "chinese",
+    "coptic",
+    "dangi",
+    "ethioaa",
+    "ethiopic",
+    "gregory",
+    "hebrew",
+    "indian",
+    "islamic",
+    "islamic-umalqura",
+    "islamic-tbla",
+    "islamic-civil",
+    "islamic-rgsa",
+    "iso8601",
+    "japanese",
+    "persian",
+    "roc",
+    "islamicc",
+};
+set<std::string> LocaleConfig::validCoTag {
+    "big5han",
+    "compat",
+    "dict",
+    "direct",
+    "ducet",
+    "eor",
+    "gb2312",
+    "phonebk",
+    "phonetic",
+    "pinyin",
+    "reformed",
+    "searchjl",
+    "stroke",
+    "trad",
+    "unihan",
+    "zhuyin",
+};
+set<std::string> LocaleConfig::validKnTag {
+    "true",
+    "false",
+};
+set<std::string> LocaleConfig::validKfTag {
+    "upper",
+    "lower",
+    "false",
+};
+set<std::string> LocaleConfig::validNuTag {
+    "adlm", "ahom", "arab", "arabext", "bali", "beng",
+    "bhks", "brah", "cakm", "cham", "deva", "diak",
+    "fullwide", "gong", "gonm", "gujr", "guru", "hanidec",
+    "hmng", "hmnp", "java", "kali", "khmr", "knda",
+    "lana", "lanatham", "laoo", "latn", "lepc", "limb",
+    "mathbold", "mathdbl", "mathmono", "mathsanb", "mathsans", "mlym",
+    "modi", "mong", "mroo", "mtei", "mymr", "mymrshan",
+    "mymrtlng", "newa", "nkoo", "olck", "orya", "osma",
+    "rohg", "saur", "segment", "shrd", "sind", "sinh",
+    "sora", "sund", "takr", "talu", "tamldec", "telu",
+    "thai", "tibt", "tirh", "vaii", "wara", "wcho",
+};
+set<std::string> LocaleConfig::validHcTag {
+    "h12",
+    "h23",
+    "h11",
+    "h24",
 };
 
 bool LocaleConfig::listsInitialized = LocaleConfig::InitializeLists();
@@ -482,6 +551,140 @@ string LocaleConfig::GetDisplayRegion(const string &region, const string &displa
     string temp;
     displayRegion.toUTF8String(temp);
     return temp;
+}
+
+bool LocaleConfig::IsRTL(const string &locale)
+{
+    icu::Locale curLocale(locale.c_str());
+    return curLocale.isRightToLeft();
+}
+
+std::string ContainTag(std::string &localeTag, std::string &defaultLocaleTag,
+    const std::string &extensionTag)
+{
+    std::string tag = localeTag;
+    std::size_t found = tag.find(extensionTag);
+    if (found == std::string::npos) {
+        tag = defaultLocaleTag;
+        found = tag.find(extensionTag);
+    }
+    if (found == std::string::npos) {
+        return "";
+    }
+
+    std::size_t start = found + 4;
+    std::size_t end = tag.find("-", start);
+
+    return tag.substr(start, end - start);
+}
+
+void parseExtension(const std::string &extension, std::map<std::string, std::string> &map)
+{
+    std::string pattern = "-..-";
+    std::regex express(pattern);
+
+    std::regex_token_iterator<std::string::const_iterator> begin1(extension.cbegin(), extension.cend(), express);
+    std::regex_token_iterator<std::string::const_iterator> begin2(extension.cbegin(), extension.cend(), express, -1);
+    begin2++;
+    for (; begin1 != std::sregex_token_iterator() && begin2 != std::sregex_token_iterator(); begin1++, begin2++) {
+        map.insert(std::pair<std::string, std::string>(begin1->str(), begin2->str()));
+    }
+}
+
+void setExtension(std::string &extension, const std::string &tag, const std::set<string> &validValue,
+    const std::map<std::string, std::string> &extensionMap,
+    const std::map<std::string, std::string> &defaultExtensionMap)
+{
+    std::string value = "";
+    auto it = extensionMap.find(tag);
+    if (it != extensionMap.end()) {
+        value = it->second;
+        if (validValue.find(value) == validValue.end()) {
+            return;
+        } else {
+            extension += tag;
+            extension += value;
+        }
+    } else {
+        it = defaultExtensionMap.find(tag);
+        if (it != defaultExtensionMap.end()) {
+            value = it->second;
+            if (validValue.find(value) == validValue.end()) {
+                return;
+            } else {
+                extension += tag;
+                extension += value;
+            }
+        }
+    }
+}
+
+void setOtherExtension(std::string &extension, std::map<std::string, std::string> &extensionMap,
+    std::map<std::string, std::string> &defaultExtensionMap)
+{
+    std::set<std::string> tags;
+    tags.insert("-ca-");
+    tags.insert("-co-");
+    tags.insert("-kn-");
+    tags.insert("-kf-");
+    tags.insert("-nu-");
+    tags.insert("-hc-");
+
+    for (auto it = tags.begin(); it != tags.end(); it++) {
+        extensionMap.erase(*it);
+        defaultExtensionMap.erase(*it);
+    }
+
+    for (auto it = defaultExtensionMap.begin(); it != defaultExtensionMap.end(); it++) {
+        extensionMap.insert(std::pair<std::string, std::string>(it->first, it->second));
+    }
+
+    for (auto it = extensionMap.begin(); it != extensionMap.end(); it++) {
+        extension += it->first;
+        extension += it->second;
+    }
+}
+
+std::string LocaleConfig::GetValidLocale(const std::string &localeTag)
+{
+    std::string baseLocale = "";
+    std::string extension = "";
+    std::size_t found = localeTag.find("-u-");
+    baseLocale = localeTag.substr(0, found);
+    if (found != std::string::npos) {
+        extension = localeTag.substr(found);
+    }
+    std::map<std::string, std::string> extensionMap;
+    if (extension != "") {
+        parseExtension(extension, extensionMap);
+    }
+
+    std::string systemLocaleTag = GetSystemLocale();
+    std::string defaultExtension = "";
+    found = systemLocaleTag.find("-u-");
+    if (found != std::string::npos) {
+        defaultExtension = systemLocaleTag.substr(found);
+    }
+    std::map<std::string, std::string> defaultExtensionMap;
+    if (defaultExtension != "") {
+        parseExtension(defaultExtension, defaultExtensionMap);
+    }
+
+    std::string ext = "";
+    setExtension(ext, "-ca-", validCaTag, extensionMap, defaultExtensionMap);
+    setExtension(ext, "-co-", validCoTag, extensionMap, defaultExtensionMap);
+    setExtension(ext, "-kn-", validKnTag, extensionMap, defaultExtensionMap);
+    setExtension(ext, "-kf-", validKfTag, extensionMap, defaultExtensionMap);
+    setExtension(ext, "-nu-", validNuTag, extensionMap, defaultExtensionMap);
+    setExtension(ext, "-hc-", validHcTag, extensionMap, defaultExtensionMap);
+
+    std::string otherExt = "";
+    setOtherExtension(otherExt, extensionMap, defaultExtensionMap);
+    if (ext != "" || otherExt != "") {
+        return baseLocale + "-u" + ext + otherExt;
+    } else {
+        return baseLocale;
+    }
 }
 } // I18n
 } // Global
