@@ -15,6 +15,7 @@
 #include "locale_info.h"
 #include <algorithm>
 #include "ohos/init_data.h"
+#include "locale_config.h"
 
 namespace OHOS {
 namespace Global {
@@ -25,10 +26,16 @@ LocaleInfo::LocaleInfo(std::string localeTag)
 {
     UErrorCode status = U_ZERO_ERROR;
     configs = {};
+    ComputeFinalLocaleTag(localeTag);
     auto builder = std::make_unique<LocaleBuilder>();
     Locale locale = builder->setLanguageTag(StringPiece(localeTag)).build(status);
     if (status != U_ZERO_ERROR) {
-        locale = Locale::getDefault();
+        std::string defaultLocaleTag = LocaleConfig::GetSystemLocale();
+        Locale defaultLocale(defaultLocaleTag.c_str());
+        locale = defaultLocale;
+
+        finalLocaleTag = "";
+        ComputeFinalLocaleTag(defaultLocaleTag);
     }
     language = locale.getLanguage();
     script = locale.getScript();
@@ -46,11 +53,16 @@ LocaleInfo::LocaleInfo(const std::string &localeTag, std::map<std::string, std::
 {
     UErrorCode status = U_ZERO_ERROR;
     configs = configMap;
-    ComputeFinalLocaleTag(localeTag);
     auto builder = std::make_unique<LocaleBuilder>();
-    locale = builder->setLanguageTag(StringPiece(finalLocaleTag)).build(status);
-    if (status != U_ZERO_ERROR) {
-        locale = Locale::getDefault();
+    if (localeTag != "") {
+        ComputeFinalLocaleTag(localeTag);
+        locale = builder->setLanguageTag(StringPiece(finalLocaleTag)).build(status);
+    }
+    if (status != U_ZERO_ERROR || localeTag == "") {
+        std::string defaultLocaleTag = LocaleConfig::GetSystemLocale();
+        finalLocaleTag = "";
+        ComputeFinalLocaleTag(defaultLocaleTag);
+        locale = builder->setLanguageTag(StringPiece(finalLocaleTag)).build(status);
     }
     language = locale.getLanguage();
     script = locale.getScript();
@@ -122,7 +134,7 @@ void LocaleInfo::ParseLocaleTag(const std::string &localeTag)
     }
     if (localeTag.find(caseFirstTag) != std::string::npos) {
         caseFirst = localeTag.substr(localeTag.find(caseFirstTag) + CONFIG_TAG_LEN);
-        caseFirst = hourCycle.substr(0, caseFirst.find(flag));
+        caseFirst = caseFirst.substr(0, caseFirst.find(flag));
     }
     if (localeTag.find(numericTag) != std::string::npos) {
         numeric = localeTag.substr(localeTag.find(numericTag) + CONFIG_TAG_LEN);

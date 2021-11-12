@@ -23,6 +23,7 @@
 #include "unicode/ucol.h"
 #include "unicode/errorcode.h"
 #include "unicode/uloc.h"
+#include "locale_config.h"
 
 namespace OHOS {
 namespace Global {
@@ -98,8 +99,7 @@ Collator::Collator(std::vector<std::string> &localeTags, std::map<std::string, s
     }
 
     if (localeTags.size() == 0) {
-        icu::Locale defaultLocale;
-        localeInfo = new LocaleInfo(defaultLocale.getName(), options);
+        localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), options);
         locale = localeInfo->GetLocale();
         localeStr = localeInfo->GetBaseName();
         InitCollator();
@@ -222,6 +222,7 @@ bool Collator::InitCollator()
     SetUsage(status);
     collatorPtr = icu::Collator::createInstance(locale, status);
     SetNumeric(status);
+    SetCaseFirst(status);
     SetSensitivity(status);
     SetIgnorePunctuation(status);
 

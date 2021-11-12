@@ -16,6 +16,7 @@
 #define OHOS_GLOBAL_I18N_LOCALE_CONFIG_H
 
 #include <vector>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -41,6 +42,9 @@ public:
         bool sentenceCase);
     static std::string GetDisplayRegion(const std::string &region, const std::string &displayLocale,
         bool sentenceCase);
+    static bool IsRTL(const std::string &locale);
+    static std::string GetValidLocale(const std::string &localeTag);
+
 private:
     static bool IsValidLanguage(const std::string &language);
     static bool IsValidScript(const std::string &script);
@@ -66,6 +70,7 @@ private:
     static const char *FORBIDDEN_REGIONS_NAME;
     static const char *FORBIDDEN_LANGUAGES_PATH;
     static const char *FORBIDDEN_LANGUAGES_NAME;
+
     static const std::unordered_set<std::string>& GetSupportedLocales();
     static const std::unordered_set<std::string>& GetForbiddenRegions();
     static const std::unordered_set<std::string>& GetSupportedRegions();
@@ -80,6 +85,12 @@ private:
     static std::unordered_set<std::string> supportedRegions;
     static std::unordered_set<std::string> whiteLanguages;
     static std::unordered_map<std::string, std::string> dialectMap;
+    static std::set<std::string> validCaTag;
+    static std::set<std::string> validCoTag;
+    static std::set<std::string> validKnTag;
+    static std::set<std::string> validKfTag;
+    static std::set<std::string> validNuTag;
+    static std::set<std::string> validHcTag;
     static bool listsInitialized;
     static bool InitializeLists();
 };

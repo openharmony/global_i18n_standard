@@ -82,7 +82,7 @@ void I18nAddon::Destructor(napi_env env, void *nativeObject, void *hint)
 
 napi_value I18nAddon::Init(napi_env env, napi_value exports)
 {
-    napi_status status;
+    napi_status status = napi_ok;
     napi_property_descriptor properties[] = {
         DECLARE_NAPI_FUNCTION("getSystemLanguages", GetSystemLanguages),
         DECLARE_NAPI_FUNCTION("getSystemCountries", GetSystemCountries),
@@ -96,6 +96,7 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("setSystemRegion", SetSystemRegion),
         DECLARE_NAPI_FUNCTION("setSystemLocale", SetSystemLocale),
         DECLARE_NAPI_FUNCTION("getCalendar", GetCalendar),
+        DECLARE_NAPI_FUNCTION("isRTL", IsRTL),
     };
 
     status = napi_define_properties(env, exports,
@@ -112,14 +113,14 @@ napi_value I18nAddon::GetSystemLanguages(napi_env env, napi_callback_info info)
 {
     std::vector<std::string> systemLanguages;
     LocaleConfig::GetSystemLanguages(systemLanguages);
-    napi_value result;
+    napi_value result = nullptr;
     napi_status status = napi_create_array_with_length(env, systemLanguages.size(), &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create array");
         return nullptr;
     }
     for (size_t i = 0; i < systemLanguages.size(); i++) {
-        napi_value value;
+        napi_value value = nullptr;
         status = napi_create_string_utf8(env, systemLanguages[i].c_str(), NAPI_AUTO_LENGTH, &value);
         if (status != napi_ok) {
             HiLog::Error(LABEL, "Failed to create string item");
@@ -141,7 +142,7 @@ napi_value I18nAddon::GetSystemCountries(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    size_t len;
+    size_t len = 0;
     napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     std::vector<char> localeBuf(len + 1);
     status = napi_get_value_string_utf8(env, argv[0], localeBuf.data(), len + 1, &len);
@@ -151,14 +152,14 @@ napi_value I18nAddon::GetSystemCountries(napi_env env, napi_callback_info info)
     }
     std::vector<std::string> systemCountries;
     LocaleConfig::GetSystemCountries(systemCountries);
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_array_with_length(env, systemCountries.size(), &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create array");
         return nullptr;
     }
     for (size_t i = 0; i < systemCountries.size(); i++) {
-        napi_value value;
+        napi_value value = nullptr;
         status = napi_create_string_utf8(env, systemCountries[i].c_str(), NAPI_AUTO_LENGTH, &value);
         if (status != napi_ok) {
             HiLog::Error(LABEL, "Failed to create string item");
@@ -176,7 +177,7 @@ napi_value I18nAddon::GetSystemCountries(napi_env env, napi_callback_info info)
 napi_value I18nAddon::GetSystemLanguage(napi_env env, napi_callback_info info)
 {
     std::string value = LocaleConfig::GetSystemLanguage();
-    napi_value result;
+    napi_value result = nullptr;
     napi_status status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create string item");
@@ -188,7 +189,7 @@ napi_value I18nAddon::GetSystemLanguage(napi_env env, napi_callback_info info)
 napi_value I18nAddon::GetSystemRegion(napi_env env, napi_callback_info info)
 {
     std::string value = LocaleConfig::GetSystemRegion();
-    napi_value result;
+    napi_value result = nullptr;
     napi_status status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create string item");
@@ -200,7 +201,7 @@ napi_value I18nAddon::GetSystemRegion(napi_env env, napi_callback_info info)
 napi_value I18nAddon::GetSystemLocale(napi_env env, napi_callback_info info)
 {
     std::string value = LocaleConfig::GetSystemLocale();
-    napi_value result;
+    napi_value result = nullptr;
     napi_status status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create string item");
@@ -217,7 +218,7 @@ napi_value I18nAddon::GetDisplayLanguage(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    size_t len;
+    size_t len = 0;
     napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     std::vector<char> localeBuf(len + 1);
     status = napi_get_value_string_utf8(env, argv[0], localeBuf.data(), len + 1, &len);
@@ -239,7 +240,7 @@ napi_value I18nAddon::GetDisplayLanguage(napi_env env, napi_callback_info info)
     }
 
     std::string value = LocaleConfig::GetDisplayLanguage(localeBuf.data(), displayLocaleBuf.data(), sentenceCase);
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create string item");
@@ -256,7 +257,7 @@ napi_value I18nAddon::GetDisplayCountry(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    size_t len;
+    size_t len = 0;
     napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     std::vector<char> localeBuf(len + 1);
     status = napi_get_value_string_utf8(env, argv[0], localeBuf.data(), len + 1, &len);
@@ -277,7 +278,7 @@ napi_value I18nAddon::GetDisplayCountry(napi_env env, napi_callback_info info)
         napi_get_value_bool(env, argv[sentenceCaseIndex], &sentenceCase);
     }
     std::string value = LocaleConfig::GetDisplayRegion(localeBuf.data(), displayLocaleBuf.data(), sentenceCase);
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create string item");
@@ -294,7 +295,7 @@ napi_value I18nAddon::IsSuggested(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    size_t len;
+    size_t len = 0;
     napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     std::vector<char> languageBuf(len + 1);
     status = napi_get_value_string_utf8(env, argv[0], languageBuf.data(), len + 1, &len);
@@ -315,7 +316,7 @@ napi_value I18nAddon::IsSuggested(napi_env env, napi_callback_info info)
     } else {
         isSuggested = LocaleConfig::IsSuggested(languageBuf.data());
     }
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_get_boolean(env, isSuggested, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create case first boolean value failed");
@@ -331,7 +332,7 @@ napi_value I18nAddon::SetSystemLanguage(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    size_t len;
+    size_t len = 0;
     napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     std::vector<char> languageBuf(len + 1);
     status = napi_get_value_string_utf8(env, argv[0], languageBuf.data(), len + 1, &len);
@@ -340,7 +341,7 @@ napi_value I18nAddon::SetSystemLanguage(napi_env env, napi_callback_info info)
         return nullptr;
     }
     bool success = LocaleConfig::SetSystemLanguage(languageBuf.data());
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_get_boolean(env, success, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create set system language boolean value failed");
@@ -356,7 +357,7 @@ napi_value I18nAddon::SetSystemRegion(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    size_t len;
+    size_t len = 0;
     napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     std::vector<char> regionBuf(len + 1);
     status = napi_get_value_string_utf8(env, argv[0], regionBuf.data(), len + 1, &len);
@@ -365,7 +366,7 @@ napi_value I18nAddon::SetSystemRegion(napi_env env, napi_callback_info info)
         return nullptr;
     }
     bool success = LocaleConfig::SetSystemRegion(regionBuf.data());
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_get_boolean(env, success, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create set system language boolean value failed");
@@ -381,7 +382,7 @@ napi_value I18nAddon::SetSystemLocale(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    size_t len;
+    size_t len = 0;
     napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     std::vector<char> localeBuf(len + 1);
     status = napi_get_value_string_utf8(env, argv[0], localeBuf.data(), len + 1, &len);
@@ -390,7 +391,7 @@ napi_value I18nAddon::SetSystemLocale(napi_env env, napi_callback_info info)
         return nullptr;
     }
     bool success = LocaleConfig::SetSystemLocale(localeBuf.data());
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_get_boolean(env, success, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create set system language boolean value failed");
@@ -399,9 +400,34 @@ napi_value I18nAddon::SetSystemLocale(napi_env env, napi_callback_info info)
     return result;
 }
 
+napi_value I18nAddon::IsRTL(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    size_t len = 0;
+    napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    std::vector<char> localeBuf(len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], localeBuf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to get string item");
+        return nullptr;
+    }
+    bool isRTL = LocaleConfig::IsRTL(localeBuf.data());
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isRTL, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "IsRTL failed");
+        return nullptr;
+    }
+    return result;
+}
+
 napi_value I18nAddon::InitPhoneNumberFormat(napi_env env, napi_value exports)
 {
-    napi_status status;
+    napi_status status = napi_ok;
     napi_property_descriptor properties[] = {
         DECLARE_NAPI_FUNCTION("isValidNumber", IsValidPhoneNumber),
         DECLARE_NAPI_FUNCTION("format", FormatPhoneNumber)
@@ -438,7 +464,7 @@ void GetOptionValue(napi_env env, napi_value options, const std::string &optionN
     if (propStatus == napi_ok && hasProperty) {
         status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
         if (status == napi_ok) {
-            size_t len;
+            size_t len = 0;
             napi_get_value_string_utf8(env, optionValue, nullptr, 0, &len);
             std::vector<char> optionBuf(len + 1);
             status = napi_get_value_string_utf8(env, optionValue, optionBuf.data(), len + 1, &len);
@@ -450,7 +476,7 @@ void GetOptionValue(napi_env env, napi_value options, const std::string &optionN
 napi_value I18nAddon::PhoneNumberFormatConstructor(napi_env env, napi_callback_info info)
 {
     size_t argc = 2;
-    napi_value argv[2] = {0};
+    napi_value argv[2] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
@@ -462,7 +488,7 @@ napi_value I18nAddon::PhoneNumberFormatConstructor(napi_env env, napi_callback_i
         return nullptr;
     }
 
-    size_t len;
+    size_t len = 0;
     status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get country tag length failed");
@@ -504,7 +530,7 @@ napi_value I18nAddon::PhoneNumberFormatConstructor(napi_env env, napi_callback_i
 bool I18nAddon::InitPhoneNumberFormatContext(napi_env env, napi_callback_info info, const std::string &country,
                                              const std::map<std::string, std::string> &options)
 {
-    napi_value global;
+    napi_value global = nullptr;
     napi_status status = napi_get_global(env, &global);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get global failed");
@@ -519,7 +545,7 @@ bool I18nAddon::InitPhoneNumberFormatContext(napi_env env, napi_callback_info in
 napi_value I18nAddon::IsValidPhoneNumber(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[1];
+    napi_value argv[1] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
@@ -530,7 +556,7 @@ napi_value I18nAddon::IsValidPhoneNumber(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    size_t len;
+    size_t len = 0;
     napi_status status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get phone number length failed");
@@ -552,7 +578,7 @@ napi_value I18nAddon::IsValidPhoneNumber(napi_env env, napi_callback_info info)
 
     bool isValid = obj->phonenumberfmt_->isValidPhoneNumber(buf.data());
 
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_get_boolean(env, isValid, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create boolean failed");
@@ -565,7 +591,7 @@ napi_value I18nAddon::IsValidPhoneNumber(napi_env env, napi_callback_info info)
 napi_value I18nAddon::FormatPhoneNumber(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[1] = {0};
+    napi_value argv[1] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
@@ -576,7 +602,7 @@ napi_value I18nAddon::FormatPhoneNumber(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    size_t len;
+    size_t len = 0;
     napi_status status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get phone number length failed");
@@ -598,7 +624,7 @@ napi_value I18nAddon::FormatPhoneNumber(napi_env env, napi_callback_info info)
 
     std::string formattedPhoneNumber = obj->phonenumberfmt_->format(buf.data());
 
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_string_utf8(env, formattedPhoneNumber.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create format phone number failed");
@@ -609,7 +635,7 @@ napi_value I18nAddon::FormatPhoneNumber(napi_env env, napi_callback_info info)
 
 std::string I18nAddon::GetString(napi_env &env, napi_value &value, int32_t &code)
 {
-    size_t len;
+    size_t len = 0;
     napi_status status = napi_get_value_string_utf8(env, value, nullptr, 0, &len);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get string failed");
@@ -628,7 +654,7 @@ std::string I18nAddon::GetString(napi_env &env, napi_value &value, int32_t &code
 
 napi_value I18nAddon::InitI18nCalendar(napi_env env, napi_value exports)
 {
-    napi_status status;
+    napi_status status = napi_ok;
     napi_property_descriptor properties[] = {
         DECLARE_NAPI_FUNCTION("setTime", SetTime),
         DECLARE_NAPI_FUNCTION("set", Set),
@@ -642,7 +668,7 @@ napi_value I18nAddon::InitI18nCalendar(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getDisplayName", GetDisplayName),
         DECLARE_NAPI_FUNCTION("isWeekend", IsWeekend)
     };
-    napi_value constructor;
+    napi_value constructor = nullptr;
     status = napi_define_class(env, "I18nCalendar", NAPI_AUTO_LENGTH, CalendarConstructor, nullptr,
         sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
     if (status != napi_ok) {
@@ -665,7 +691,7 @@ napi_value I18nAddon::InitI18nCalendar(napi_env env, napi_value exports)
 napi_value I18nAddon::CalendarConstructor(napi_env env, napi_callback_info info)
 {
     size_t argc = 2;
-    napi_value argv[argc];
+    napi_value argv[2] = { 0 };
     argv[0] = nullptr;
     argv[1] = nullptr;
     napi_value thisVar = nullptr;
@@ -736,13 +762,13 @@ bool I18nAddon::InitCalendarContext(napi_env env, napi_callback_info info, const
 napi_value I18nAddon::GetCalendar(napi_env env, napi_callback_info info)
 {
     size_t argc = 2; // retrieve 2 arguments
-    napi_value argv[argc];
+    napi_value argv[2] = { 0 };
     argv[0] = nullptr;
     argv[1] = nullptr;
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    napi_value constructor;
+    napi_value constructor = nullptr;
     napi_status status = napi_get_reference_value(env, *g_constructor, &constructor);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create reference at GetCalendar");
@@ -768,13 +794,13 @@ napi_value I18nAddon::GetDate(napi_env env, napi_value value)
     if (value == nullptr) {
         return nullptr;
     }
-    napi_value funcGetDateInfo;
+    napi_value funcGetDateInfo = nullptr;
     napi_status status = napi_get_named_property(env, value, "valueOf", &funcGetDateInfo);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get method valueOf failed");
         return nullptr;
     }
-    napi_value ret_value;
+    napi_value ret_value = nullptr;
     status = napi_call_function(env, value, funcGetDateInfo, 0, nullptr, &ret_value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get milliseconds failed");
@@ -788,7 +814,7 @@ void I18nAddon::SetMilliseconds(napi_env env, napi_value value)
     if (value == nullptr) {
         return;
     }
-    double milliseconds;
+    double milliseconds = 0;
     napi_valuetype valueType = napi_valuetype::napi_undefined;
     napi_typeof(env, value, &valueType);
     if (valueType != napi_valuetype::napi_number) {
@@ -808,7 +834,7 @@ void I18nAddon::SetMilliseconds(napi_env env, napi_value value)
 napi_value I18nAddon::Set(napi_env env, napi_callback_info info)
 {
     size_t argc = 6; // Set may have 6 arguments
-    napi_value argv[argc];
+    napi_value argv[6] = { 0 };
     for (size_t i = 0; i < argc; ++i) {
         argv[i] = nullptr;
     }
@@ -816,7 +842,7 @@ napi_value I18nAddon::Set(napi_env env, napi_callback_info info)
     void *data = nullptr;
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     napi_valuetype valueType = napi_valuetype::napi_undefined;
-    napi_status status;
+    napi_status status = napi_ok;
     int32_t times[3] = { 0 }; // There are at least 3 arguments.
     for (int i = 0; i < 3; ++i) { // There are at least 3 arguments.
         napi_typeof(env, argv[i], &valueType);
@@ -846,7 +872,7 @@ napi_value I18nAddon::Set(napi_env env, napi_callback_info info)
 napi_value I18nAddon::SetTime(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[argc];
+    napi_value argv[1] = { 0 };
     argv[0] = nullptr;
     napi_value thisVar = nullptr;
     void *data = nullptr;
@@ -883,7 +909,7 @@ void I18nAddon::SetField(napi_env env, napi_value value, UCalendarDateFields fie
     if (value == nullptr) {
         return;
     }
-    int32_t val;
+    int32_t val = 0;
     napi_valuetype valueType = napi_valuetype::napi_undefined;
     napi_typeof(env, value, &valueType);
     if (valueType != napi_valuetype::napi_number) {
@@ -903,7 +929,7 @@ void I18nAddon::SetField(napi_env env, napi_value value, UCalendarDateFields fie
 napi_value I18nAddon::SetTimeZone(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[argc];
+    napi_value argv[1] = { 0 };
     argv[0] = nullptr;
     napi_value thisVar = nullptr;
     void *data = nullptr;
@@ -914,7 +940,7 @@ napi_value I18nAddon::SetTimeZone(napi_env env, napi_callback_info info)
         napi_throw_type_error(env, nullptr, "Parameter type does not match");
         return nullptr;
     }
-    size_t len;
+    size_t len = 0;
     napi_status status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get timezone length failed");
@@ -951,7 +977,7 @@ napi_value I18nAddon::GetTimeZone(napi_env env, napi_callback_info info)
         return nullptr;
     }
     std::string temp = obj->calendar_->GetTimeZone();
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_string_utf8(env, temp.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create timezone string failed");
@@ -974,7 +1000,7 @@ napi_value I18nAddon::GetFirstDayOfWeek(napi_env env, napi_callback_info info)
         return nullptr;
     }
     int32_t temp = obj->calendar_->GetFirstDayOfWeek();
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_int32(env, temp, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create int32 failed");
@@ -997,7 +1023,7 @@ napi_value I18nAddon::GetMinimalDaysInFirstWeek(napi_env env, napi_callback_info
         return nullptr;
     }
     int32_t temp = obj->calendar_->GetMinimalDaysInFirstWeek();
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_int32(env, temp, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create int32 failed");
@@ -1009,7 +1035,7 @@ napi_value I18nAddon::GetMinimalDaysInFirstWeek(napi_env env, napi_callback_info
 napi_value I18nAddon::SetFirstDayOfWeek(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[argc];
+    napi_value argv[1] = { 0 };
     argv[0] = nullptr;
     napi_value thisVar = nullptr;
     void *data = nullptr;
@@ -1020,7 +1046,7 @@ napi_value I18nAddon::SetFirstDayOfWeek(napi_env env, napi_callback_info info)
         napi_throw_type_error(env, nullptr, "Parameter type does not match");
         return nullptr;
     }
-    int32_t value;
+    int32_t value = 0;
     napi_status status = napi_get_value_int32(env, argv[0], &value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get int32 failed");
@@ -1039,7 +1065,7 @@ napi_value I18nAddon::SetFirstDayOfWeek(napi_env env, napi_callback_info info)
 napi_value I18nAddon::SetMinimalDaysInFirstWeek(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[argc];
+    napi_value argv[1] = { 0 };
     argv[0] = nullptr;
     napi_value thisVar = nullptr;
     void *data = nullptr;
@@ -1050,7 +1076,7 @@ napi_value I18nAddon::SetMinimalDaysInFirstWeek(napi_env env, napi_callback_info
         napi_throw_type_error(env, nullptr, "Parameter type does not match");
         return nullptr;
     }
-    int32_t value;
+    int32_t value = 0;
     napi_status status = napi_get_value_int32(env, argv[0], &value);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get int32 failed");
@@ -1069,7 +1095,7 @@ napi_value I18nAddon::SetMinimalDaysInFirstWeek(napi_env env, napi_callback_info
 napi_value I18nAddon::Get(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[argc];
+    napi_value argv[1] = { 0 };
     argv[0] = nullptr;
     napi_value thisVar = nullptr;
     void *data = nullptr;
@@ -1080,7 +1106,7 @@ napi_value I18nAddon::Get(napi_env env, napi_callback_info info)
         napi_throw_type_error(env, nullptr, "Parameter type does not match");
         return nullptr;
     }
-    size_t len;
+    size_t len = 0;
     napi_status status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Get field length failed");
@@ -1104,7 +1130,7 @@ napi_value I18nAddon::Get(napi_env env, napi_callback_info info)
         return nullptr;
     }
     int32_t value = obj->calendar_->Get(g_fieldsMap[field]);
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_int32(env, value, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create int32 failed");
@@ -1116,7 +1142,7 @@ napi_value I18nAddon::Get(napi_env env, napi_callback_info info)
 napi_value I18nAddon::IsWeekend(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[argc];
+    napi_value argv[1] = { 0 };
     argv[0] = nullptr;
     napi_value thisVar = nullptr;
     void *data = nullptr;
@@ -1132,19 +1158,19 @@ napi_value I18nAddon::IsWeekend(napi_env env, napi_callback_info info)
         if (argv[0] == nullptr) {
             isWeekEnd = obj->calendar_->IsWeekend();
         } else {
-            napi_value funcGetDateInfo;
+            napi_value funcGetDateInfo = nullptr;
             status = napi_get_named_property(env, argv[0], "valueOf", &funcGetDateInfo);
             if (status != napi_ok) {
                 HiLog::Error(LABEL, "Get method now failed");
                 break;
             }
-            napi_value value;
+            napi_value value = nullptr;
             status = napi_call_function(env, argv[0], funcGetDateInfo, 0, nullptr, &value);
             if (status != napi_ok) {
                 HiLog::Error(LABEL, "Get milliseconds failed");
                 break;
             }
-            double milliseconds;
+            double milliseconds = 0;
             status = napi_get_value_double(env, value, &milliseconds);
             if (status != napi_ok) {
                 HiLog::Error(LABEL, "Retrieve milliseconds failed");
@@ -1154,7 +1180,7 @@ napi_value I18nAddon::IsWeekend(napi_env env, napi_callback_info info)
             isWeekEnd = obj->calendar_->IsWeekend(milliseconds, error);
         }
     } while (false);
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_get_boolean(env, isWeekEnd, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create boolean failed");
@@ -1166,7 +1192,7 @@ napi_value I18nAddon::IsWeekend(napi_env env, napi_callback_info info)
 napi_value I18nAddon::GetDisplayName(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value argv[argc];
+    napi_value argv[1] = { 0 };
     argv[0] = nullptr;
     napi_value thisVar = nullptr;
     void *data = nullptr;
@@ -1192,7 +1218,7 @@ napi_value I18nAddon::GetDisplayName(napi_env env, napi_callback_info info)
         return nullptr;
     }
     std::string name = obj->calendar_->GetDisplayName(localeTag);
-    napi_value result;
+    napi_value result = nullptr;
     status = napi_create_string_utf8(env, name.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create calendar name string failed");

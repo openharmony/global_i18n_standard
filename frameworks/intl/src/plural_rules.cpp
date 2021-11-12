@@ -18,6 +18,7 @@
 #include "hilog/log.h"
 #include "unicode/unistr.h"
 
+#include "locale_config.h"
 #include "plural_rules.h"
 
 namespace OHOS {
@@ -106,8 +107,7 @@ void PluralRules::InitPluralRules(std::vector<std::string> &localeTags,
         }
     }
     if (localeTags.size() == 0) {
-        icu::Locale defaultLocale;
-        localeInfo = new LocaleInfo(defaultLocale.getName(), options);
+        localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), options);
         locale = localeInfo->GetLocale();
         localeStr = localeInfo->GetBaseName();
         pluralRules = icu::PluralRules::forLocale(locale, uPluralType, status);
