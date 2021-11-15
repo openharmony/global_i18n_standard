@@ -13,18 +13,7 @@
 
 import("//build/ohos.gni")
 
-config("intl_config") {
-  include_dirs = [
-    "//third_party/icu/icu4c/source",
-    "//third_party/icu/icu4c/source/common",
-    "//third_party/icu/icu4c/source/i18n",
-    "//base/global/i18n_standard/frameworks/intl/include",
-    "//third_party/libphonenumber/cpp/src",
-    "//third_party/protobuf/src",
-  ]
-}
 ohos_shared_library("intl_util") {
-  configs = [ ":intl_config" ]
   include_dirs = [
     "//third_party/icu/icu4c/source",
     "//third_party/icu/icu4c/source/common",
@@ -80,9 +69,16 @@ ohos_shared_library("intl_util") {
   part_name = "i18n_standard"
 }
 
+ohos_prebuilt_etc("language_config.para") {
+  source =
+      "//base/global/i18n_standard/frameworks/intl/etc/language_config.para"
+  part_name = "i18n_standard"
+  module_install_dir = "etc/param"
+}
+
 ohos_prebuilt_etc("config_locales_xml") {
   source =
-      "//base/global/i18n_standard/frameworks/intl/src/supported_locales.xml"
+      "//base/global/i18n_standard/frameworks/intl/etc/supported_locales.xml"
   module_install_dir = "usr/ohos_locale_config/"
   part_name = "i18n_standard"
   subsystem_name = "global"
@@ -90,7 +86,7 @@ ohos_prebuilt_etc("config_locales_xml") {
 
 ohos_prebuilt_etc("config_regions_xml") {
   source =
-      "//base/global/i18n_standard/frameworks/intl/src/supported_regions.xml"
+      "//base/global/i18n_standard/frameworks/intl/etc/supported_regions.xml"
   module_install_dir = "usr/ohos_locale_config/"
   part_name = "i18n_standard"
   subsystem_name = "global"

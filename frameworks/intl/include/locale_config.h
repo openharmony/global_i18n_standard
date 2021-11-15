@@ -56,9 +56,9 @@ private:
     static constexpr uint32_t SCRIPT_OFFSET = 2;
     static const char *LANGUAGE_KEY;
     static const char *LOCALE_KEY;
-    static const char *DEFAULT_LOCALE;
-    static const char *DEFAULT_LANGUAGE;
-    static const char *DEFAULT_REGION;
+    static const char *DEFAULT_LOCALE_KEY;
+    static const char *DEFAULT_LANGUAGE_KEY;
+    static const char *DEFAULT_REGION_KEY;
     static const char *SUPPORTED_LOCALES_PATH;
     static const char *SUPPORTED_REGIONS_PATH;
     static constexpr int CONFIG_LEN = 128;

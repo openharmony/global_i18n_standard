@@ -33,11 +33,11 @@ namespace Global {
 namespace I18n {
 using namespace std;
 
-const char *LocaleConfig::LANGUAGE_KEY = "hm.sys.language";
-const char *LocaleConfig::LOCALE_KEY = "hm.sys.locale";
-const char *LocaleConfig::DEFAULT_LOCALE = "zh-Hans-CN";
-const char *LocaleConfig::DEFAULT_LANGUAGE = "zh-Hans";
-const char *LocaleConfig::DEFAULT_REGION = "CN";
+const char *LocaleConfig::LANGUAGE_KEY = "persist.sys.language";
+const char *LocaleConfig::LOCALE_KEY = "persist.sys.locale";
+const char *LocaleConfig::DEFAULT_LOCALE_KEY = "const.sys.locale";
+const char *LocaleConfig::DEFAULT_LANGUAGE_KEY = "const.sys.language";
+const char *LocaleConfig::DEFAULT_REGION_KEY = "const.sys.region";
 const char *LocaleConfig::SUPPORTED_LOCALES_NAME = "supported_locales";
 const char *LocaleConfig::SUPPORTED_REGIONS_NAME = "supported_regions";
 const char *LocaleConfig::WHITE_LANGUAGES_NAME = "white_languages";
@@ -155,7 +155,11 @@ string LocaleConfig::GetSystemLanguage()
     if (code > 0) {
         return value;
     }
-    return DEFAULT_LANGUAGE;
+    code = GetParameter(DEFAULT_LANGUAGE_KEY, "", value, CONFIG_LEN);
+    if (code > 0) {
+        return value;
+    }
+    return "";
 }
 
 string LocaleConfig::GetSystemRegion()
@@ -168,10 +172,17 @@ string LocaleConfig::GetSystemRegion()
         UErrorCode status = U_ZERO_ERROR;
         icu::Locale origin = icu::Locale::forLanguageTag(tag, status);
         if (status == U_ZERO_ERROR) {
-            return origin.getCountry();
+            const char *country = origin.getCountry();
+            if (country != nullptr) {
+                return country;
+            }
         }
     }
-    return DEFAULT_REGION;
+    code = GetParameter(DEFAULT_REGION_KEY, "", value, CONFIG_LEN);
+    if (code > 0) {
+        return value;
+    }
+    return "";
 }
 
 string LocaleConfig::GetSystemLocale()
@@ -181,7 +192,11 @@ string LocaleConfig::GetSystemLocale()
     if (code > 0) {
         return value;
     }
-    return DEFAULT_LOCALE;
+    code = GetParameter(DEFAULT_LOCALE_KEY, "", value, CONFIG_LEN);
+    if (code > 0) {
+        return value;
+    }
+    return "";
 }
 
 bool LocaleConfig::SetSystemLanguage(const string &language)
