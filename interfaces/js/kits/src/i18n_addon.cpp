@@ -83,6 +83,22 @@ void I18nAddon::Destructor(napi_env env, void *nativeObject, void *hint)
 napi_value I18nAddon::Init(napi_env env, napi_value exports)
 {
     napi_status status = napi_ok;
+    napi_value util;
+    status = napi_create_object(env, &util);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create util object at init");
+        return nullptr;
+    }
+    napi_property_descriptor utilProperties[] = {
+        DECLARE_NAPI_FUNCTION("unitConvert", UnitConvert),
+    };
+    status = napi_define_properties(env, util,
+                                    sizeof(utilProperties) / sizeof(napi_property_descriptor),
+                                    utilProperties);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to set properties of util at init");
+        return nullptr;
+    }
     napi_property_descriptor properties[] = {
         DECLARE_NAPI_FUNCTION("getSystemLanguages", GetSystemLanguages),
         DECLARE_NAPI_FUNCTION("getSystemCountries", GetSystemCountries),
@@ -97,6 +113,7 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("setSystemLocale", SetSystemLocale),
         DECLARE_NAPI_FUNCTION("getCalendar", GetCalendar),
         DECLARE_NAPI_FUNCTION("isRTL", IsRTL),
+        DECLARE_NAPI_PROPERTY("Util", util),
     };
 
     status = napi_define_properties(env, exports,
@@ -107,6 +124,99 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
         return nullptr;
     }
     return exports;
+}
+
+void GetOptionValue(napi_env env, napi_value options, const std::string &optionName,
+    std::string &value)
+{
+    napi_value optionValue = nullptr;
+    napi_valuetype type = napi_undefined;
+    napi_status status = napi_typeof(env, options, &type);
+    if (status != napi_ok && type != napi_object) {
+        HiLog::Error(LABEL, "Get option failed, option is not an object");
+        return;
+    }
+    bool hasProperty = false;
+    napi_status propStatus = napi_has_named_property(env, options, optionName.c_str(), &hasProperty);
+    if (propStatus == napi_ok && hasProperty) {
+        status = napi_get_named_property(env, options, optionName.c_str(), &optionValue);
+        if (status == napi_ok) {
+            size_t len;
+            napi_get_value_string_utf8(env, optionValue, nullptr, 0, &len);
+            std::vector<char> optionBuf(len + 1);
+            status = napi_get_value_string_utf8(env, optionValue, optionBuf.data(), len + 1, &len);
+            if (status != napi_ok) {
+                HiLog::Error(LABEL, "Failed to get string item");
+                return;
+            }
+            value = optionBuf.data();
+        }
+    }
+}
+
+void GetOptionMap(napi_env env, napi_value option, std::map<std::string, std::string> &map)
+{
+    if (option != nullptr) {
+        size_t len;
+        napi_get_value_string_utf8(env, option, nullptr, 0, &len);
+        std::vector<char> styleBuf(len + 1);
+        napi_status status = napi_get_value_string_utf8(env, option, styleBuf.data(), len + 1, &len);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "Failed to get string item");
+            return;
+        }
+        map.insert(std::make_pair("unitDisplay", styleBuf.data()));
+    }
+}
+
+napi_value I18nAddon::UnitConvert(napi_env env, napi_callback_info info)
+{
+    size_t argc = 5;
+    napi_value argv[5] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    std::string fromUnit;
+    GetOptionValue(env, argv[0], "unit", fromUnit);
+    std::string fromMeasSys;
+    GetOptionValue(env, argv[0], "measureSystem", fromMeasSys);
+    std::string toUnit;
+    GetOptionValue(env, argv[1], "unit", toUnit);
+    std::string toMeasSys;
+    GetOptionValue(env, argv[1], "measureSystem", toMeasSys);
+    double number;
+    napi_get_value_double(env, argv[2], &number); // 2 is the index of value
+    int convertStatus = Convert(number, fromUnit, fromMeasSys, toUnit, toMeasSys);
+    size_t len;
+    napi_get_value_string_utf8(env, argv[3], nullptr, 0, &len); // 3 is the index of value
+    std::vector<char> localeBuf(len + 1);
+    // 3 is the index of value
+    status = napi_get_value_string_utf8(env, argv[3], localeBuf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to get string item");
+        return nullptr;
+    }
+    std::vector<std::string> localeTags;
+    localeTags.push_back(localeBuf.data());
+    std::map<std::string, std::string> map = {};
+    map.insert(std::make_pair("style", "unit"));
+    if (convertStatus == 0) {
+        HiLog::Error(LABEL, "Do not support the conversion");
+        map.insert(std::make_pair("unit", fromUnit));
+    } else {
+        map.insert(std::make_pair("unit", toUnit));
+    }
+    // 4 is the index of value
+    GetOptionMap(env, argv[4], map);
+    auto numberFmt = std::make_unique<NumberFormat>(localeTags, map);
+    std::string value = numberFmt->Format(number);
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create string item");
+        return nullptr;
+    }
+    return result;
 }
 
 napi_value I18nAddon::GetSystemLanguages(napi_env env, napi_callback_info info)

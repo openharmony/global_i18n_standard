@@ -487,6 +487,7 @@ void GetNumberOptionValues(napi_env env, napi_value options, std::map<std::strin
     GetOptionValue(env, options, "style", map);
     GetOptionValue(env, options, "numberingSystem", map);
     GetOptionValue(env, options, "notation", map);
+    GetOptionValue(env, options, "unitUsage", map);
     GetBoolOptionValue(env, options, "useGrouping", map);
     GetIntegerOptionValue(env, options, "minimumIntegerDigits", map);
     GetIntegerOptionValue(env, options, "minimumFractionDigits", map);
@@ -1169,6 +1170,7 @@ napi_value IntlAddon::GetNumberResolvedOptions(napi_env env, napi_callback_info 
     SetOptionProperties(env, result, options, "notation");
     SetOptionProperties(env, result, options, "style");
     SetOptionProperties(env, result, options, "numberingSystem");
+    SetOptionProperties(env, result, options, "unitUsage");
     SetBooleanOptionProperties(env, result, options, "useGrouping");
     SetIntegerOptionProperties(env, result, options, "minimumIntegerDigits");
     SetIntegerOptionProperties(env, result, options, "minimumFractionDigits");

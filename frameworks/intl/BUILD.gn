@@ -52,9 +52,11 @@ ohos_shared_library("intl_util") {
     "src/i18n_calendar.cpp",
     "src/locale_config.cpp",
     "src/locale_info.cpp",
+    "src/measure_data.cpp",
     "src/number_format.cpp",
     "src/phone_number_format.cpp",
     "src/plural_rules.cpp",
+    "src/str_util.cpp",
   ]
   cflags_cc = [
     "-Wall",
