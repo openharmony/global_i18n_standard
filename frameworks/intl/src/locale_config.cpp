@@ -12,10 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <algorithm>
-#include <memory.h>
 #include <regex>
-#include <unordered_set>
 #include "locale_config.h"
 #include "libxml/parser.h"
 #include "locale_info.h"
@@ -23,10 +20,15 @@
 #include "locid.h"
 #include "ohos/init_data.h"
 #include "parameter.h"
+#include "securec.h"
 #include "sim_card_manager.h"
 #include "string_ex.h"
 #include "ucase.h"
+#include "ulocimp.h"
 #include "unistr.h"
+#include "ureslocs.h"
+#include "ustring.h"
+#include "ustr_imp.h"
 
 namespace OHOS {
 namespace Global {
@@ -145,6 +147,132 @@ set<std::string> LocaleConfig::validHcTag {
     "h11",
     "h24",
 };
+
+static unordered_map<string, string> g_languageMap = {
+    { "zh-Hans", "zh-Hans" },
+    { "zh-Hant", "zh-Hant" },
+    { "my-Qaag", "my-Qaag" },
+    { "es-Latn-419", "es-419" },
+    { "es-Latn-US", "es-419" },
+    { "az-Latn", "az-Latn" },
+    { "bs-Latn", "bs-Latn" },
+    { "en-Qaag", "en-Qaag" },
+    { "uz-Latn", "uz-Latn" },
+    { "sr-Latn", "sr-Latn" },
+    { "jv-Latn", "jv-Latn" },
+    { "pt-Latn-BR", "pt-BR" },
+    { "pa-Guru", "pa-Guru" },
+    { "mai-Deva", "mai-Deva" }
+};
+
+string Adjust(const string &origin)
+{
+    for (auto iter = g_languageMap.begin(); iter != g_languageMap.end(); ++iter) {
+        string key = iter->first;
+        if (origin.find(key) == 0) {
+            return iter->second;
+        }
+    }
+    return origin;
+}
+
+int32_t GetDialectName(const char *localeName, char *name, int32_t nameCapacity, UErrorCode &status)
+{
+    icu::Locale locale = icu::Locale::forLanguageTag(localeName, status);
+    if (status != U_ZERO_ERROR) {
+        return 0;
+    }
+    const char *lang = locale.getLanguage();
+    const char *script = locale.getScript();
+    const char *country = locale.getCountry();
+    bool hasScript = (script != nullptr) && strlen(script) > 0;
+    bool hasCountry = (country != nullptr) && strlen(country) > 0;
+    string temp = lang;
+    if (hasScript && hasCountry) {
+        temp.append("_");
+        temp.append(script);
+        temp.append("_");
+        temp.append(country);
+    } else if (hasScript) {
+        temp.append("_");
+        temp.append(script);
+    } else if (hasCountry) {
+        temp.append("_");
+        temp.append(country);
+    }
+    if (strcpy_s(name, nameCapacity, temp.data()) != EOK) {
+        return 0;
+    }
+    return temp.size();
+}
+
+int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *dest, int32_t destCapacity,
+    UErrorCode &status)
+{
+    if (status != U_ZERO_ERROR) {
+        return 0;
+    }
+    if ((destCapacity < 0) || (destCapacity > 0  && dest == nullptr)) {
+        status = U_ILLEGAL_ARGUMENT_ERROR;
+        return 0;
+    }
+    char localeBuffer[ULOC_FULLNAME_CAPACITY * 4];
+    int32_t length = GetDialectName(displayLocale, localeBuffer, sizeof(localeBuffer), status);
+    if (status != U_ZERO_ERROR || length == 0) {
+        status = U_ILLEGAL_ARGUMENT_ERROR;
+        return 0;
+    }
+    const UChar *str = uloc_getTableStringWithFallback(U_ICUDATA_LANG, locale, "Languages",
+        nullptr, localeBuffer, &length, &status);
+    if (status == U_ZERO_ERROR) {
+        int32_t len = (length < destCapacity) ? length : destCapacity;
+        if ((len > 0) && (str != nullptr)) {
+            u_memcpy(dest, str, len);
+        }
+    } else {
+        status = U_USING_DEFAULT_WARNING;
+        return 0;
+    }
+    return u_terminateUChars(dest, destCapacity, length, &status);
+}
+
+void GetDisplayLanguageImpl(const char *locale, const char *displayLocale, icu::UnicodeString &result)
+{
+    UChar *buffer = result.getBuffer(50); // size 50 is enough to hold language name
+    if (buffer == 0) {
+        result.truncate(0);
+        return;
+    }
+    UErrorCode status = U_ZERO_ERROR;
+    int32_t length = GetDisplayName(locale, displayLocale, buffer, result.getCapacity(), status);
+    result.releaseBuffer(U_SUCCESS(status) ? length : 0);
+}
+
+string GetDisplayLanguageInner(const string &language, const string &displayLocale, bool sentenceCase)
+{
+    icu::UnicodeString unistr;
+    if (language.find("zh") == 0 || language.find("fa") == 0) {
+        GetDisplayLanguageImpl(language.c_str(), displayLocale.c_str(), unistr);
+    } else {
+        UErrorCode status = U_ZERO_ERROR;
+        icu::Locale displayLoc = icu::Locale::forLanguageTag(displayLocale, status);
+        if (status != U_ZERO_ERROR) {
+            return "";
+        }
+        icu::Locale locale = icu::Locale::forLanguageTag(language, status);
+        if (status != U_ZERO_ERROR) {
+            return "";
+        }
+        locale.getDisplayName(displayLoc, unistr);
+    }
+    if (sentenceCase) {
+        UChar ch = ucase_toupper(unistr.char32At(0));
+        unistr.replace(0, 1, ch);
+    }
+    string out;
+    unistr.toUTF8String(out);
+    return out;
+}
 
 bool LocaleConfig::listsInitialized = LocaleConfig::InitializeLists();
 
@@ -503,25 +631,28 @@ string LocaleConfig::GetMainLanguage(const string &language)
 
 string LocaleConfig::GetDisplayLanguage(const string &language, const string &displayLocale, bool sentenceCase)
 {
-    UErrorCode status = U_ZERO_ERROR;
-    icu::Locale originLocale = icu::Locale::forLanguageTag(language, status);
-    originLocale.addLikelySubtags(status);
-    if (status != U_ZERO_ERROR) {
-        return "";
+    string adjust = Adjust(language);
+    if (adjust == language) {
+        UErrorCode status = U_ZERO_ERROR;
+        icu::Locale displayLoc = icu::Locale::forLanguageTag(displayLocale, status);
+        if (status != U_ZERO_ERROR) {
+            return "";
+        }
+        icu::Locale locale = icu::Locale::forLanguageTag(language, status);
+        if (status != U_ZERO_ERROR) {
+            return "";
+        }
+        icu::UnicodeString unistr;
+        locale.getDisplayLanguage(displayLoc, unistr);
+        if (sentenceCase) {
+            UChar ch = ucase_toupper(unistr.char32At(0));
+            unistr.replace(0, 1, ch);
+        }
+        string out;
+        unistr.toUTF8String(out);
+        return out;
     }
-    const icu::Locale locale = icu::Locale::forLanguageTag(displayLocale, status);
-    if (status != U_ZERO_ERROR) {
-        return "";
-    }
-    icu::UnicodeString displayLang;
-    originLocale.getDisplayLanguage(locale, displayLang);
-    if (sentenceCase) {
-        UChar ch = ucase_toupper(displayLang.char32At(0));
-        displayLang.replace(0, 1, ch);
-    }
-    string temp;
-    displayLang.toUTF8String(temp);
-    return temp;
+    return GetDisplayLanguageInner(adjust, displayLocale, sentenceCase);
 }
 
 string LocaleConfig::GetDisplayRegion(const string &region, const string &displayLocale, bool sentenceCase)
