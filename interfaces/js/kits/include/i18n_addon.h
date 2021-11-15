@@ -21,11 +21,17 @@
 #include "i18n_calendar.h"
 #include "napi/native_node_api.h"
 #include "locale_config.h"
+#include "measure_data.h"
+#include "number_format.h"
 #include "phone_number_format.h"
 
 namespace OHOS {
 namespace Global {
 namespace I18n {
+void GetOptionMap(napi_env env, napi_value argv, std::map<std::string, std::string> &map);
+void GetOptionValue(napi_env env, napi_value options, const std::string &optionName,
+    std::string &value);
+
 class I18nAddon {
 public:
     static napi_value Init(napi_env env, napi_value exports);
@@ -46,6 +52,7 @@ public:
     static napi_value IsRTL(napi_env env, napi_callback_info info);
     static napi_value InitPhoneNumberFormat(napi_env env, napi_value exports);
     static napi_value InitI18nCalendar(napi_env env, napi_value exports);
+    static napi_value UnitConvert(napi_env env, napi_callback_info info);
 
 private:
     static napi_value PhoneNumberFormatConstructor(napi_env env, napi_callback_info info);

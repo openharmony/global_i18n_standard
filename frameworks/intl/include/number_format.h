@@ -15,6 +15,10 @@
 #ifndef OHOS_GLOBAL_I18N_NUMBER_FORMAT_H
 #define OHOS_GLOBAL_I18N_NUMBER_FORMAT_H
 
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <vector>
 #include "unicode/numberformatter.h"
 #include "unicode/locid.h"
 #include "unicode/numfmt.h"
@@ -27,12 +31,12 @@
 #include "unicode/measure.h"
 #include "unicode/currunit.h"
 #include "unicode/fmtable.h"
+#include "unicode/ures.h"
+#include "unicode/ulocdata.h"
 #include "number_utils.h"
 #include "number_utypes.h"
 #include "locale_info.h"
-#include <map>
-#include <set>
-#include <vector>
+#include "measure_data.h"
 
 namespace OHOS {
 namespace Global {
@@ -75,6 +79,9 @@ private:
     std::string maximumSignificantDigits;
     std::string localeBaseName;
     std::string localeMatcher;
+    std::string unitUsage;
+    std::string unitType;
+    std::string unitMeasSys;
     LocaleInfo *localeInfo = nullptr;
     icu::number::LocalizedNumberFormatter numberFormat;
     icu::number::Notation notation = icu::number::Notation::simple();
@@ -82,13 +89,15 @@ private:
     UNumberUnitWidth currencyDisplay = UNumberUnitWidth::UNUM_UNIT_WIDTH_SHORT;
     UNumberSignDisplay signDisplay = UNumberSignDisplay::UNUM_SIGN_AUTO;
     static const int MAX_UNIT_NUM = 500;
+    static const int DEFAULT_FRACTION_DIGITS = 3;
     icu::MeasureUnit unitArray[MAX_UNIT_NUM];
     static bool icuInitialized;
     static bool Init();
-    static std::map<std::string, UNumberUnitWidth> unitStyle;
-    static std::map<std::string, UNumberUnitWidth> currencyStyle;
-    static std::map<std::string, UNumberSignDisplay> signAutoStyle;
-    static std::map<std::string, UNumberSignDisplay> signAccountingStyle;
+    static std::unordered_map<std::string, UNumberUnitWidth> unitStyle;
+    static std::unordered_map<std::string, UNumberUnitWidth> currencyStyle;
+    static std::unordered_map<std::string, UNumberSignDisplay> signAutoStyle;
+    static std::unordered_map<std::string, UNumberSignDisplay> signAccountingStyle;
+    static std::unordered_map<UMeasurementSystem, std::string> measurementSystem;
     static std::set<std::string> allValidLocales;
     static std::set<std::string> GetValidLocales();
     void ParseConfigs(std::map<std::string, std::string> &configs);

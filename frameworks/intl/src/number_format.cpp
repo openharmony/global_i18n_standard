@@ -36,31 +36,37 @@ std::set<std::string> NumberFormat::GetValidLocales()
     return allValidLocales;
 }
 
-std::map<std::string, UNumberUnitWidth> NumberFormat::unitStyle = {
+std::unordered_map<std::string, UNumberUnitWidth> NumberFormat::unitStyle = {
     { "long", UNumberUnitWidth::UNUM_UNIT_WIDTH_FULL_NAME },
     { "short", UNumberUnitWidth::UNUM_UNIT_WIDTH_SHORT },
     { "narrow", UNumberUnitWidth::UNUM_UNIT_WIDTH_NARROW }
 };
 
-std::map<std::string, UNumberUnitWidth> NumberFormat::currencyStyle = {
+std::unordered_map<std::string, UNumberUnitWidth> NumberFormat::currencyStyle = {
     { "symbol", UNumberUnitWidth::UNUM_UNIT_WIDTH_SHORT },
     { "code", UNumberUnitWidth::UNUM_UNIT_WIDTH_ISO_CODE },
     { "name", UNumberUnitWidth::UNUM_UNIT_WIDTH_FULL_NAME },
     { "narrowSymbol", UNumberUnitWidth::UNUM_UNIT_WIDTH_NARROW }
 };
 
-std::map<std::string, UNumberSignDisplay> NumberFormat::signAutoStyle = {
+std::unordered_map<std::string, UNumberSignDisplay> NumberFormat::signAutoStyle = {
     { "auto", UNumberSignDisplay::UNUM_SIGN_AUTO },
     { "never", UNumberSignDisplay::UNUM_SIGN_NEVER },
     { "always", UNumberSignDisplay::UNUM_SIGN_ALWAYS },
     { "exceptZero", UNumberSignDisplay::UNUM_SIGN_EXCEPT_ZERO }
 };
 
-std::map<std::string, UNumberSignDisplay> NumberFormat::signAccountingStyle = {
+std::unordered_map<std::string, UNumberSignDisplay> NumberFormat::signAccountingStyle = {
     { "auto", UNumberSignDisplay::UNUM_SIGN_ACCOUNTING },
     { "never", UNumberSignDisplay::UNUM_SIGN_NEVER },
     { "always", UNumberSignDisplay::UNUM_SIGN_ACCOUNTING_ALWAYS },
     { "exceptZero", UNumberSignDisplay::UNUM_SIGN_ACCOUNTING_EXCEPT_ZERO }
+};
+
+std::unordered_map<UMeasurementSystem, std::string> NumberFormat::measurementSystem = {
+    { UMeasurementSystem::UMS_SI, "SI" },
+    { UMeasurementSystem::UMS_US, "US" },
+    { UMeasurementSystem::UMS_UK, "UK" },
 };
 
 NumberFormat::NumberFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs)
@@ -115,9 +121,14 @@ void NumberFormat::InitProperties()
         for (icu::MeasureUnit curUnit : unitArray) {
             if (strcmp(curUnit.getSubtype(), unit.c_str()) == 0) {
                 numberFormat = numberFormat.unit(curUnit);
+                unitType = curUnit.getType();
             }
         }
+        UErrorCode status = U_ZERO_ERROR;
+        UMeasurementSystem measSys = ulocdata_getMeasurementSystem(localeBaseName.c_str(), &status);
+        unitMeasSys = measurementSystem[measSys];
         numberFormat = numberFormat.unitWidth(unitDisplay);
+        numberFormat = numberFormat.precision(icu::number::Precision::maxFraction(DEFAULT_FRACTION_DIGITS));
     }
     if (!useGrouping.empty()) {
         numberFormat.grouping((useGrouping == "true") ?
@@ -175,6 +186,9 @@ void NumberFormat::ParseConfigs(std::map<std::string, std::string> &configs)
         if (configs.count("unitDisplay") > 0) {
             unitDisplayString = configs["unitDisplay"];
             unitDisplay = unitStyle[unitDisplayString];
+        }
+        if (configs.count("unitUsage") > 0) {
+            unitUsage = configs["unitUsage"];
         }
     }
     if (styleString == "currency" && configs.count("currency") > 0) {
@@ -239,9 +253,47 @@ void NumberFormat::ParseDigitsConfigs(std::map<std::string, std::string> &config
 
 std::string NumberFormat::Format(double number)
 {
+    double finalNumber = number;
+    if (!unitUsage.empty()) {
+        std::vector<std::string> preferredUnits;
+        if (unitUsage == "default") {
+            GetDefaultPreferredUnit(localeInfo->GetRegion(), unitType, preferredUnits);
+        } else {
+            GetPreferredUnit(localeInfo->GetRegion(), unitUsage, preferredUnits);
+        }
+        std::map<double, std::string> preferredValuesOverOne;
+        std::map<double, std::string> preferredValuesUnderOne;
+        double num = number;
+        for (size_t i = 0; i < preferredUnits.size(); i++) {
+            int status = Convert(num, unit, unitMeasSys, preferredUnits[i], unitMeasSys);
+            if (status == 0) {
+                continue;
+            }
+            if (num >= 1) {
+                preferredValuesOverOne.insert(std::make_pair(num, preferredUnits[i]));
+            } else {
+                preferredValuesUnderOne.insert(std::make_pair(num, preferredUnits[i]));
+            }
+        }
+        std::string preferredUnit;
+        if (preferredValuesOverOne.size() > 0) {
+            finalNumber = preferredValuesOverOne.begin()->first;
+            preferredUnit = preferredValuesOverOne.begin()->second;
+        } else if (preferredValuesUnderOne.size() > 0) {
+            finalNumber = preferredValuesUnderOne.rbegin()->first;
+            preferredUnit = preferredValuesUnderOne.rbegin()->second;
+        }
+        if (!preferredUnit.empty()) {
+            for (icu::MeasureUnit curUnit : unitArray) {
+                if (strcmp(curUnit.getSubtype(), preferredUnit.c_str()) == 0) {
+                    numberFormat = numberFormat.unit(curUnit);
+                }
+            }
+        }
+    }
     std::string result;
     UErrorCode status = U_ZERO_ERROR;
-    numberFormat.formatDouble(number, status).toString(status).toUTF8String(result);
+    numberFormat.formatDouble(finalNumber, status).toString(status).toUTF8String(result);
     return result;
 }
 
@@ -268,6 +320,9 @@ void NumberFormat::GetResolvedOptions(std::map<std::string, std::string> &map)
     }
     if (!unitDisplayString.empty()) {
         map.insert(std::make_pair("unitDisplay", unitDisplayString));
+    }
+    if (!unitUsage.empty()) {
+        map.insert(std::make_pair("unitUsage", unitUsage));
     }
     if (!unit.empty()) {
         map.insert(std::make_pair("unit", unit));

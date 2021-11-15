@@ -29,22 +29,22 @@
 namespace OHOS {
 namespace Global {
 namespace I18n {
-static void GetLocaleTags(napi_env env, napi_value rawLocaleTag, std::vector<std::string> &localeTags);
-static void GetOptionValue(napi_env env, napi_value options, const std::string &optionName,
+void GetLocaleTags(napi_env env, napi_value rawLocaleTag, std::vector<std::string> &localeTags);
+void GetOptionValue(napi_env env, napi_value options, const std::string &optionName,
     std::map<std::string, std::string> &map);
-static void GetBoolOptionValue(napi_env env, napi_value options, const std::string &optionName,
+void GetBoolOptionValue(napi_env env, napi_value options, const std::string &optionName,
     std::map<std::string, std::string> &map);
-static void GetIntegerOptionValue(napi_env env, napi_value options, const std::string &optionName,
+void GetIntegerOptionValue(napi_env env, napi_value options, const std::string &optionName,
     std::map<std::string, std::string> &map);
-static void GetDateOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
-static void GetNumberOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
-static void GetCollatorOptionValue(napi_env env, napi_value options, std::map<std::string, std::string> &map);
-static void GetPluralRulesOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
-static void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> &options,
+void GetDateOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
+void GetNumberOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
+void GetCollatorOptionValue(napi_env env, napi_value options, std::map<std::string, std::string> &map);
+void GetPluralRulesOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
+void SetOptionProperties(napi_env env, napi_value &result, std::map<std::string, std::string> &options,
     const std::string &option);
-static void SetIntegerOptionProperties(napi_env env, napi_value &result,
+void SetIntegerOptionProperties(napi_env env, napi_value &result,
     std::map<std::string, std::string> &options, const std::string &option);
-static void SetBooleanOptionProperties(napi_env env, napi_value &result,
+void SetBooleanOptionProperties(napi_env env, napi_value &result,
     std::map<std::string, std::string> &options, const std::string &option);
 
 class IntlAddon {
