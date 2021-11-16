@@ -38,6 +38,7 @@ ohos_shared_library("intl_util") {
   sources = [
     "src/collator.cpp",
     "src/date_time_format.cpp",
+    "src/i18n_break_iterator.cpp",
     "src/i18n_calendar.cpp",
     "src/locale_config.cpp",
     "src/locale_info.cpp",
