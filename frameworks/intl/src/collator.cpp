@@ -82,7 +82,9 @@ Collator::Collator(std::vector<std::string> &localeTags, std::map<std::string, s
 
     UErrorCode status = UErrorCode::U_ZERO_ERROR;
     std::set<std::string> allValidLocales = GetValidLocales();
-
+    if (localeTags.size() == 0) {
+        localeTags.push_back(LocaleConfig::GetSystemLocale());
+    }
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
         locale = icu::Locale::forLanguageTag(icu::StringPiece(curLocale), status);
@@ -97,27 +99,22 @@ Collator::Collator(std::vector<std::string> &localeTags, std::map<std::string, s
             break;
         }
     }
-
-    if (localeTags.size() == 0) {
-        localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), options);
-        locale = localeInfo->GetLocale();
-        localeStr = localeInfo->GetBaseName();
-        InitCollator();
-    }
 }
 
 bool Collator::IsValidCollation(std::string &collation, UErrorCode &status)
 {
     const char *currentCollation = uloc_toLegacyType("collation", collation.c_str());
-    std::unique_ptr<icu::StringEnumeration> enumeration(
-        icu::Collator::getKeywordValuesForLocale("collation", icu::Locale(locale.getBaseName()), false, status));
-    int length;
-    const char *validCollations = enumeration->next(&length, status);
-    while (validCollations != nullptr) {
-        if (strcmp(validCollations, currentCollation) == 0) {
-            return true;
+    if (currentCollation != nullptr) {
+        std::unique_ptr<icu::StringEnumeration> enumeration(
+            icu::Collator::getKeywordValuesForLocale("collation", icu::Locale(locale.getBaseName()), false, status));
+        int length;
+        const char *validCollations = enumeration->next(&length, status);
+        while (validCollations != nullptr) {
+            if (strcmp(validCollations, currentCollation) == 0) {
+                return true;
+            }
+            validCollations = enumeration->next(&length, status);
         }
-        validCollations = enumeration->next(&length, status);
     }
     return false;
 }

@@ -93,6 +93,9 @@ void PluralRules::InitPluralRules(std::vector<std::string> &localeTags,
     UPluralType uPluralType = (type == "cardinal") ? UPLURAL_TYPE_CARDINAL : UPLURAL_TYPE_ORDINAL;
     UErrorCode status = UErrorCode::U_ZERO_ERROR;
     std::set<std::string> allValidLocales = GetValidLocales();
+    if (localeTags.size() == 0) {
+        localeTags.push_back(LocaleConfig::GetSystemLocale());
+    }
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
         locale = icu::Locale::forLanguageTag(icu::StringPiece(curLocale), status);
@@ -105,12 +108,6 @@ void PluralRules::InitPluralRules(std::vector<std::string> &localeTags,
                 continue;
             }
         }
-    }
-    if (localeTags.size() == 0) {
-        localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), options);
-        locale = localeInfo->GetLocale();
-        localeStr = localeInfo->GetBaseName();
-        pluralRules = icu::PluralRules::forLocale(locale, uPluralType, status);
     }
     if (status != UErrorCode::U_ZERO_ERROR || pluralRules == nullptr) {
         HiLog::Error(LABEL, "PluralRules object created failed");
