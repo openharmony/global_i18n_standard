@@ -98,8 +98,6 @@ private:
     static std::unordered_map<std::string, UNumberSignDisplay> signAutoStyle;
     static std::unordered_map<std::string, UNumberSignDisplay> signAccountingStyle;
     static std::unordered_map<UMeasurementSystem, std::string> measurementSystem;
-    static std::set<std::string> allValidLocales;
-    static std::set<std::string> GetValidLocales();
     void ParseConfigs(std::map<std::string, std::string> &configs);
     void ParseDigitsConfigs(std::map<std::string, std::string> &configs);
     void GetDigitsResolvedOptions(std::map<std::string, std::string> &map);

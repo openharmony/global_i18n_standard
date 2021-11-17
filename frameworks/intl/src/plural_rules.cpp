@@ -27,17 +27,6 @@ namespace I18n {
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "IntlJs" };
 using namespace OHOS::HiviewDFX;
 
-std::set<std::string> PluralRules::GetValidLocales()
-{
-    int32_t validCount = 1;
-    const icu::Locale *validLocales = icu::Locale::getAvailableLocales(validCount);
-    std::set<std::string> allValidLocales;
-    for (int i = 0; i < validCount; i++) {
-        allValidLocales.insert(validLocales[i].getLanguage());
-    }
-    return allValidLocales;
-}
-
 std::string PluralRules::ParseOption(std::map<std::string, std::string> &options, const std::string &key)
 {
     std::map<std::string, std::string>::iterator it = options.find(key);
@@ -92,14 +81,13 @@ void PluralRules::InitPluralRules(std::vector<std::string> &localeTags,
 {
     UPluralType uPluralType = (type == "cardinal") ? UPLURAL_TYPE_CARDINAL : UPLURAL_TYPE_ORDINAL;
     UErrorCode status = UErrorCode::U_ZERO_ERROR;
-    std::set<std::string> allValidLocales = GetValidLocales();
     if (localeTags.size() == 0) {
         localeTags.push_back(LocaleConfig::GetSystemLocale());
     }
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
         locale = icu::Locale::forLanguageTag(icu::StringPiece(curLocale), status);
-        if (allValidLocales.count(locale.getLanguage()) > 0) {
+        if (LocaleInfo::allValidLocales.count(locale.getLanguage()) > 0) {
             localeInfo = new LocaleInfo(curLocale, options);
             locale = localeInfo->GetLocale();
             localeStr = localeInfo->GetBaseName();

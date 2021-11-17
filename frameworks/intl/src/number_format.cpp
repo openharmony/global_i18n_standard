@@ -23,19 +23,6 @@ namespace Global {
 namespace I18n {
 bool NumberFormat::icuInitialized = NumberFormat::Init();
 
-std::set<std::string> NumberFormat::allValidLocales = GetValidLocales();
-
-std::set<std::string> NumberFormat::GetValidLocales()
-{
-    int32_t validCount = 1;
-    const icu::Locale *validLocales = icu::Locale::getAvailableLocales(validCount);
-    std::set<std::string> allValidLocales;
-    for (int i = 0; i < validCount; i++) {
-        allValidLocales.insert(validLocales[i].getLanguage());
-    }
-    return allValidLocales;
-}
-
 std::unordered_map<std::string, UNumberUnitWidth> NumberFormat::unitStyle = {
     { "long", UNumberUnitWidth::UNUM_UNIT_WIDTH_FULL_NAME },
     { "short", UNumberUnitWidth::UNUM_UNIT_WIDTH_SHORT },
@@ -77,7 +64,7 @@ NumberFormat::NumberFormat(const std::vector<std::string> &localeTags, std::map<
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
         locale = builder->setLanguageTag(icu::StringPiece(curLocale)).build(status);
-        if (allValidLocales.count(locale.getLanguage()) > 0) {
+        if (LocaleInfo::allValidLocales.count(locale.getLanguage()) > 0) {
             localeInfo = new LocaleInfo(curLocale, configs);
             locale = localeInfo->GetLocale();
             localeBaseName = localeInfo->GetBaseName();

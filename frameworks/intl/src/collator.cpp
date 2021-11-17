@@ -65,30 +65,18 @@ void Collator::ParseAllOptions(std::map<std::string, std::string> &options)
     collation = ParseOption(options, "collation");
 }
 
-std::set<std::string> Collator::GetValidLocales()
-{
-    int32_t validCount = 1;
-    const icu::Locale *validLocaleArray = icu::Locale::getAvailableLocales(validCount);
-    std::set<std::string> allValidLocales;
-    for (int i = 0; i < validCount; i++) {
-        allValidLocales.insert(validLocaleArray[i].getLanguage());
-    }
-    return allValidLocales;
-}
-
 Collator::Collator(std::vector<std::string> &localeTags, std::map<std::string, std::string> &options)
 {
     ParseAllOptions(options);
 
     UErrorCode status = UErrorCode::U_ZERO_ERROR;
-    std::set<std::string> allValidLocales = GetValidLocales();
     if (localeTags.size() == 0) {
         localeTags.push_back(LocaleConfig::GetSystemLocale());
     }
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
         locale = icu::Locale::forLanguageTag(icu::StringPiece(curLocale), status);
-        if (allValidLocales.count(locale.getLanguage()) > 0) {
+        if (LocaleInfo::allValidLocales.count(locale.getLanguage()) > 0) {
             localeInfo = new LocaleInfo(curLocale, options);
             locale = localeInfo->GetLocale();
             localeStr = localeInfo->GetBaseName();

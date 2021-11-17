@@ -40,11 +40,11 @@ const std::unordered_map<std::string, std::vector<std::string>> USAGE_001 {
     { "length-person", { "centimeter" } },
     { "length-person-small", { "centimeter" } },
     { "length-rainfall", { "millimeter" } },
-    { "length-road", { "kilometer" } },
+    { "length-road", { "meter" } },
     { "length-road-small", { "meter" } },
     { "length-snowfall", { "centimeter" } },
     { "length-vehicle", { "meter" } },
-    { "length-visiblty", { "kilometer" } },
+    { "length-visiblty", { "meter" } },
     { "length-visiblty-small", { "meter" } },
     { "speed-road-travel", { "kilometer-per-hour" } },
     { "speed-wind", { "kilometer-per-hour" } },
@@ -75,6 +75,7 @@ const std::unordered_map<std::string, std::vector<std::string>> USAGE_BS {
 };
 
 const std::unordered_map<std::string, std::vector<std::string>> USAGE_CA {
+    { "length-person", { "inch" } },
     { "length-person-informal", { "foot", "inch" } },
     { "length-person-small-informal", { "inch" } },
 };
@@ -92,12 +93,13 @@ const std::unordered_map<std::string, std::vector<std::string>> USAGE_GB {
     { "area-land-agricult", { "acre" } },
     { "area-land-commercl", { "acre" } },
     { "area-land-residntl", { "acre" } },
+    { "length-person", { "inch" } },
     { "length-person-informal", { "foot", "inch" } },
     { "length-person-small-informal", { "inch" } },
-    { "length-road", { "mile" } },
+    { "length-road", { "yard" } },
     { "length-road-small", { "yard" } },
     { "length-vehicle", { "foot", "inch" } },
-    { "length-visiblty", { "mile" } },
+    { "length-visiblty", { "mile", "foot" } },
     { "length-visiblty-small", { "foot" } },
     { "speed-road-travel", { "mile-per-hour" } },
 };
@@ -120,7 +122,7 @@ const std::unordered_map<std::string, std::vector<std::string>> USAGE_MX {
 
 const std::unordered_map<std::string, std::vector<std::string>> USAGE_NL {
     { "length-person-informal", { "meter", "centimeter" } },
-    { "length-visiblty", { "meter", "centimeter" } },
+    { "length-visiblty", { "meter" } },
 };
 
 const std::unordered_map<std::string, std::vector<std::string>> USAGE_NO {
@@ -130,6 +132,7 @@ const std::unordered_map<std::string, std::vector<std::string>> USAGE_NO {
 
 const std::unordered_map<std::string, std::vector<std::string>> USAGE_SE {
     { "length-person", { "meter", "centimeter" } },
+    { "length-road", { "mile-scandinavian", "kilometer" } },
     { "length-road-informal", { "mile-scandinavian" } },
     { "speed-wind", { "meter-per-second" } },
 };
@@ -146,7 +149,7 @@ const std::unordered_map<std::string, std::vector<std::string>> USAGE_US {
     { "length-road-small", { "foot" } },
     { "length-snowfall", { "inch" } },
     { "length-vehicle", { "foot", "inch" } },
-    { "length-visiblty", { "mile" } },
+    { "length-visiblty", { "mile", "foot" } },
     { "length-visiblty-small", { "foot" } },
     { "speed-road-travel", { "mile-per-hour" } },
     { "speed-wind", { "mile-per-hour" } },

@@ -22,6 +22,22 @@ namespace Global {
 namespace I18n {
 using namespace icu;
 
+std::set<std::string> LocaleInfo::allValidLocales = GetValidLocales();
+
+std::set<std::string> LocaleInfo::GetValidLocales()
+{
+    int32_t validCount = 1;
+    const Locale *validLocales = Locale::getAvailableLocales(validCount);
+    std::set<std::string> allValidLocales;
+    for (int i = 0; i < validCount; i++) {
+        allValidLocales.insert(validLocales[i].getLanguage());
+    }
+    allValidLocales.insert("in");
+    allValidLocales.insert("iw");
+    allValidLocales.insert("tl");
+    return allValidLocales;
+}
+
 LocaleInfo::LocaleInfo(std::string localeTag)
 {
     UErrorCode status = U_ZERO_ERROR;

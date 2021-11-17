@@ -19,6 +19,7 @@
 #include "unicode/localebuilder.h"
 #include "unicode/stringpiece.h"
 #include <map>
+#include <set>
 
 namespace OHOS {
 namespace Global {
@@ -45,6 +46,8 @@ public:
     icu::Locale GetLocaleTag() const;
     static const uint32_t SCRIPT_LEN = 4;
     static const uint32_t REGION_LEN = 2;
+    static std::set<std::string> allValidLocales;
+    static std::set<std::string> GetValidLocales();
 private:
     std::string language;
     std::string region;
