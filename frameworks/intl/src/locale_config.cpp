@@ -216,15 +216,15 @@ int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *des
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
-    char localeBuffer[ULOC_FULLNAME_CAPACITY * 4];
-    int32_t length = GetDialectName(displayLocale, localeBuffer, sizeof(localeBuffer), status);
+    char localeBuffer[ULOC_FULLNAME_CAPACITY];
+    int32_t length = GetDialectName(locale, localeBuffer, sizeof(localeBuffer), status);
     if (status != U_ZERO_ERROR || length == 0) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
-    const UChar *str = uloc_getTableStringWithFallback(U_ICUDATA_LANG, locale, "Languages",
+    const UChar *str = uloc_getTableStringWithFallback(U_ICUDATA_LANG, displayLocale, "Languages",
         nullptr, localeBuffer, &length, &status);
-    if (status == U_ZERO_ERROR) {
+    if (status <= U_ZERO_ERROR) {
         int32_t len = (length < destCapacity) ? length : destCapacity;
         if ((len > 0) && (str != nullptr)) {
             u_memcpy(dest, str, len);
@@ -252,7 +252,16 @@ string GetDisplayLanguageInner(const string &language, const string &displayLoca
 {
     icu::UnicodeString unistr;
     if (language.find("zh") == 0 || language.find("fa") == 0) {
-        GetDisplayLanguageImpl(language.c_str(), displayLocale.c_str(), unistr);
+        UErrorCode error = U_ZERO_ERROR;
+        icu::Locale disLocale = icu::Locale::forLanguageTag(displayLocale, error);
+        if (error != U_ZERO_ERROR) {
+            return language;
+        }
+        const char *name = disLocale.getName();
+        if (name == nullptr) {
+            return language;
+        }
+        GetDisplayLanguageImpl(language.c_str(), name, unistr);
     } else {
         UErrorCode status = U_ZERO_ERROR;
         icu::Locale displayLoc = icu::Locale::forLanguageTag(displayLocale, status);
