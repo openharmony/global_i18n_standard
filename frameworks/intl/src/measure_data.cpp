@@ -219,9 +219,9 @@ const std::unordered_map<std::string, std::vector<double>> CONVERT_FACTORS {
 };
 
 const std::unordered_map<std::string, std::string> CONVERT_TO_UNIT {
-    { "acre", "sqaure-meter" },
-    { "hectare", "sqaure-meter" },
-    { "dunam", "sqaure-meter" },
+    { "acre", "square-meter" },
+    { "hectare", "square-meter" },
+    { "dunam", "square-meter" },
     { "fathom", "meter" },
     { "foot", "meter" },
     { "furlong", "meter" },

@@ -15,11 +15,11 @@
 #ifndef OHOS_GLOBAL_I18N_LOCALE_INFO_H
 #define OHOS_GLOBAL_I18N_LOCALE_INFO_H
 
+#include <map>
+#include <set>
 #include "unicode/locid.h"
 #include "unicode/localebuilder.h"
 #include "unicode/stringpiece.h"
-#include <map>
-#include <set>
 
 namespace OHOS {
 namespace Global {
