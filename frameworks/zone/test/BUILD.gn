@@ -31,7 +31,6 @@ ohos_unittest("zone_util_test") {
     "//third_party/googletest/googletest/src/hwext/gtest-filter.cc",
     "//third_party/googletest/googletest/src/hwext/gtest-tag.cc",
     "//third_party/googletest/googletest/src/hwext/gtest-utils.cc",
-    "unittest/zone_util_performance_test.cpp",
     "unittest/zone_util_test.cpp",
   ]
   remove_configs = [ "//build/config/compiler:no_rtti" ]
