@@ -24,6 +24,7 @@ namespace Global {
 namespace I18n {
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "I18nJs" };
 static napi_ref* g_constructor = nullptr;
+static napi_ref* g_BrkConstructor = nullptr;
 static std::unordered_map<std::string, UCalendarDateFields> g_fieldsMap {{
     { "era", UCAL_ERA },
     { "year", UCAL_YEAR },
@@ -114,6 +115,7 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getCalendar", GetCalendar),
         DECLARE_NAPI_FUNCTION("isRTL", IsRTL),
         DECLARE_NAPI_PROPERTY("Util", util),
+        DECLARE_NAPI_FUNCTION("getLineInstance", GetLineInstance),
     };
 
     status = napi_define_properties(env, exports,
@@ -1337,10 +1339,379 @@ napi_value I18nAddon::GetDisplayName(napi_env env, napi_callback_info info)
     return result;
 }
 
+napi_value I18nAddon::BreakIteratorConstructor(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (status != napi_ok) {
+        return nullptr;
+    }
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string localeTag = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    std::unique_ptr<I18nAddon> obj = std::make_unique<I18nAddon>();
+    if (obj == nullptr) {
+        HiLog::Error(LABEL, "Create I18nAddon failed");
+        return nullptr;
+    }
+    status =
+        napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), I18nAddon::Destructor, nullptr, &obj->wrapper_);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Wrap II18nAddon failed");
+        return nullptr;
+    }
+    obj->brkiter_ = std::make_unique<I18nBreakIterator>(localeTag);
+    if (obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Wrap BreakIterator failed");
+        return nullptr;
+    }
+    obj.release();
+    return thisVar;
+}
+
+napi_value I18nAddon::InitBreakIterator(napi_env env, napi_value exports)
+{
+    napi_status status = napi_ok;
+    napi_property_descriptor properties[] = {
+        DECLARE_NAPI_FUNCTION("current", Current),
+        DECLARE_NAPI_FUNCTION("first", First),
+        DECLARE_NAPI_FUNCTION("last", Last),
+        DECLARE_NAPI_FUNCTION("next", Next),
+        DECLARE_NAPI_FUNCTION("previous", Previous),
+        DECLARE_NAPI_FUNCTION("setLineBreakText", SetText),
+        DECLARE_NAPI_FUNCTION("following", Following),
+        DECLARE_NAPI_FUNCTION("getLineBreakText", GetText),
+        DECLARE_NAPI_FUNCTION("isBoundary", IsBoundary),
+    };
+    napi_value constructor = nullptr;
+    status = napi_define_class(env, "BreakIterator", NAPI_AUTO_LENGTH, BreakIteratorConstructor, nullptr,
+        sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to define class BreakIterator at Init");
+        return nullptr;
+    }
+    g_BrkConstructor = new (std::nothrow) napi_ref;
+    if (g_BrkConstructor == nullptr) {
+        HiLog::Error(LABEL, "Failed to create brkiterator ref at init");
+        return nullptr;
+    }
+    status = napi_create_reference(env, constructor, 1, g_BrkConstructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create reference g_BrkConstructor at init");
+        return nullptr;
+    }
+    return exports;
+}
+
+napi_value I18nAddon::GetLineInstance(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_value constructor = nullptr;
+    napi_status status = napi_get_reference_value(env, *g_BrkConstructor, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create reference at GetLineInstance");
+        return nullptr;
+    }
+    if (argv[0] == nullptr) {
+        return nullptr;
+    }
+    napi_value result = nullptr;
+    status = napi_new_instance(env, constructor, 1, argv, &result); // 1 arguments
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "GetLineInstance create instance failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::Current(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value *argv = nullptr;
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    int value = obj->brkiter_->current();
+    napi_value result = nullptr;
+    status = napi_create_int32(env, value, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create int32_t value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::First(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value *argv = nullptr;
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    int value = obj->brkiter_->first();
+    napi_value result = nullptr;
+    status = napi_create_int32(env, value, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create int32_t value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::Last(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value *argv = nullptr;
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    int value = obj->brkiter_->last();
+    napi_value result = nullptr;
+    status = napi_create_int32(env, value, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create int32_t value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::Previous(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value *argv = nullptr;
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    int value = obj->brkiter_->previous();
+    napi_value result = nullptr;
+    status = napi_create_int32(env, value, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create int32_t value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::Next(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    int value = 1;
+    if (argv[0] != nullptr) {
+        napi_valuetype valueType = napi_valuetype::napi_undefined;
+        napi_typeof(env, argv[0], &valueType);
+        if (valueType != napi_valuetype::napi_number) {
+            napi_throw_type_error(env, nullptr, "Parameter type does not match");
+            return nullptr;
+        }
+        status = napi_get_value_int32(env, argv[0], &value);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "Retrieve next value failed");
+            return nullptr;
+        }
+    }
+    value = obj->brkiter_->next(value);
+    napi_value result = nullptr;
+    status = napi_create_int32(env, value, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create int32_t value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::SetText(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    if (argv[0] == nullptr) {
+        return nullptr;
+    }
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    size_t len = 0;
+    status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get field length failed");
+        return nullptr;
+    }
+    std::vector<char> buf(len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get string value failed");
+        return nullptr;
+    }
+    obj->brkiter_->setText(buf.data());
+    return nullptr;
+}
+
+napi_value I18nAddon::GetText(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value *argv = nullptr;
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    napi_value value = nullptr;
+    std::string temp;
+    obj->brkiter_->getText(temp);
+    status = napi_create_string_utf8(env, temp.c_str(), NAPI_AUTO_LENGTH, &value);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get field length failed");
+        return nullptr;
+    }
+    return value;
+}
+
+napi_value I18nAddon::Following(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    if (argv[0] == nullptr) {
+        return nullptr;
+    }
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_number) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int value;
+    status = napi_get_value_int32(env, argv[0], &value);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Retrieve following value failed");
+        return nullptr;
+    }
+    value = obj->brkiter_->following(value);
+    napi_value result = nullptr;
+    status = napi_create_int32(env, value, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create int32_t value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsBoundary(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+        HiLog::Error(LABEL, "Get BreakIterator object failed");
+        return nullptr;
+    }
+    if (argv[0] == nullptr) {
+        return nullptr;
+    }
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    int value;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_number) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    status = napi_get_value_int32(env, argv[0], &value);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Retrieve following value failed");
+        return nullptr;
+    }
+    bool boundary = obj->brkiter_->isBoundary(value);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, boundary, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create boolean failed");
+        return nullptr;
+    }
+    return result;
+}
+
+
 napi_value Init(napi_env env, napi_value exports)
 {
     napi_value val = I18nAddon::Init(env, exports);
     val = I18nAddon::InitPhoneNumberFormat(env, val);
+    val = I18nAddon::InitBreakIterator(env, val);
     return I18nAddon::InitI18nCalendar(env, val);
 }
 

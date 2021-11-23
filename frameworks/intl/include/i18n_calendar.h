@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OHOS_GLOBAL_I18N_DATE_TIME_FORMAT_H
-#define OHOS_GLOBAL_I18N_DATE_TIME_FORMAT_H
+#ifndef OHOS_GLOBAL_I18N_CALENDAR_H
+#define OHOS_GLOBAL_I18N_CALENDAR_H
 
 #include "unicode/ucal.h"
 #include "unicode/calendar.h"
