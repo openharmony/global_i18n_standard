@@ -115,8 +115,6 @@ private:
     static const int HOURS_OF_A_DAY = 24;
     static bool icuInitialized;
     static bool Init();
-    static std::set<std::string> allValidLocales;
-    static std::set<std::string> GetValidLocales();
     static std::map<std::string, icu::DateFormat::EStyle> dateTimeStyle;
     void ParseConfigsPartOne(std::map<std::string, std::string> &configs);
     void ParseConfigsPartTwo(std::map<std::string, std::string> &configs);

@@ -25,19 +25,6 @@ using namespace icu;
 
 bool DateTimeFormat::icuInitialized = DateTimeFormat::Init();
 
-std::set<std::string> DateTimeFormat::allValidLocales = GetValidLocales();
-
-std::set<std::string> DateTimeFormat::GetValidLocales()
-{
-    int32_t validCount = 1;
-    const Locale *validLocales = Locale::getAvailableLocales(validCount);
-    std::set<std::string> allValidLocales;
-    for (int i = 0; i < validCount; i++) {
-        allValidLocales.insert(validLocales[i].getLanguage());
-    }
-    return allValidLocales;
-}
-
 std::map<std::string, DateFormat::EStyle> DateTimeFormat::dateTimeStyle = {
     { "full", DateFormat::EStyle::kFull },
     { "long", DateFormat::EStyle::kLong },
@@ -51,11 +38,10 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
     auto builder = std::make_unique<LocaleBuilder>();
     ParseConfigsPartOne(configs);
     ParseConfigsPartTwo(configs);
-    GetValidLocales();
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
         locale = Locale::forLanguageTag(StringPiece(curLocale), status);
-        if (allValidLocales.count(locale.getLanguage()) > 0) {
+        if (LocaleInfo::allValidLocales.count(locale.getLanguage()) > 0) {
             localeInfo = new LocaleInfo(curLocale, configs);
             locale = localeInfo->GetLocale();
             localeTag = localeInfo->GetBaseName();
