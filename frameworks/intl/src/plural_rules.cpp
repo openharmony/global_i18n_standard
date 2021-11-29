@@ -88,7 +88,7 @@ void PluralRules::InitPluralRules(std::vector<std::string> &localeTags,
         std::string curLocale = localeTags[i];
         locale = icu::Locale::forLanguageTag(icu::StringPiece(curLocale), status);
         if (LocaleInfo::allValidLocales.count(locale.getLanguage()) > 0) {
-            localeInfo = new LocaleInfo(curLocale, options);
+            localeInfo = std::make_unique<LocaleInfo>(curLocale, options);
             locale = localeInfo->GetLocale();
             localeStr = localeInfo->GetBaseName();
             pluralRules = icu::PluralRules::forLocale(locale, uPluralType, status);
@@ -131,11 +131,6 @@ PluralRules::PluralRules(std::vector<std::string> &localeTags, std::map<std::str
 
 PluralRules::~PluralRules()
 {
-    if (localeInfo != nullptr) {
-        delete localeInfo;
-        localeInfo = nullptr;
-    }
-
     if (pluralRules == nullptr) {
         delete pluralRules;
         pluralRules = nullptr;

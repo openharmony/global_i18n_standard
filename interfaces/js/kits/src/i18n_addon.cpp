@@ -186,7 +186,7 @@ napi_value I18nAddon::UnitConvert(napi_env env, napi_callback_info info)
     GetOptionValue(env, argv[1], "unit", toUnit);
     std::string toMeasSys;
     GetOptionValue(env, argv[1], "measureSystem", toMeasSys);
-    double number;
+    double number = 0;
     napi_get_value_double(env, argv[2], &number); // 2 is the index of value
     int convertStatus = Convert(number, fromUnit, fromMeasSys, toUnit, toMeasSys);
     size_t len;
