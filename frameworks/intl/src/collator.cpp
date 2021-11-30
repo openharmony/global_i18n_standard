@@ -77,7 +77,7 @@ Collator::Collator(std::vector<std::string> &localeTags, std::map<std::string, s
         std::string curLocale = localeTags[i];
         locale = icu::Locale::forLanguageTag(icu::StringPiece(curLocale), status);
         if (LocaleInfo::allValidLocales.count(locale.getLanguage()) > 0) {
-            localeInfo = new LocaleInfo(curLocale, options);
+            localeInfo = std::make_unique<LocaleInfo>(curLocale, options);
             locale = localeInfo->GetLocale();
             localeStr = localeInfo->GetBaseName();
             bool createSuccess = InitCollator();
@@ -142,6 +142,9 @@ void Collator::SetUsage(UErrorCode &status)
 
 void Collator::SetNumeric(UErrorCode &status)
 {
+    if (collatorPtr == nullptr) {
+        return;
+    }
     if (numeric == "") {
         numeric = localeInfo->GetNumeric();
         if (numeric != "true" && numeric != "false") {
@@ -159,6 +162,9 @@ void Collator::SetNumeric(UErrorCode &status)
 
 void Collator::SetCaseFirst(UErrorCode &status)
 {
+    if (collatorPtr == nullptr) {
+        return;
+    }
     if (caseFirst == "") {
         caseFirst = localeInfo->GetCaseFirst();
         if (caseFirst != "upper" && caseFirst != "lower" && caseFirst != "false") {
@@ -179,6 +185,9 @@ void Collator::SetCaseFirst(UErrorCode &status)
 
 void Collator::SetSensitivity(UErrorCode &status)
 {
+    if (collatorPtr == nullptr) {
+        return;
+    }
     if (sensitivity == "base") {
         collatorPtr->setStrength(icu::Collator::PRIMARY);
     } else if (sensitivity == "accent") {
@@ -194,6 +203,9 @@ void Collator::SetSensitivity(UErrorCode &status)
 
 void Collator::SetIgnorePunctuation(UErrorCode &status)
 {
+    if (collatorPtr == nullptr) {
+        return;
+    }
     if (ignorePunctuation == "true") {
         collatorPtr->setAttribute(UColAttribute::UCOL_ALTERNATE_HANDLING,
             UColAttributeValue::UCOL_SHIFTED, status);
@@ -212,10 +224,6 @@ bool Collator::InitCollator()
     SetIgnorePunctuation(status);
 
     if (collatorPtr == nullptr) {
-        if (localeInfo != nullptr) {
-            delete localeInfo;
-            localeInfo = nullptr;
-        }
         return false;
     }
     return true;
@@ -223,11 +231,6 @@ bool Collator::InitCollator()
 
 Collator::~Collator()
 {
-    if (localeInfo != nullptr) {
-        delete localeInfo;
-        localeInfo = nullptr;
-    }
-
     if (collatorPtr != nullptr) {
         delete collatorPtr;
         collatorPtr = nullptr;
@@ -236,6 +239,9 @@ Collator::~Collator()
 
 int32_t Collator::Compare(const std::string &first, const std::string &second)
 {
+    if (collatorPtr == nullptr) {
+        return -2;
+    }
     icu::Collator::EComparisonResult result = collatorPtr->compare(icu::UnicodeString(first.data(), first.length()),
         icu::UnicodeString(second.data(), second.length()));
     if (result == icu::Collator::EComparisonResult::LESS) {

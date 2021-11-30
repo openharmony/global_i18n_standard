@@ -45,7 +45,7 @@ private:
     std::string caseFirst;
     std::string collation;
 
-    LocaleInfo *localeInfo;
+    std::unique_ptr<LocaleInfo> localeInfo;
     icu::Locale locale;
     icu::Collator *collatorPtr;
 

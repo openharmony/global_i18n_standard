@@ -113,7 +113,9 @@ void NumberFormat::InitProperties()
         }
         UErrorCode status = U_ZERO_ERROR;
         UMeasurementSystem measSys = ulocdata_getMeasurementSystem(localeBaseName.c_str(), &status);
-        unitMeasSys = measurementSystem[measSys];
+        if (status == U_ZERO_ERROR && measSys >= 0) {
+            unitMeasSys = measurementSystem[measSys];
+        }
         numberFormat = numberFormat.unitWidth(unitDisplay);
         numberFormat = numberFormat.precision(icu::number::Precision::maxFraction(DEFAULT_FRACTION_DIGITS));
     }

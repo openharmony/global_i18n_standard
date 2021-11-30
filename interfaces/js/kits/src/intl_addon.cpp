@@ -240,19 +240,19 @@ std::string GetLocaleTag(napi_env env, napi_value argv)
         napi_typeof(env, argv, &valueType);
         if (valueType != napi_valuetype::napi_string) {
             napi_throw_type_error(env, nullptr, "Parameter type does not match");
-            return nullptr;
+            return "";
         }
         size_t len = 0;
         napi_status status = napi_get_value_string_utf8(env, argv, nullptr, 0, &len);
         if (status != napi_ok) {
             HiLog::Error(LABEL, "Get locale tag length failed");
-            return nullptr;
+            return "";
         }
         buf.resize(len + 1);
         status = napi_get_value_string_utf8(env, argv, buf.data(), len + 1, &len);
         if (status != napi_ok) {
             HiLog::Error(LABEL, "Get locale tag failed");
-            return nullptr;
+            return "";
         }
         localeTag = buf.data();
     } else {
