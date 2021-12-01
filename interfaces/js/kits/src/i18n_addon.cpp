@@ -24,8 +24,8 @@ namespace Global {
 namespace I18n {
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "I18nJs" };
 static napi_ref* g_constructor = nullptr;
-static napi_ref* g_BrkConstructor = nullptr;
-static std::unordered_map<std::string, UCalendarDateFields> g_fieldsMap {{
+static napi_ref* g_brkConstructor = nullptr;
+static std::unordered_map<std::string, UCalendarDateFields> g_fieldsMap {
     { "era", UCAL_ERA },
     { "year", UCAL_YEAR },
     { "month", UCAL_MONTH },
@@ -48,7 +48,7 @@ static std::unordered_map<std::string, UCalendarDateFields> g_fieldsMap {{
     { "extended_year", UCAL_EXTENDED_YEAR },
     { "julian_day", UCAL_JULIAN_DAY },
     { "milliseconds_in_day", UCAL_MILLISECONDS_IN_DAY },
-    { "is_leap_month", UCAL_IS_LEAP_MONTH }}, 13
+    { "is_leap_month", UCAL_IS_LEAP_MONTH },
 };
 static std::unordered_map<std::string, CalendarType> g_typeMap {
     { "buddhist", CalendarType::BUDDHIST },
@@ -1401,14 +1401,14 @@ napi_value I18nAddon::InitBreakIterator(napi_env env, napi_value exports)
         HiLog::Error(LABEL, "Failed to define class BreakIterator at Init");
         return nullptr;
     }
-    g_BrkConstructor = new (std::nothrow) napi_ref;
-    if (g_BrkConstructor == nullptr) {
+    g_brkConstructor = new (std::nothrow) napi_ref;
+    if (g_brkConstructor == nullptr) {
         HiLog::Error(LABEL, "Failed to create brkiterator ref at init");
         return nullptr;
     }
-    status = napi_create_reference(env, constructor, 1, g_BrkConstructor);
+    status = napi_create_reference(env, constructor, 1, g_brkConstructor);
     if (status != napi_ok) {
-        HiLog::Error(LABEL, "Failed to create reference g_BrkConstructor at init");
+        HiLog::Error(LABEL, "Failed to create reference g_brkConstructor at init");
         return nullptr;
     }
     return exports;
@@ -1422,7 +1422,7 @@ napi_value I18nAddon::GetLineInstance(napi_env env, napi_callback_info info)
     void *data = nullptr;
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     napi_value constructor = nullptr;
-    napi_status status = napi_get_reference_value(env, *g_BrkConstructor, &constructor);
+    napi_status status = napi_get_reference_value(env, *g_brkConstructor, &constructor);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create reference at GetLineInstance");
         return nullptr;
