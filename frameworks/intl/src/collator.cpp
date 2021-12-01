@@ -255,17 +255,13 @@ int32_t Collator::Compare(const std::string &first, const std::string &second)
 
 void Collator::ResolvedOptions(std::map<std::string, std::string> &options)
 {
-    options.insert(
-        {
-            { "locale", localeStr },
-            { "usage", usage },
-            { "sensitivity", sensitivity },
-            { "ignorePunctuation", ignorePunctuation },
-            { "numeric", numeric },
-            { "caseFirst", caseFirst },
-            { "collation", collation }
-        }
-    );
+    options.insert(std::pair<std::string, std::string>("locale", localeStr));
+    options.insert(std::pair<std::string, std::string>("usage", usage));
+    options.insert(std::pair<std::string, std::string>("sensitivity", sensitivity));
+    options.insert(std::pair<std::string, std::string>("ignorePunctuation", ignorePunctuation));
+    options.insert(std::pair<std::string, std::string>("numeric", numeric));
+    options.insert(std::pair<std::string, std::string>("caseFirst", caseFirst));
+    options.insert(std::pair<std::string, std::string>("collation", collation));
 }
 }
 }
