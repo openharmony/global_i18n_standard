@@ -1298,11 +1298,23 @@ void GetCollatorCollation(napi_env env, napi_value options, std::map<std::string
     auto it = map.find("collation");
     if (it != map.end()) {
         std::string collation = it->second;
-        std::set<std::string> validCollation(
-            { "big5han", "compat", "dict", "direct", "ducet", "eor", "gb2312",
-            "phonebk", "phonetic", "pinyin", "reformed", "searchjl", "stroke",
-            "trad", "unihan", "zhuyin" }
-        );
+        std::set<std::string> validCollation;
+        validCollation.insert("big5han");
+        validCollation.insert("compat");
+        validCollation.insert("dict");
+        validCollation.insert("direct");
+        validCollation.insert("ducet");
+        validCollation.insert("eor");
+        validCollation.insert("gb2312");
+        validCollation.insert("phonebk");
+        validCollation.insert("phonetic");
+        validCollation.insert("pinyin");
+        validCollation.insert("reformed");
+        validCollation.insert("searchjl");
+        validCollation.insert("stroke");
+        validCollation.insert("trad");
+        validCollation.insert("unihan");
+        validCollation.insert("zhuyin");
         if (validCollation.find(collation) == validCollation.end()) {
             map["collation"] = "default";
         }

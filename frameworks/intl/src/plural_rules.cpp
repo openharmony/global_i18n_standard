@@ -63,7 +63,7 @@ void PluralRules::ParseAllOptions(std::map<std::string, std::string> &options)
 
         if (minFractionStr != "" || maxFractionStr != "") {
             minFraction = (minFractionStr == "") ? 0 : std::stoi(minFractionStr);
-            int maxFractionDefault = std::max(3, minFraction);
+            int maxFractionDefault = std::max(3, minFraction);  // 3 is the default valud of minFraction
             maxFraction = (maxFractionStr == "") ? maxFractionDefault : std::stoi(maxFractionStr);
             if (minFraction > maxFraction) {
                 HiLog::Error(LABEL, "minimumFractionDigits is greater than maximumFractionDigits");

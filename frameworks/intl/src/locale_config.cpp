@@ -727,7 +727,7 @@ std::string ContainTag(std::string &localeTag, std::string &defaultLocaleTag,
         return "";
     }
 
-    std::size_t start = found + 4;
+    std::size_t start = found + 4;  // 4 is the tag length
     std::size_t end = tag.find("-", start);
 
     return tag.substr(start, end - start);
