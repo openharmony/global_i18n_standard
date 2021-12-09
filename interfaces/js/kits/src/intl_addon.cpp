@@ -113,6 +113,31 @@ napi_value IntlAddon::InitDateTimeFormat(napi_env env, napi_value exports)
     return exports;
 }
 
+napi_value IntlAddon::InitRelativeTimeFormat(napi_env env, napi_value exports)
+{
+    napi_status status = napi_ok;
+    napi_property_descriptor properties[] = {
+        DECLARE_NAPI_FUNCTION("format", FormatRelativeTime),
+        DECLARE_NAPI_FUNCTION("formatToParts", FormatToParts),
+        DECLARE_NAPI_FUNCTION("resolvedOptions", GetRelativeTimeResolvedOptions)
+    };
+
+    napi_value constructor = nullptr;
+    status = napi_define_class(env, "RelativeTimeFormat", NAPI_AUTO_LENGTH, RelativeTimeFormatConstructor, nullptr,
+        sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Define class failed when InitRelativeTimeFormat");
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "RelativeTimeFormat", constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Set property failed when InitRelativeTimeFormat");
+        return nullptr;
+    }
+    return exports;
+}
+
 napi_value IntlAddon::InitNumberFormat(napi_env env, napi_value exports)
 {
     napi_status status = napi_ok;
@@ -229,6 +254,13 @@ void GetDateOptionValues(napi_env env, napi_value options, std::map<std::string,
     GetOptionValue(env, options, "localeMatcher", map);
     GetOptionValue(env, options, "formatMatcher", map);
     GetOptionValue(env, options, "dayPeriod", map);
+}
+
+void GetRelativeTimeOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map)
+{
+    GetOptionValue(env, options, "localeMatcher", map);
+    GetOptionValue(env, options, "numeric", map);
+    GetOptionValue(env, options, "style", map);
 }
 
 std::string GetLocaleTag(napi_env env, napi_value argv)
@@ -397,6 +429,70 @@ bool IntlAddon::InitDateTimeFormatContext(napi_env env, napi_callback_info info,
     datefmt_ = std::make_unique<DateTimeFormat>(localeTags, map);
 
     return datefmt_ != nullptr;
+}
+
+napi_value IntlAddon::RelativeTimeFormatConstructor(napi_env env, napi_callback_info info)
+{
+    // Need to get one parameter of a locale in string format to create DateTimeFormat object.
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    std::vector<std::string> localeTags;
+    if (argv[0] != nullptr) {
+        napi_valuetype valueType = napi_valuetype::napi_undefined;
+        napi_typeof(env, argv[0], &valueType);
+        bool isArray = false;
+        napi_is_array(env, argv[0], &isArray);
+        if (valueType == napi_valuetype::napi_string) {
+            GetLocaleTags(env, argv[0], localeTags);
+        } else if (isArray) {
+            uint32_t arrayLength = 0;
+            napi_get_array_length(env, argv[0], &arrayLength);
+            napi_value element = nullptr;
+            for (uint32_t i = 0; i < arrayLength; i++) {
+                napi_get_element(env, argv[0], i, &element);
+                GetLocaleTags(env, element, localeTags);
+            }
+        }
+    }
+
+    std::map<std::string, std::string> map = {};
+    if (argv[1] != nullptr) {
+        GetRelativeTimeOptionValues(env, argv[1], map);
+    }
+
+    std::unique_ptr<IntlAddon> obj = std::make_unique<IntlAddon>();
+    if (obj == nullptr) {
+        HiLog::Error(LABEL, "Create IntlAddon failed");
+        return nullptr;
+    }
+
+    status =
+        napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), IntlAddon::Destructor, nullptr, &obj->wrapper_);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Wrap IntlAddon failed");
+        return nullptr;
+    }
+
+    if (!obj->InitRelativeTimeFormatContext(env, info, localeTags, map)) {
+        HiLog::Error(LABEL, "Init RelativeTimeFormat failed");
+        return nullptr;
+    }
+
+    obj.release();
+    return thisVar;
+}
+
+bool IntlAddon::InitRelativeTimeFormatContext(napi_env env, napi_callback_info info,
+    std::vector<std::string> localeTags, std::map<std::string, std::string> &map)
+{
+    env_ = env;
+    relativetimefmt_ = std::make_unique<RelativeTimeFormat>(localeTags, map);
+
+    return relativetimefmt_ != nullptr;
 }
 
 napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
@@ -1100,6 +1196,31 @@ void SetBooleanOptionProperties(napi_env env, napi_value &result, std::map<std::
     }
 }
 
+napi_value IntlAddon::GetRelativeTimeResolvedOptions(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value argv[0];
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->relativetimefmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get RelativeTimeFormat object failed");
+        return nullptr;
+    }
+    napi_value result = nullptr;
+    napi_create_object(env, &result);
+    std::map<std::string, std::string> options = {};
+    obj->relativetimefmt_->GetResolvedOptions(options);
+    SetOptionProperties(env, result, options, "locale");
+    SetOptionProperties(env, result, options, "style");
+    SetOptionProperties(env, result, options, "numeric");
+    SetOptionProperties(env, result, options, "numberingSystem");
+    return result;
+}
+
 napi_value IntlAddon::GetDateTimeResolvedOptions(napi_env env, napi_callback_info info)
 {
     size_t argc = 0;
@@ -1445,6 +1566,115 @@ bool GetStringParameter(napi_env env, napi_value value, std::vector<char> &buf)
     return true;
 }
 
+napi_value IntlAddon::FormatRelativeTime(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_status status;
+    double number;
+    status = napi_get_value_double(env, argv[0], &number);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get number failed");
+        return nullptr;
+    }
+    std::vector<char> unit;
+    if (!GetStringParameter(env, argv[1], unit)) {
+        return nullptr;
+    }
+    IntlAddon *obj = nullptr;
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->relativetimefmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get RelativeTimeFormat object failed");
+        return nullptr;
+    }
+    std::string value = obj->relativetimefmt_->Format(number, unit.data());
+    napi_value result = nullptr;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create format string failed");
+        return nullptr;
+    }
+    return result;
+}
+
+void IntlAddon::FillInArrayElement(napi_env env, napi_value &result, napi_status &status,
+    const std::vector<std::vector<std::string>> &timeVector)
+{
+    for (size_t i = 0; i < timeVector.size(); i++) {
+        napi_value value = nullptr;
+        status = napi_create_string_utf8(env, timeVector[i][1].c_str(), NAPI_AUTO_LENGTH, &value);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "Failed to create string item.");
+            return;
+        }
+        napi_value type = nullptr;
+        status = napi_create_string_utf8(env, timeVector[i][0].c_str(), NAPI_AUTO_LENGTH, &type);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "Failed to create string item.");
+            return;
+        }
+        napi_value unit = nullptr;
+        int unitIndex = 2;
+        if (timeVector[i].size() > unitIndex) {
+            status = napi_create_string_utf8(env, timeVector[i][unitIndex].c_str(), NAPI_AUTO_LENGTH, &unit);
+            if (status != napi_ok) {
+                HiLog::Error(LABEL, "Failed to create string item.");
+                return;
+            }
+        } else {
+            napi_get_undefined(env, &unit);
+        }
+        napi_value formatInfo;
+        status = napi_create_object(env, &formatInfo);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "Failed to create format info object.");
+            return;
+        }
+        napi_set_named_property(env, formatInfo, "type", type);
+        napi_set_named_property(env, formatInfo, "value", value);
+        napi_set_named_property(env, formatInfo, "unit", unit);
+        status = napi_set_element(env, result, i, formatInfo);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "Failed to set array item");
+            return;
+        }
+    }
+}
+
+napi_value IntlAddon::FormatToParts(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    double number = 0;
+    napi_get_value_double(env, argv[0], &number);
+    std::vector<char> unit;
+    if (!GetStringParameter(env, argv[1], unit)) {
+        return nullptr;
+    }
+    IntlAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || obj == nullptr || obj->relativetimefmt_ == nullptr) {
+        HiLog::Error(LABEL, "Get RelativeTimeFormat object failed");
+        return nullptr;
+    }
+    std::vector<std::vector<std::string>> timeVector;
+    obj->relativetimefmt_->FormatToParts(number, unit.data(), timeVector);
+    napi_value result = nullptr;
+    status = napi_create_array_with_length(env, timeVector.size(), &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create array");
+        return nullptr;
+    }
+    FillInArrayElement(env, result, status, timeVector);
+    return result;
+}
+
 napi_value IntlAddon::CompareString(napi_env env, napi_callback_info info)
 {
     size_t argc = 2;
@@ -1735,6 +1965,7 @@ napi_value Init(napi_env env, napi_value exports)
     val = IntlAddon::InitDateTimeFormat(env, val);
     val = IntlAddon::InitNumberFormat(env, val);
     val = IntlAddon::InitCollator(env, val);
+    val = IntlAddon::InitRelativeTimeFormat(env, val);
     return IntlAddon::InitPluralRules(env, val);
 }
 

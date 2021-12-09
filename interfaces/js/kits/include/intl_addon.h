@@ -23,6 +23,7 @@
 #include "locale_info.h"
 #include "date_time_format.h"
 #include "number_format.h"
+#include "relative_time_format.h"
 #include "collator.h"
 #include "plural_rules.h"
 
@@ -46,6 +47,7 @@ void SetIntegerOptionProperties(napi_env env, napi_value &result,
     std::map<std::string, std::string> &options, const std::string &option);
 void SetBooleanOptionProperties(napi_env env, napi_value &result,
     std::map<std::string, std::string> &options, const std::string &option);
+void GetRelativeTimeOptionValues(napi_env env, napi_value options, std::map<std::string, std::string> &map);
 
 class IntlAddon {
 public:
@@ -53,6 +55,7 @@ public:
     static napi_value InitDateTimeFormat(napi_env env, napi_value exports);
     static napi_value InitNumberFormat(napi_env env, napi_value exports);
     static napi_value InitCollator(napi_env env, napi_value exports);
+    static napi_value InitRelativeTimeFormat(napi_env env, napi_value exports);
     static napi_value InitPluralRules(napi_env env, napi_value exports);
     static void Destructor(napi_env env, void *nativeObject, void *finalize_hint);
 
@@ -63,6 +66,7 @@ private:
     static napi_value DateTimeFormatConstructor(napi_env env, napi_callback_info info);
     static napi_value NumberFormatConstructor(napi_env env, napi_callback_info info);
     static napi_value LocaleConstructor(napi_env env, napi_callback_info info);
+    static napi_value RelativeTimeFormatConstructor(napi_env env, napi_callback_info info);
     static napi_value GetLanguage(napi_env env, napi_callback_info info);
     static napi_value GetScript(napi_env env, napi_callback_info info);
     static napi_value GetRegion(napi_env env, napi_callback_info info);
@@ -80,6 +84,12 @@ private:
     static napi_value FormatDateTime(napi_env env, napi_callback_info info);
     static napi_value FormatDateTimeRange(napi_env env, napi_callback_info info);
     static napi_value GetDateTimeResolvedOptions(napi_env env, napi_callback_info info);
+
+    static napi_value FormatRelativeTime(napi_env env, napi_callback_info info);
+    static napi_value FormatToParts(napi_env env, napi_callback_info info);
+    static void FillInArrayElement(napi_env env, napi_value &result, napi_status &status,
+        const std::vector<std::vector<std::string>> &timeVector);
+    static napi_value GetRelativeTimeResolvedOptions(napi_env env, napi_callback_info info);
 
     static napi_value GetNumberResolvedOptions(napi_env env, napi_callback_info info);
     static napi_value FormatNumber(napi_env env, napi_callback_info info);
@@ -105,6 +115,8 @@ private:
         std::map<std::string, std::string> &map);
     bool InitCollatorContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
         std::map<std::string, std::string> &map);
+    bool InitRelativeTimeFormatContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
+        std::map<std::string, std::string> &map);
     bool InitPluralRulesContext(napi_env env, napi_callback_info info, std::vector<std::string> localeTags,
         std::map<std::string, std::string> &map);
 
@@ -113,6 +125,7 @@ private:
     std::unique_ptr<LocaleInfo> locale_;
     std::unique_ptr<DateTimeFormat> datefmt_;
     std::unique_ptr<NumberFormat> numberfmt_;
+    std::unique_ptr<RelativeTimeFormat> relativetimefmt_;
     std::unique_ptr<Collator> collator_;
     std::unique_ptr<PluralRules> pluralrules_;
 };
