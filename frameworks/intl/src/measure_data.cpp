@@ -32,6 +32,7 @@ const int REGION_OFFSET = 7;
 const int BASE_VALUE_SIZE = 2;
 const int FACTOR_SIZE = 2;
 const int CHAR_OFFSET = 48;
+const int MAX_UNIT_NUM = 500;
 
 const std::unordered_map<std::string, std::vector<std::string>> USAGE_001 {
     { "area-land-agricult", { "hectare" } },
@@ -550,6 +551,22 @@ int Convert(double &value, const string &fromUnit, const string &fromMeasSys, co
     double baseResult = 0.0;
     double result = 0.0;
     vector<double> fromFactors = {0.0, 0.0};
+    string fromUnitType;
+    string toUnitType;
+    icu::MeasureUnit unitArray[MAX_UNIT_NUM];
+    UErrorCode icuStatus = U_ZERO_ERROR;
+    icu::MeasureUnit::getAvailable(unitArray, MAX_UNIT_NUM, icuStatus);
+    for (icu::MeasureUnit curUnit : unitArray) {
+        if (strcmp(curUnit.getSubtype(), fromUnit.c_str()) == 0) {
+            fromUnitType = curUnit.getType();
+        }
+        if (strcmp(curUnit.getSubtype(), toUnit.c_str()) == 0) {
+            toUnitType = curUnit.getType();
+        }
+    }
+    if (fromUnitType.empty() || toUnitType.empty() || strcmp(fromUnitType.c_str(), toUnitType.c_str()) != 0) {
+        return 0;
+    }
     int status = ComputeValue(fromUnit, fromMeasSys, fromFactors);
     if (status == 0) {
         return 0;

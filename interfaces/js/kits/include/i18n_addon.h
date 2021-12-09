@@ -20,6 +20,7 @@
 #include "napi/native_api.h"
 #include "i18n_break_iterator.h"
 #include "i18n_calendar.h"
+#include "index_util.h"
 #include "napi/native_node_api.h"
 #include "locale_config.h"
 #include "measure_data.h"
@@ -55,6 +56,7 @@ public:
     static napi_value InitI18nCalendar(napi_env env, napi_value exports);
     static napi_value UnitConvert(napi_env env, napi_callback_info info);
     static napi_value InitBreakIterator(napi_env env, napi_value exports);
+    static napi_value InitIndexUtil(napi_env env, napi_value exports);
 
 private:
     static napi_value PhoneNumberFormatConstructor(napi_env env, napi_callback_info info);
@@ -94,11 +96,20 @@ private:
     static napi_value Following(napi_env env, napi_callback_info info);
     static napi_value IsBoundary(napi_env env, napi_callback_info info);
 
+    static napi_value GetIndexUtil(napi_env env, napi_callback_info info);
+    static napi_value IndexUtilConstructor(napi_env env, napi_callback_info info);
+    static napi_value GetIndexList(napi_env env, napi_callback_info info);
+    static napi_value AddLocale(napi_env env, napi_callback_info info);
+    static napi_value GetIndex(napi_env env, napi_callback_info info);
+    bool InitIndexUtilContext(napi_env env, napi_callback_info info, const std::string &localeTag);
+    static napi_value CreateUtilObject(napi_env env);
+
     napi_env env_;
     napi_ref wrapper_;
     std::unique_ptr<PhoneNumberFormat> phonenumberfmt_;
     std::unique_ptr<I18nCalendar> calendar_;
     std::unique_ptr<I18nBreakIterator> brkiter_;
+    std::unique_ptr<IndexUtil> indexUtil_;
 };
 } // namespace I18n
 } // namespace Global
