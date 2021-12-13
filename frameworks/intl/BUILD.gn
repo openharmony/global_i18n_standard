@@ -47,6 +47,7 @@ ohos_shared_library("intl_util") {
     "src/number_format.cpp",
     "src/phone_number_format.cpp",
     "src/plural_rules.cpp",
+    "src/relative_time_format.cpp",
     "src/str_util.cpp",
   ]
   cflags_cc = [
