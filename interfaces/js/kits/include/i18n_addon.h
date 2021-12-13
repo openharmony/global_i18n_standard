@@ -57,6 +57,15 @@ public:
     static napi_value UnitConvert(napi_env env, napi_callback_info info);
     static napi_value InitBreakIterator(napi_env env, napi_value exports);
     static napi_value InitIndexUtil(napi_env env, napi_value exports);
+    static napi_value IsDigitAddon(napi_env env, napi_callback_info info);
+    static napi_value IsSpaceCharAddon(napi_env env, napi_callback_info info);
+    static napi_value IsWhiteSpaceAddon(napi_env env, napi_callback_info info);
+    static napi_value IsRTLCharacterAddon(napi_env env, napi_callback_info info);
+    static napi_value IsIdeoGraphicAddon(napi_env env, napi_callback_info info);
+    static napi_value IsLetterAddon(napi_env env, napi_callback_info info);
+    static napi_value IsLowerCaseAddon(napi_env env, napi_callback_info info);
+    static napi_value IsUpperCaseAddon(napi_env env, napi_callback_info info);
+    static napi_value GetTypeAddon(napi_env env, napi_callback_info info);
 
 private:
     static napi_value PhoneNumberFormatConstructor(napi_env env, napi_callback_info info);
@@ -103,6 +112,7 @@ private:
     static napi_value GetIndex(napi_env env, napi_callback_info info);
     bool InitIndexUtilContext(napi_env env, napi_callback_info info, const std::string &localeTag);
     static napi_value CreateUtilObject(napi_env env);
+    static napi_value CreateCharacterObject(napi_env env);
 
     napi_env env_;
     napi_ref wrapper_;
