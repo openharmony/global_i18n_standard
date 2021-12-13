@@ -36,6 +36,7 @@ ohos_shared_library("intl_util") {
     "//third_party/protobuf/src",
   ]
   sources = [
+    "src/character.cpp",
     "src/collator.cpp",
     "src/date_time_format.cpp",
     "src/i18n_break_iterator.cpp",

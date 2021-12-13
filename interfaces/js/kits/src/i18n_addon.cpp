@@ -14,6 +14,7 @@
  */
 #include <unordered_map>
 #include <vector>
+#include "character.h"
 #include "hilog/log.h"
 #include "i18n_addon.h"
 #include "i18n_calendar.h"
@@ -82,6 +83,36 @@ void I18nAddon::Destructor(napi_env env, void *nativeObject, void *hint)
     reinterpret_cast<I18nAddon *>(nativeObject)->~I18nAddon();
 }
 
+napi_value I18nAddon::CreateCharacterObject(napi_env env)
+{
+    napi_status status = napi_ok;
+    napi_value character = nullptr;
+    status = napi_create_object(env, &character);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create character object at init");
+        return nullptr;
+    }
+    napi_property_descriptor characterProperties[] = {
+        DECLARE_NAPI_FUNCTION("isDigit", IsDigitAddon),
+        DECLARE_NAPI_FUNCTION("isSpaceChar", IsSpaceCharAddon),
+        DECLARE_NAPI_FUNCTION("isWhitespace", IsWhiteSpaceAddon),
+        DECLARE_NAPI_FUNCTION("isRTL", IsRTLCharacterAddon),
+        DECLARE_NAPI_FUNCTION("isIdeograph", IsIdeoGraphicAddon),
+        DECLARE_NAPI_FUNCTION("isLetter", IsLetterAddon),
+        DECLARE_NAPI_FUNCTION("isLowerCase", IsLowerCaseAddon),
+        DECLARE_NAPI_FUNCTION("isUpperCase", IsUpperCaseAddon),
+        DECLARE_NAPI_FUNCTION("getType", GetTypeAddon),
+    };
+    status = napi_define_properties(env, character,
+                                    sizeof(characterProperties) / sizeof(napi_property_descriptor),
+                                    characterProperties);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to set properties of character at init");
+        return nullptr;
+    }
+    return character;
+}
+
 napi_value I18nAddon::Init(napi_env env, napi_value exports)
 {
     napi_status status = napi_ok;
@@ -101,6 +132,10 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
         HiLog::Error(LABEL, "Failed to set properties of util at init");
         return nullptr;
     }
+    napi_value character = CreateCharacterObject(env);
+    if (character == nullptr) {
+        return nullptr;
+    }
     napi_property_descriptor properties[] = {
         DECLARE_NAPI_FUNCTION("getSystemLanguages", GetSystemLanguages),
         DECLARE_NAPI_FUNCTION("getSystemCountries", GetSystemCountries),
@@ -118,6 +153,7 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_PROPERTY("Util", util),
         DECLARE_NAPI_FUNCTION("getLineInstance", GetLineInstance),
         DECLARE_NAPI_FUNCTION("getInstance", GetIndexUtil),
+        DECLARE_NAPI_PROPERTY("Character", character),
     };
 
     status = napi_define_properties(env, exports,
@@ -218,6 +254,258 @@ napi_value I18nAddon::UnitConvert(napi_env env, napi_callback_info info)
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create string item");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsDigitAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    bool isDigit = IsDigit(character);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isDigit, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create isDigit boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsSpaceCharAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    bool isSpaceChar = IsSpaceChar(character);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isSpaceChar, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create isSpaceChar boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsWhiteSpaceAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    bool isWhiteSpace = IsWhiteSpace(character);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isWhiteSpace, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create isWhiteSpace boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsRTLCharacterAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    bool isRTLCharacter = IsRTLCharacter(character);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isRTLCharacter, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create isRTLCharacter boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsIdeoGraphicAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    bool isIdeoGraphic = IsIdeoGraphic(character);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isIdeoGraphic, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create isIdeoGraphic boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsLetterAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    bool isLetter = IsLetter(character);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isLetter, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create isLetter boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsLowerCaseAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    bool isLowerCase = IsLowerCase(character);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isLowerCase, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create isLowerCase boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::IsUpperCaseAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    bool isUpperCase = IsUpperCase(character);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, isUpperCase, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create isUpperCase boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::GetTypeAddon(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string character = GetString(env, argv[0], code);
+    if (code != 0) {
+        return nullptr;
+    }
+    std::string type = GetType(character);
+    napi_value result = nullptr;
+    status = napi_create_string_utf8(env, type.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create getType string value failed");
         return nullptr;
     }
     return result;
