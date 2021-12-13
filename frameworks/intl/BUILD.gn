@@ -40,6 +40,7 @@ ohos_shared_library("intl_util") {
     "src/date_time_format.cpp",
     "src/i18n_break_iterator.cpp",
     "src/i18n_calendar.cpp",
+    "src/index_util.cpp",
     "src/locale_config.cpp",
     "src/locale_info.cpp",
     "src/measure_data.cpp",

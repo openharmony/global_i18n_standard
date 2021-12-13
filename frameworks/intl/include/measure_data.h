@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <string>
+#include "unicode/measunit.h"
 
 namespace OHOS {
 namespace Global {
