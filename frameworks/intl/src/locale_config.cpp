@@ -544,10 +544,8 @@ void LocaleConfig::GetRelatedLocales(unordered_set<string> &relatedLocales, vect
 
 void LocaleConfig::GetCountriesFromSim(vector<string> &simCountries)
 {
-    simCountries.push_back(GetSystemRegion());
-    Telephony::SimCardManager simCardManager;
-    simCardManager.ConnectService();
-    simCountries.push_back(Str16ToStr8(simCardManager.GetIsoCountryCodeForSim(0)));
+    auto simCardManager = std::make_unique<Telephony::SimCardManager>();
+    simCountries.push_back(Str16ToStr8(simCardManager->GetIsoCountryCodeForSim(0)));
 }
 
 void LocaleConfig::GetListFromFile(const char *path, const char *resourceName, unordered_set<string> &ret)
