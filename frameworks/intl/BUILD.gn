@@ -21,14 +21,6 @@ ohos_shared_library("intl_util") {
     "//third_party/icu/icu4c/source/common/unicode",
     "//base/global/i18n_standard/frameworks/intl/include",
     "//base/global/i18n_standard/interfaces/native/innerkits/i18n/include",
-    "//base/telephony/core_service/interfaces/innerkits/common",
-    "//base/telephony/core_service/interfaces/innerkits/network_search/include",
-    "//base/telephony/core_service/interfaces/innerkits/api",
-    "//base/telephony/core_service/interfaces/innerkits/proxy",
-    "//base/telephony/core_service/interfaces/innerkits/kits/js/napi/sim/include",
-    "//base/telephony/ril_adapter/interfaces/innerkits",
-    "//base/telephony/core_service/common/log/include",
-    "//base/telephony/core_service/interfaces/kits/include",
     "//utils/native/base/include",
     "//third_party/libxml2/include",
     "//third_party/libphonenumber/cpp/src",
@@ -59,7 +51,6 @@ ohos_shared_library("intl_util") {
     ":config_locales_xml",
     ":config_regions_xml",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
-    "//base/telephony/core_service/interfaces/kits:tel_core_service_api",
     "//foundation/appexecfwk/standard/interfaces/innerkits/libeventhandler:libeventhandler",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
@@ -68,6 +59,7 @@ ohos_shared_library("intl_util") {
     "//utils/native/base:utils",
   ]
   external_deps = [
+    "core_service:tel_core_service_api",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
   ]
