@@ -77,6 +77,9 @@ RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTag
             UDISPCTX_CAPITALIZATION_NONE, status);
     }
     numberingSystem = localeInfo->GetNumberingSystem();
+    if (numberingSystem == "") {
+        numberingSystem = "latn";
+    }
 }
 
 RelativeTimeFormat::~RelativeTimeFormat()
