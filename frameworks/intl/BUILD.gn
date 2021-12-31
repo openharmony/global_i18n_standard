@@ -50,6 +50,7 @@ ohos_shared_library("intl_util") {
   deps = [
     ":config_locales_xml",
     ":config_regions_xml",
+    ":language_config.para",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
     "//foundation/appexecfwk/standard/interfaces/innerkits/libeventhandler:libeventhandler",
     "//third_party/icu/icu4c:shared_icui18n",
