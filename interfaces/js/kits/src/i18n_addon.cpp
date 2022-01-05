@@ -24,9 +24,9 @@ namespace OHOS {
 namespace Global {
 namespace I18n {
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "I18nJs" };
-static napi_ref* g_constructor = nullptr;
-static napi_ref* g_brkConstructor = nullptr;
-static napi_ref g_indexUtilConstructor = nullptr;
+static thread_local napi_ref* g_constructor = nullptr;
+static thread_local napi_ref* g_brkConstructor = nullptr;
+static thread_local napi_ref g_indexUtilConstructor = nullptr;
 static std::unordered_map<std::string, UCalendarDateFields> g_fieldsMap {
     { "era", UCAL_ERA },
     { "year", UCAL_YEAR },

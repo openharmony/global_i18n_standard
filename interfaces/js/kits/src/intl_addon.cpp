@@ -26,7 +26,7 @@ namespace Global {
 namespace I18n {
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "IntlJs" };
 using namespace OHOS::HiviewDFX;
-static napi_ref *g_constructor = nullptr;
+static thread_local napi_ref *g_constructor = nullptr;
 
 IntlAddon::IntlAddon() : env_(nullptr), wrapper_(nullptr) {}
 
