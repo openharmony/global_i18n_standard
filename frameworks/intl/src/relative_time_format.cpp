@@ -59,11 +59,7 @@ RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTag
             localeInfo = new LocaleInfo(curLocale, configs);
             locale = localeInfo->GetLocale();
             localeBaseName = localeInfo->GetBaseName();
-            numberFormat = icu::NumberFormat::createInstance(locale, UNUM_DECIMAL, status);
-            if (numberFormat == nullptr) {
-                continue;
-            }
-            relativeTimeFormat = new icu::RelativeDateTimeFormatter(locale, numberFormat, style,
+            relativeTimeFormat = new icu::RelativeDateTimeFormatter(locale, nullptr, style,
                 UDISPCTX_CAPITALIZATION_NONE, status);
             break;
         }
@@ -72,8 +68,7 @@ RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTag
         localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), configs);
         locale = localeInfo->GetLocale();
         localeBaseName = localeInfo->GetBaseName();
-        numberFormat = icu::NumberFormat::createInstance(locale, UNUM_DECIMAL, status);
-        relativeTimeFormat = new icu::RelativeDateTimeFormatter(locale, numberFormat, style,
+        relativeTimeFormat = new icu::RelativeDateTimeFormatter(locale, nullptr, style,
             UDISPCTX_CAPITALIZATION_NONE, status);
     }
     numberingSystem = localeInfo->GetNumberingSystem();
@@ -87,10 +82,6 @@ RelativeTimeFormat::~RelativeTimeFormat()
     if (localeInfo != nullptr) {
         delete localeInfo;
         localeInfo = nullptr;
-    }
-    if (numberFormat != nullptr) {
-        delete numberFormat;
-        numberFormat = nullptr;
     }
     if (relativeTimeFormat != nullptr) {
         delete relativeTimeFormat;
