@@ -60,7 +60,6 @@ private:
     std::string numeric = "always";
     std::string numberingSystem;
     LocaleInfo *localeInfo = nullptr;
-    icu::NumberFormat *numberFormat = nullptr;
     icu::RelativeDateTimeFormatter *relativeTimeFormat = nullptr;
     UDateRelativeDateTimeFormatterStyle style = UDAT_STYLE_LONG;
     static std::unordered_map<std::string, URelativeDateTimeUnit> relativeUnits;
