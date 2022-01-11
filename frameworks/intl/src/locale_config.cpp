@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include <regex>
+#include "core_service_client.h"
 #include "locale_config.h"
 #include "libxml/parser.h"
 #include "locale_info.h"
@@ -21,7 +22,6 @@
 #include "ohos/init_data.h"
 #include "parameter.h"
 #include "securec.h"
-#include "sim_card_manager.h"
 #include "string_ex.h"
 #include "ucase.h"
 #include "ulocimp.h"
@@ -545,8 +545,8 @@ void LocaleConfig::GetRelatedLocales(unordered_set<string> &relatedLocales, vect
 void LocaleConfig::GetCountriesFromSim(vector<string> &simCountries)
 {
     simCountries.push_back(GetSystemRegion());
-    auto simCardManager = std::make_unique<Telephony::SimCardManager>();
-    simCountries.push_back(Str16ToStr8(simCardManager->GetIsoCountryCodeForSim(0)));
+    simCountries.push_back(Str16ToStr8(
+        DelayedRefSingleton<Telephony::CoreServiceClient>::GetInstance().GetISOCountryCodeForSim(0)));
 }
 
 void LocaleConfig::GetListFromFile(const char *path, const char *resourceName, unordered_set<string> &ret)
