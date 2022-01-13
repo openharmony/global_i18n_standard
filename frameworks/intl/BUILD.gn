@@ -50,7 +50,10 @@ ohos_shared_library("intl_util") {
   deps = [
     ":config_locales_xml",
     ":config_regions_xml",
+    ":forbidden_languages_xml",
+    ":forbidden_regions_xml",
     ":language_config.para",
+    ":white_languages_xml",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
     "//foundation/appexecfwk/standard/interfaces/innerkits/libeventhandler:libeventhandler",
     "//third_party/icu/icu4c:shared_icui18n",
@@ -86,6 +89,29 @@ ohos_prebuilt_etc("config_locales_xml") {
 ohos_prebuilt_etc("config_regions_xml") {
   source =
       "//base/global/i18n_standard/frameworks/intl/etc/supported_regions.xml"
+  module_install_dir = "usr/ohos_locale_config/"
+  part_name = "i18n_standard"
+  subsystem_name = "global"
+}
+
+ohos_prebuilt_etc("white_languages_xml") {
+  source = "//base/global/i18n_standard/frameworks/intl/etc/white_languages.xml"
+  module_install_dir = "usr/ohos_locale_config/"
+  part_name = "i18n_standard"
+  subsystem_name = "global"
+}
+
+ohos_prebuilt_etc("forbidden_languages_xml") {
+  source =
+      "//base/global/i18n_standard/frameworks/intl/etc/forbidden_languages.xml"
+  module_install_dir = "usr/ohos_locale_config/"
+  part_name = "i18n_standard"
+  subsystem_name = "global"
+}
+
+ohos_prebuilt_etc("forbidden_regions_xml") {
+  source =
+      "//base/global/i18n_standard/frameworks/intl/etc/forbidden_regions.xml"
   module_install_dir = "usr/ohos_locale_config/"
   part_name = "i18n_standard"
   subsystem_name = "global"
