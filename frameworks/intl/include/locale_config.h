@@ -44,6 +44,8 @@ public:
         bool sentenceCase);
     static bool IsRTL(const std::string &locale);
     static std::string GetValidLocale(const std::string &localeTag);
+    static bool Is24HourClock();
+    static bool Set24HourClock(bool option);
 
 private:
     static bool IsValidLanguage(const std::string &language);
@@ -56,6 +58,7 @@ private:
     static constexpr uint32_t SCRIPT_OFFSET = 2;
     static const char *LANGUAGE_KEY;
     static const char *LOCALE_KEY;
+    static const char *HOUR_KEY;
     static const char *DEFAULT_LOCALE_KEY;
     static const char *DEFAULT_LANGUAGE_KEY;
     static const char *DEFAULT_REGION_KEY;
