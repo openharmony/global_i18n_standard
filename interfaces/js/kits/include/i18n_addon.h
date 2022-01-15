@@ -66,6 +66,8 @@ public:
     static napi_value IsLowerCaseAddon(napi_env env, napi_callback_info info);
     static napi_value IsUpperCaseAddon(napi_env env, napi_callback_info info);
     static napi_value GetTypeAddon(napi_env env, napi_callback_info info);
+    static napi_value Is24HourClock(napi_env env, napi_callback_info info);
+    static napi_value Set24HourClock(napi_env env, napi_callback_info info);
 
 private:
     static napi_value PhoneNumberFormatConstructor(napi_env env, napi_callback_info info);

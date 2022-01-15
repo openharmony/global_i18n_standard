@@ -37,6 +37,7 @@ using namespace std;
 
 const char *LocaleConfig::LANGUAGE_KEY = "persist.sys.language";
 const char *LocaleConfig::LOCALE_KEY = "persist.sys.locale";
+const char *LocaleConfig::HOUR_KEY = "persist.sys.is24Hour";
 const char *LocaleConfig::DEFAULT_LOCALE_KEY = "const.sys.locale";
 const char *LocaleConfig::DEFAULT_LANGUAGE_KEY = "const.sys.language";
 const char *LocaleConfig::DEFAULT_REGION_KEY = "const.sys.region";
@@ -169,7 +170,7 @@ string Adjust(const string &origin)
 {
     for (auto iter = g_languageMap.begin(); iter != g_languageMap.end(); ++iter) {
         string key = iter->first;
-        if (origin.find(key) == 0) {
+        if (origin.compare(0, key.length(), key) == 0) {
             return iter->second;
         }
     }
@@ -251,7 +252,8 @@ void GetDisplayLanguageImpl(const char *locale, const char *displayLocale, icu::
 string GetDisplayLanguageInner(const string &language, const string &displayLocale, bool sentenceCase)
 {
     icu::UnicodeString unistr;
-    if (language.find("zh") == 0 || language.find("fa") == 0) {
+    // 0 is the start position of language, 2 is the length of zh and fa
+    if (language.compare(0, 2, "zh") == 0 || language.compare(0, 2, "fa") == 0) {
         UErrorCode error = U_ZERO_ERROR;
         icu::Locale disLocale = icu::Locale::forLanguageTag(displayLocale, error);
         if (error != U_ZERO_ERROR) {
@@ -839,6 +841,30 @@ std::string LocaleConfig::GetValidLocale(const std::string &localeTag)
     } else {
         return baseLocale;
     }
+}
+
+bool LocaleConfig::Is24HourClock()
+{
+    char value[CONFIG_LEN];
+    int code = GetParameter(HOUR_KEY, "", value, CONFIG_LEN);
+    if (code <= 0) {
+        return true;
+    }
+    if (strcmp(value, "false") == 0) {
+        return false;
+    }
+    return true;
+}
+
+bool LocaleConfig::Set24HourClock(bool option)
+{
+    std::string optionStr = "";
+    if (option) {
+        optionStr = "true";
+    } else {
+        optionStr = "false";
+    }
+    return SetParameter(HOUR_KEY, optionStr.data()) == 0;
 }
 } // I18n
 } // Global

@@ -154,6 +154,8 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getLineInstance", GetLineInstance),
         DECLARE_NAPI_FUNCTION("getInstance", GetIndexUtil),
         DECLARE_NAPI_PROPERTY("Character", character),
+        DECLARE_NAPI_FUNCTION("is24HourClock", Is24HourClock),
+        DECLARE_NAPI_FUNCTION("set24HourClock", Set24HourClock),
     };
 
     status = napi_define_properties(env, exports,
@@ -2215,6 +2217,42 @@ napi_value I18nAddon::GetIndex(napi_env env, napi_callback_info info)
     status = napi_create_string_utf8(env, index.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "GetIndex Failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::Is24HourClock(napi_env env, napi_callback_info info)
+{
+    bool is24HourClock = LocaleConfig::Is24HourClock();
+    napi_value result = nullptr;
+    napi_status status = napi_get_boolean(env, is24HourClock, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create boolean item");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::Set24HourClock(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    bool option = false;
+    status = napi_get_value_bool(env, argv[0], &option);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to get boolean item");
+        return nullptr;
+    }
+    bool success = LocaleConfig::Set24HourClock(option);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, success, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create set 24HourClock boolean value failed");
         return nullptr;
     }
     return result;
