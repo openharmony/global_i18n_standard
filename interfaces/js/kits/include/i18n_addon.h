@@ -26,6 +26,7 @@
 #include "measure_data.h"
 #include "number_format.h"
 #include "phone_number_format.h"
+#include "preferred_language.h"
 
 namespace OHOS {
 namespace Global {
@@ -68,8 +69,13 @@ public:
     static napi_value GetTypeAddon(napi_env env, napi_callback_info info);
     static napi_value Is24HourClock(napi_env env, napi_callback_info info);
     static napi_value Set24HourClock(napi_env env, napi_callback_info info);
+    static napi_value AddPreferredLanguage(napi_env env, napi_callback_info info);
+    static napi_value RemovePreferredLanguage(napi_env env, napi_callback_info info);
+    static napi_value GetPreferredLanguageList(napi_env env, napi_callback_info info);
+    static napi_value GetFirstPreferredLanguage(napi_env env, napi_callback_info info);
 
 private:
+    static void CreateInitProperties(napi_property_descriptor *properties);
     static napi_value PhoneNumberFormatConstructor(napi_env env, napi_callback_info info);
     static napi_value IsValidPhoneNumber(napi_env env, napi_callback_info info);
     static napi_value FormatPhoneNumber(napi_env env, napi_callback_info info);

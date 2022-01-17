@@ -113,6 +113,36 @@ napi_value I18nAddon::CreateCharacterObject(napi_env env)
     return character;
 }
 
+void I18nAddon::CreateInitProperties(napi_property_descriptor *properties)
+{
+    properties[0] = DECLARE_NAPI_FUNCTION("getSystemLanguages", GetSystemLanguages);  // 0 is properties index
+    properties[1] = DECLARE_NAPI_FUNCTION("getSystemCountries", GetSystemCountries);  // 1 is properties index
+    properties[2] = DECLARE_NAPI_FUNCTION("isSuggested", IsSuggested);  // 2 is properties index
+    properties[3] = DECLARE_NAPI_FUNCTION("getDisplayLanguage", GetDisplayLanguage);  // 3 is properties index
+    properties[4] = DECLARE_NAPI_FUNCTION("getDisplayCountry", GetDisplayCountry);  // 4 is properties index
+    properties[5] = DECLARE_NAPI_FUNCTION("getSystemLanguage", GetSystemLanguage);  // 5 is properties index
+    properties[6] = DECLARE_NAPI_FUNCTION("getSystemRegion", GetSystemRegion);  // 6 is properties index
+    properties[7] = DECLARE_NAPI_FUNCTION("getSystemLocale", GetSystemLocale);  // 7 is properties index
+    properties[8] = DECLARE_NAPI_FUNCTION("setSystemLanguage", SetSystemLanguage);  // 8 is properties index
+    properties[9] = DECLARE_NAPI_FUNCTION("setSystemRegion", SetSystemRegion);  // 9 is properties index
+    properties[10] = DECLARE_NAPI_FUNCTION("setSystemLocale", SetSystemLocale);  // 10 is properties index
+    properties[11] = DECLARE_NAPI_FUNCTION("getCalendar", GetCalendar);  // 11 is properties index
+    properties[12] = DECLARE_NAPI_FUNCTION("isRTL", IsRTL);  // 12 is properties index
+    properties[14] = DECLARE_NAPI_FUNCTION("getLineInstance", GetLineInstance);  // 14 is properties index
+    properties[15] = DECLARE_NAPI_FUNCTION("getInstance", GetIndexUtil);  // 15 is properties index
+    properties[17] = DECLARE_NAPI_FUNCTION("addPreferredLanguage", AddPreferredLanguage);  // 17 is properties index
+    // 18 is properties index
+    properties[18] = DECLARE_NAPI_FUNCTION("removePreferredLanguage", RemovePreferredLanguage);
+    // 19 is properties index
+    properties[19] = DECLARE_NAPI_FUNCTION("getPreferredLanguageList", GetPreferredLanguageList);
+    // 20 is properties index
+    properties[20] = DECLARE_NAPI_FUNCTION("getFirstPreferredLanguage", GetFirstPreferredLanguage);
+	// 21 is properties index
+    properties[21] = DECLARE_NAPI_FUNCTION("is24HourClock", Is24HourClock);
+	// 22 is properties index
+    properties[22] = DECLARE_NAPI_FUNCTION("set24HourClock", Set24HourClock);
+}
+
 napi_value I18nAddon::Init(napi_env env, napi_value exports)
 {
     napi_status status = napi_ok;
@@ -136,31 +166,12 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
     if (character == nullptr) {
         return nullptr;
     }
-    napi_property_descriptor properties[] = {
-        DECLARE_NAPI_FUNCTION("getSystemLanguages", GetSystemLanguages),
-        DECLARE_NAPI_FUNCTION("getSystemCountries", GetSystemCountries),
-        DECLARE_NAPI_FUNCTION("isSuggested", IsSuggested),
-        DECLARE_NAPI_FUNCTION("getDisplayLanguage", GetDisplayLanguage),
-        DECLARE_NAPI_FUNCTION("getDisplayCountry", GetDisplayCountry),
-        DECLARE_NAPI_FUNCTION("getSystemLanguage", GetSystemLanguage),
-        DECLARE_NAPI_FUNCTION("getSystemRegion", GetSystemRegion),
-        DECLARE_NAPI_FUNCTION("getSystemLocale", GetSystemLocale),
-        DECLARE_NAPI_FUNCTION("setSystemLanguage", SetSystemLanguage),
-        DECLARE_NAPI_FUNCTION("setSystemRegion", SetSystemRegion),
-        DECLARE_NAPI_FUNCTION("setSystemLocale", SetSystemLocale),
-        DECLARE_NAPI_FUNCTION("getCalendar", GetCalendar),
-        DECLARE_NAPI_FUNCTION("isRTL", IsRTL),
-        DECLARE_NAPI_PROPERTY("Util", util),
-        DECLARE_NAPI_FUNCTION("getLineInstance", GetLineInstance),
-        DECLARE_NAPI_FUNCTION("getInstance", GetIndexUtil),
-        DECLARE_NAPI_PROPERTY("Character", character),
-        DECLARE_NAPI_FUNCTION("is24HourClock", Is24HourClock),
-        DECLARE_NAPI_FUNCTION("set24HourClock", Set24HourClock),
-    };
-
-    status = napi_define_properties(env, exports,
-                                    sizeof(properties) / sizeof(napi_property_descriptor),
-                                    properties);
+    size_t propertiesNums = 23;
+    napi_property_descriptor properties[propertiesNums];
+    CreateInitProperties(properties);
+    properties[13] = DECLARE_NAPI_PROPERTY("Util", util);  // 13 is properties index
+    properties[16] = DECLARE_NAPI_PROPERTY("Character", character);  // 16 is properties index
+    status = napi_define_properties(env, exports, propertiesNums, properties);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to set properties at init");
         return nullptr;
@@ -2253,6 +2264,119 @@ napi_value I18nAddon::Set24HourClock(napi_env env, napi_callback_info info)
     status = napi_get_boolean(env, success, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Create set 24HourClock boolean value failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::AddPreferredLanguage(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "addPreferredLanguage: first parameter type does not match");
+        return nullptr;
+    }
+    size_t len = 0;
+    status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "addPreferredLanguage: get language length failed");
+        return nullptr;
+    }
+    std::vector<char> language(len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], language.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "addPreferrdLanguage: get language failed");
+        return nullptr;
+    }
+    int index = 1000000;
+    if (argv[1] != nullptr) {
+        status = napi_get_value_int32(env, argv[1], &index);
+    }
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "addPreferrdLanguage: get index failed");
+        return nullptr;
+    }
+    bool success = PreferredLanguage::AddPreferredLanguage(language.data(), index);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, success, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "addPreferrdLanguage: create boolean result failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::RemovePreferredLanguage(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_number) {
+        napi_throw_type_error(env, nullptr, "removePreferredLanguage: parameter type does not match");
+        return nullptr;
+    }
+    int index = 1000000;
+    status = napi_get_value_int32(env, argv[0], &index);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "removePreferrdLanguage: get index failed");
+        return nullptr;
+    }
+    bool success = PreferredLanguage::RemovePreferredLanguage(index);
+    napi_value result = nullptr;
+    status = napi_get_boolean(env, success, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "removePreferrdLanguage: create boolean result failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::GetPreferredLanguageList(napi_env env, napi_callback_info info)
+{
+    std::vector<std::string> languageList = PreferredLanguage::GetPreferredLanguageList();
+    napi_value result = nullptr;
+    napi_status status = napi_ok;
+    status = napi_create_array_with_length(env, languageList.size(), &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "getPreferrdLanguageList: create array failed");
+        return nullptr;
+    }
+    for (size_t i = 0; i < languageList.size(); i++) {
+        napi_value value = nullptr;
+        status = napi_create_string_utf8(env, languageList[i].c_str(), NAPI_AUTO_LENGTH, &value);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "getPreferrdLanguageList: create string failed");
+            return nullptr;
+        }
+        status = napi_set_element(env, result, i, value);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "GetPreferredLanguageList: set array item failed");
+            return nullptr;
+        }
+    }
+    return result;
+}
+
+napi_value I18nAddon::GetFirstPreferredLanguage(napi_env env, napi_callback_info info)
+{
+    std::string language = PreferredLanguage::GetFirstPreferredLanguage();
+    napi_value result = nullptr;
+    napi_status status = napi_ok;
+    status = napi_create_string_utf8(env, language.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "getFirstPreferrdLanguage: create string result failed");
         return nullptr;
     }
     return result;
