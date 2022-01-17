@@ -64,6 +64,7 @@ ohos_shared_library("i18n") {
 
   deps = [
     "//base/global/i18n_standard/frameworks/intl:intl_util",
+    "//base/global/i18n_standard/frameworks/intl:preferred_language",
     "//foundation/ace/napi:ace_napi",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
