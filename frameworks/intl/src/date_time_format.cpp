@@ -182,6 +182,12 @@ void DateTimeFormat::ParseConfigsPartTwo(std::map<std::string, std::string> &con
     if (configs.count("hour12") > 0) {
         hour12 = configs["hour12"];
     }
+    if (hour12.empty()) {
+        bool is24HourClock = LocaleConfig::Is24HourClock();
+        if (is24HourClock) {
+            hour12 = "false";
+        }
+    }
     if (configs.count("weekday") > 0) {
         weekday = configs["weekday"];
     }
@@ -296,9 +302,9 @@ void DateTimeFormat::ComputePartOfPattern(std::string option, char16_t character
     if (!option.empty()) {
         UnicodeString curPartOfPattern = UnicodeString(character);
         int32_t length = curPartOfPattern.length();
-        if (option == "2-digit" && length != TWO_DIGIT_LENGTH) {
+        if (option == "2-digit" && length == TWO_DIGIT_LENGTH) {
             pattern.findAndReplace(curPartOfPattern, UnicodeString::fromUTF8(StringPiece(twoDigitChar)));
-        } else if (option == "numeric" && length != NUMERIC_LENGTH) {
+        } else if (option == "numeric" && length == NUMERIC_LENGTH) {
             pattern.findAndReplace(curPartOfPattern, UnicodeString::fromUTF8(StringPiece(numericChar)));
         }
     }
