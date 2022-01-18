@@ -26,7 +26,7 @@ namespace OHOS {
 namespace Global {
 namespace I18n {
 const char *PreferredLanguage::RESOURCE_PATH_HEAD = "/data/accounts/account_0/applications/";
-const char *PreferredLanguage::RESOURCE_PATH_TAILOR = "/assets/entry/resources.index";
+const char *PreferredLanguage::RESOURCE_PATH_TAILOR = "/resources.index";
 const char *PreferredLanguage::RESOURCE_PATH_SPLITOR = "/";
 const char *PreferredLanguage::PREFERRED_LANGUAGES = "persist.sys.preferredLanguages";
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "LocaleConfig" };
