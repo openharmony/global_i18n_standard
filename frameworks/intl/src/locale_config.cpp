@@ -848,12 +848,12 @@ bool LocaleConfig::Is24HourClock()
     char value[CONFIG_LEN];
     int code = GetParameter(HOUR_KEY, "", value, CONFIG_LEN);
     if (code <= 0) {
-        return true;
-    }
-    if (strcmp(value, "false") == 0) {
         return false;
     }
-    return true;
+    if (strcmp(value, "true") == 0) {
+        return true;
+    }
+    return false;
 }
 
 bool LocaleConfig::Set24HourClock(bool option)
