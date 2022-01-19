@@ -129,6 +129,7 @@ private:
     void InitDateFormatWithoutConfigs(UErrorCode &status);
     void InitDateFormat(UErrorCode &status);
     void GetAdditionalResolvedOptions(std::map<std::string, std::string> &map);
+    void FixPattern();
 };
 } // namespace I18n
 } // namespace Global
