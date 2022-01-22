@@ -26,7 +26,7 @@ namespace OHOS {
 namespace Global {
 namespace I18n {
 const char *PreferredLanguage::RESOURCE_PATH_HEAD = "/data/accounts/account_0/applications/";
-const char *PreferredLanguage::RESOURCE_PATH_TAILOR = "/resources.index";
+const char *PreferredLanguage::RESOURCE_PATH_TAILOR = "/assets/entry/resources.index";
 const char *PreferredLanguage::RESOURCE_PATH_SPLITOR = "/";
 const char *PreferredLanguage::PREFERRED_LANGUAGES = "persist.sys.preferredLanguages";
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "LocaleConfig" };
@@ -129,9 +129,9 @@ bool PreferredLanguage::RemovePreferredLanguage(int index)
         return false;
     }
     std::vector<std::string>::iterator it = preferredLanguageList.begin();
-    preferredLanguageList.erase(it + index);
+    preferredLanguageList.erase(it + idx);
     bool status = false;
-    if (index == 0) {
+    if (idx == 0) {
         status = LocaleConfig::SetSystemLanguage(preferredLanguageList[0]);
         if (!status) {
             return false;
