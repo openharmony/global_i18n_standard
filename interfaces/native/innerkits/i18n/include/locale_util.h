@@ -12,22 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef I18N_STANDARD_ISRTL_LOCALE_UTIL_H
-#define I18N_STANDARD_ISRTL_LOCALE_UTIL_H
+#ifndef OHOS_GLOBAL_I18N_LOCALE_UTIL_H
+#define OHOS_GLOBAL_I18N_LOCALE_UTIL_H
 
 #include <string>
-
 #include "locid.h"
 
 namespace OHOS {
 namespace Global {
 namespace I18n {
-static inline bool IsRTL(const std::string &locale)
-{
-    icu::Locale curLocale(locale.c_str());
-    return curLocale.isRightToLeft();
+class LocaleUtil {
+public:
+   static bool IsRTL(const std::string &locale);
 }
-}
-}
-}
+} // I18n
+} // Global
+} // OHOS
 #endif
