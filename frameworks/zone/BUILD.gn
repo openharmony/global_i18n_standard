@@ -13,19 +13,22 @@
 
 import("//build/ohos.gni")
 
-ohos_shared_library("zone_util") {
+config("zone_util_public_configs") {
   include_dirs = [
     "//third_party/icu/icu4c/source",
     "//third_party/icu/icu4c/source/common",
     "//third_party/icu/icu4c/source/common/unicode",
     "//third_party/icu/icu4c/source/i18n",
-    "//third_party/icu/icu4c/source/i18n/unicode",
     "//base/global/i18n_standard/interfaces/native/innerkits/zone/include",
     "//third_party/libphonenumber/cpp/src",
     "//third_party/protobuf/src",
     "//third_party/protobuf/src/google",
     "//third_party/protobuf/src/google/protobuf",
   ]
+}
+
+ohos_shared_library("zone_util") {
+  public_configs = [ ":zone_util_public_configs" ]
   sources = [ "src/zone_util.cpp" ]
   cflags_cc = [
     "-Wall",

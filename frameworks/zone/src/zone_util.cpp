@@ -18,7 +18,7 @@
 #include <cctype>
 #include "ohos/init_data.h"
 #include "strenum.h"
-#include "timezone.h"
+#include "unicode/timezone.h"
 
 using namespace OHOS::Global::I18n;
 using namespace icu;
@@ -90,9 +90,7 @@ string ZoneUtil::GetDefaultZone(const int32_t number)
         return "";
     }
     string ret = GetDefaultZone(*region_code);
-    if (region_code != nullptr) {
-        delete region_code;
-    }
+    delete region_code;
     return ret;
 }
 
@@ -124,10 +122,7 @@ string ZoneUtil::GetDefaultZone(const int32_t number, const int32_t offset)
         return "";
     }
     string ret = GetDefaultZone(*region_code, offset);
-    if (region_code != nullptr) {
-        delete region_code;
-        region_code = nullptr;
-    }
+    delete region_code;
     return ret;
 }
 

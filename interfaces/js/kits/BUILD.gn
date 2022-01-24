@@ -13,6 +13,13 @@
 
 import("//build/ohos.gni")
 
+group("build_module") {
+  deps = [
+    ":i18n",
+    ":intl",
+  ]
+}
+
 ohos_shared_library("intl") {
   include_dirs = [
     "//base/global/i18n_standard/frameworks/intl/include",
@@ -65,12 +72,14 @@ ohos_shared_library("i18n") {
   deps = [
     "//base/global/i18n_standard/frameworks/intl:intl_util",
     "//base/global/i18n_standard/frameworks/intl:preferred_language",
-    "//foundation/ace/napi:ace_napi",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
     "//third_party/libphonenumber/cpp:phonenumber_standard",
   ]
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "napi:ace_napi",
+  ]
   relative_install_dir = "module"
   subsystem_name = "global"
   part_name = "i18n_standard"

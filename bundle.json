@@ -1,0 +1,113 @@
+{
+    "name": "@ohos/global_i18n_standard",
+    "version": "1.0.0",
+    "description": "Provides internationalization APIS for implementing functions such date and time formatting.",
+    "homePage": "https://gitee.com/openharmony/",
+    "license": "Apache V2",
+    "repository": "https://gitee.com/openharmony/global_i18n_standard",
+    "domain": "os",
+    "language": "",
+    "publishAs": "code-segment",
+    "private": false,
+    "scripts": {},
+    "tags": [
+        "global"
+    ],
+    "keywords": [
+        "i18n",
+        "standard"
+    ],
+    "envs": [],
+    "dirs": [],
+    "author": {
+        "name": "",
+        "email": "",
+        "url": ""
+    },
+    "contributors": [
+        {
+            "name": "",
+            "email": "",
+            "url": ""
+        }
+    ],
+    "segment": {
+        "destPath": "base/global/i18n_standard"
+    },
+    "component": {
+        "name": "i18n_standard",
+        "subsystem": "global",
+        "syscap": [
+            "SystemCapability.I18N"
+        ],
+        "features": [],
+        "adapted_system_type": [
+            "standard"
+        ],
+        "rom": "",
+        "ram": "",
+        "deps": {
+            "components": [
+                "app_manager",
+                "want",
+                "appexecfwk_base",
+                "appexecfwk_core",
+                "ipc_core",
+                "syspara",
+                "utils",
+                "tel_core_service_api",
+                "libhilog",
+                "samgr_proxy",
+                "ace_napi",
+                "base"
+            ],
+            "third_party": [
+                "icu",
+                "libxml2",
+                "libphonenumber"
+            ]
+        },
+        "build": {
+            "sub_component": [
+                "//base/global/i18n_standard/frameworks/zone:zone_util",
+                "//base/global/i18n_standard/frameworks/intl:build_module",
+                "//base/global/i18n_standard/interfaces/js/kits:build_module",
+                "//third_party/icu/icu4c:ohos_icudat"
+            ],
+            "inner_kits": [
+                {
+                    "name": "//base/global/i18n_standard/frameworks/zone:zone_util",
+                    "header": {
+                        "header_files": [
+                            "zone_util.h"
+                        ],
+                        "header_base": "//base/global/i18n_standard/interfaces/native/innerkits/zone/include"
+                    }
+                },
+                {
+                    "name": "//base/global/i18n_standard/frameworks/intl:intl_util",
+                    "header": {
+                        "header_files": [
+                            "locale_config.h",
+                            "locale_info.h"
+                        ],
+                        "header_base": "//base/global/i18n_standard/frameworks/intl/include"
+                    }
+                },
+                {
+                    "name": "//base/global/i18n_standard/frameworks/intl:preferred_language",
+                    "header": {
+                        "header_files": [
+                            "preferred_language.h"
+                        ],
+                        "header_base": "//base/global/i18n_standard/interfaces/native/innerkits/preferred_language/include"
+                    }
+                }
+            ],
+            "test": [
+                "//base/global/i18n_standard/frameworks/intl/test:intl_test",
+                "//base/global/i18n_standard/frameworks/zone/test:zone_util_test"
+            ]
+        }
+    }
+}

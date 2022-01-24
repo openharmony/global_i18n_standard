@@ -13,21 +13,28 @@
 
 import("//build/ohos.gni")
 
+group("build_module") {
+  deps = [
+    ":intl_util",
+    ":preferred_language",
+  ]
+}
+
+config("preferred_language_config") {
+  include_dirs = [ "//base/global/i18n_standard/interfaces/native/innerkits/preferred_language/include" ]
+}
 ohos_shared_library("preferred_language") {
+  public_configs = [ ":preferred_language_config" ]
   include_dirs = [
-    "//base/global/i18n_standard/frameworks/intl/include",
     "//base/global/resmgr_standard/frameworks/resmgr/include",
+    "include",
   ]
   sources = [ "src/preferred_language.cpp" ]
   cflags_cc = [
     "-Wall",
     "-fPIC",
   ]
-  deps = [
-    "//base/global/i18n_standard/frameworks/intl:intl_util",
-    "//base/global/resmgr_standard/frameworks/resmgr:global_resmgr",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
-  ]
+  deps = [ "//base/global/i18n_standard/frameworks/intl:intl_util" ]
   external_deps = [
     "ability_runtime:app_manager",
     "ability_runtime:want",
@@ -36,19 +43,26 @@ ohos_shared_library("preferred_language") {
     "core_service:tel_core_service_api",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "resmgr_standard:global_resmgr",
+    "startup_l2:syspara",
   ]
   subsystem_name = "global"
   part_name = "i18n_standard"
 }
 
-ohos_shared_library("intl_util") {
+config("intl_util_config") {
   include_dirs = [
     "//third_party/icu/icu4c/source",
     "//third_party/icu/icu4c/source/common",
     "//third_party/icu/icu4c/source/i18n",
     "//third_party/icu/icu4c/source/common/unicode",
-    "//base/global/i18n_standard/frameworks/intl/include",
     "//base/global/i18n_standard/interfaces/native/innerkits/i18n/include",
+  ]
+}
+ohos_shared_library("intl_util") {
+  public_configs = [ ":intl_util_config" ]
+  include_dirs = [
+    "include",
     "//utils/native/base/include",
     "//third_party/libxml2/include",
     "//third_party/libphonenumber/cpp/src",
@@ -82,18 +96,17 @@ ohos_shared_library("intl_util") {
     ":forbidden_regions_xml",
     ":language_config.para",
     ":white_languages_xml",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
-    "//foundation/appexecfwk/standard/interfaces/innerkits/libeventhandler:libeventhandler",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
     "//third_party/libphonenumber/cpp:phonenumber_standard",
     "//third_party/libxml2:xml2",
-    "//utils/native/base:utils",
   ]
   external_deps = [
     "core_service:tel_core_service_api",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "startup_l2:syspara",
+    "utils_base:utils",
   ]
   subsystem_name = "global"
   part_name = "i18n_standard"
