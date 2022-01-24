@@ -112,52 +112,95 @@ void DateTimeFormat::InitDateFormatWithoutConfigs(UErrorCode &status)
     dateIntvFormat = DateIntervalFormat::createInstance(pattern, locale, status);
 }
 
-void DateTimeFormat::FixPattern()
+void DateTimeFormat::FixPatternPartOne()
 {
     if (hour12 == "true") {
         pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("H")),
-                               icu::UnicodeString::fromUTF8(StringPiece("h")));
+            icu::UnicodeString::fromUTF8(StringPiece("h")));
         pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("k")),
-                               icu::UnicodeString::fromUTF8(StringPiece("h")));
+            icu::UnicodeString::fromUTF8(StringPiece("h")));
         pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("K")),
-                               icu::UnicodeString::fromUTF8(StringPiece("h")));
+            icu::UnicodeString::fromUTF8(StringPiece("h")));
     } else if (hour12 == "false") {
         pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("h")),
-                               icu::UnicodeString::fromUTF8(StringPiece("H")));
+            icu::UnicodeString::fromUTF8(StringPiece("H")));
         pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("k")),
-                               icu::UnicodeString::fromUTF8(StringPiece("H")));
+            icu::UnicodeString::fromUTF8(StringPiece("H")));
         pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("K")),
-                               icu::UnicodeString::fromUTF8(StringPiece("H")));
+            icu::UnicodeString::fromUTF8(StringPiece("H")));
+        removeAmPmChar();
     } else if (hourCycle != "") {
-        if (hourCycle == "h11") {
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("h")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("K")));
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("H")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("K")));
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("k")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("K")));
-        } else if (hourCycle == "h12") {
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("H")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("h")));
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("k")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("h")));
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("K")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("h")));
-        } else if (hourCycle == "h23") {
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("h")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("H")));
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("k")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("H")));
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("K")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("H")));
-        } else if (hourCycle == "h24") {
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("h")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("k")));
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("H")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("k")));
-            pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("K")),
-                                   icu::UnicodeString::fromUTF8(StringPiece("k")));
+        FixPatternPartTwo();
+    }
+}
+
+void DateTimeFormat::FixPatternPartTwo()
+{
+    if (hourCycle == "h11") {
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("h")),
+            icu::UnicodeString::fromUTF8(StringPiece("k")));
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("H")),
+            icu::UnicodeString::fromUTF8(StringPiece("k")));
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("K")),
+            icu::UnicodeString::fromUTF8(StringPiece("k")));
+    } else if (hourCycle == "h12") {
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("H")),
+            icu::UnicodeString::fromUTF8(StringPiece("h")));
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("k")),
+            icu::UnicodeString::fromUTF8(StringPiece("h")));
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("K")),
+            icu::UnicodeString::fromUTF8(StringPiece("h")));
+    } else if (hourCycle == "h23") {
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("h")),
+            icu::UnicodeString::fromUTF8(StringPiece("K")));
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("H")),
+            icu::UnicodeString::fromUTF8(StringPiece("K")));
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("k")),
+            icu::UnicodeString::fromUTF8(StringPiece("K")));
+        removeAmPmChar();
+    } else if (hourCycle == "h24") {
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("h")),
+            icu::UnicodeString::fromUTF8(StringPiece("H")));
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("k")),
+            icu::UnicodeString::fromUTF8(StringPiece("H")));
+        pattern.findAndReplace(icu::UnicodeString::fromUTF8(StringPiece("K")),
+            icu::UnicodeString::fromUTF8(StringPiece("H")));
+        removeAmPmChar();
+    }
+}
+
+void DateTimeFormat::removeAmPmChar()
+{
+    std::string patternString = "";
+    pattern.toUTF8String(patternString);
+    size_t amPmCharStartIdx = -1;
+    size_t amPmCharEndIdx = -1;
+    for (size_t i = 0; i < patternString.length(); i++) {
+        if (patternString[i] != 'a') {
+            continue;
         }
+        if ((i + 1) < patternString.length() && patternString[i+1] == 't') {
+            continue;
+        }
+        amPmCharStartIdx = i - 1;
+        while (amPmCharStartIdx >= 0 && patternString[amPmCharStartIdx] == ' ') {
+            amPmCharStartIdx -= 1;
+        }
+        amPmCharStartIdx += 1;
+        amPmCharEndIdx = i + 1;
+        while (amPmCharEndIdx < patternString.length() && patternString[amPmCharEndIdx] == ' ') {
+            amPmCharEndIdx += 1;
+        }
+        break;
+    }
+    size_t length = amPmCharEndIdx - amPmCharStartIdx;
+    if (length != 0) {
+        if (amPmCharStartIdx == 0 || amPmCharEndIdx == patternString.length()) {
+            patternString = patternString.replace(amPmCharStartIdx, length, "");
+        } else {
+            patternString = patternString.replace(amPmCharStartIdx, length, " ");
+        }
+        pattern = icu::UnicodeString(patternString.data(), patternString.length());
     }
 }
 
@@ -177,13 +220,8 @@ void DateTimeFormat::InitDateFormat(UErrorCode &status)
         if (simDateFormat != nullptr) {
             simDateFormat->toPattern(pattern);
         }
-        FixPattern();
+        FixPatternPartOne();
         delete dateFormat;
-        auto patternGenerator =
-            std::unique_ptr<DateTimePatternGenerator>(DateTimePatternGenerator::createInstance(locale, status));
-        pattern =
-            patternGenerator->replaceFieldTypes(patternGenerator->getBestPattern(pattern, status), pattern, status);
-        pattern = patternGenerator->getBestPattern(pattern, status);
         dateFormat = new SimpleDateFormat(pattern, locale, status);
     } else {
         auto patternGenerator =
