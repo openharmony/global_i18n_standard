@@ -38,8 +38,8 @@ ohos_shared_library("preferred_language") {
   external_deps = [
     "ability_runtime:app_manager",
     "ability_runtime:want",
-    "appexecfwk_standard:appexecfwk_base",
-    "appexecfwk_standard:appexecfwk_core",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "core_service:tel_core_service_api",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
