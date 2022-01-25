@@ -43,7 +43,8 @@ bool IsRTLCharacter(const std::string &character)
 {
     icu::UnicodeString unicodeString(character.c_str());
     UChar32 char32 = unicodeString.char32At(0);
-    return u_hasBinaryProperty(char32, UCHAR_BIDI_MIRRORED);
+    UCharDirection direction = u_charDirection(char32);
+    return direction == UCharDirection::U_RIGHT_TO_LEFT;
 }
 
 bool IsIdeoGraphic(const std::string &character)
