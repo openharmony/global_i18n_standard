@@ -13,11 +13,20 @@
  * limitations under the License.
  */
 #include "character.h"
+#include <set>
 #include "unicode/unistr.h"
 
 namespace OHOS {
 namespace Global {
 namespace I18n {
+static std::set<UCharDirection> RTLDirectionSet = {
+    U_RIGHT_TO_LEFT,
+    U_RIGHT_TO_LEFT_ARABIC,
+    U_RIGHT_TO_LEFT_EMBEDDING,
+    U_RIGHT_TO_LEFT_OVERRIDE,
+    U_RIGHT_TO_LEFT_ISOLATE
+};
+
 bool IsDigit(const std::string &character)
 {
     icu::UnicodeString unicodeString(character.c_str());
@@ -44,7 +53,10 @@ bool IsRTLCharacter(const std::string &character)
     icu::UnicodeString unicodeString(character.c_str());
     UChar32 char32 = unicodeString.char32At(0);
     UCharDirection direction = u_charDirection(char32);
-    return direction == UCharDirection::U_RIGHT_TO_LEFT;
+    if (RTLDirectionSet.find(direction) != RTLDirectionSet.end()) {
+        return true;
+    }
+    return false;
 }
 
 bool IsIdeoGraphic(const std::string &character)

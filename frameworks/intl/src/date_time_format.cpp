@@ -277,7 +277,7 @@ void DateTimeFormat::ParseConfigsPartTwo(std::map<std::string, std::string> &con
     if (configs.count("hour12") > 0) {
         hour12 = configs["hour12"];
     }
-    if (hour12.empty()) {
+    if (hour12.empty() && hourCycle.empty()) {
         bool is24HourClock = LocaleConfig::Is24HourClock();
         if (is24HourClock) {
             hour12 = "false";
