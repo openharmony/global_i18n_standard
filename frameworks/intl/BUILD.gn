@@ -56,13 +56,13 @@ config("intl_util_config") {
     "//third_party/icu/icu4c/source/common",
     "//third_party/icu/icu4c/source/i18n",
     "//third_party/icu/icu4c/source/common/unicode",
+    "//base/global/i18n_standard/frameworks/intl/include",
     "//base/global/i18n_standard/interfaces/native/innerkits/i18n/include",
   ]
 }
 ohos_shared_library("intl_util") {
   public_configs = [ ":intl_util_config" ]
   include_dirs = [
-    "include",
     "//utils/native/base/include",
     "//third_party/libxml2/include",
     "//third_party/libphonenumber/cpp/src",
