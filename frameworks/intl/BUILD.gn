@@ -52,11 +52,11 @@ ohos_shared_library("preferred_language") {
 
 config("intl_util_config") {
   include_dirs = [
-    "include",
     "//third_party/icu/icu4c/source",
     "//third_party/icu/icu4c/source/common",
     "//third_party/icu/icu4c/source/i18n",
     "//third_party/icu/icu4c/source/common/unicode",
+    "//base/global/i18n_standard/frameworks/intl/include",
     "//base/global/i18n_standard/interfaces/native/innerkits/i18n/include",
   ]
 }
