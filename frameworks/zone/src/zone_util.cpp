@@ -65,7 +65,7 @@ string ZoneUtil::GetDefaultZone(const string &country)
 {
     string temp(country);
     for (size_t i = 0; i < temp.size(); i++) {
-        temp[i] = toupper(temp[i]);
+        temp[i] = (char)toupper(temp[i]);
     }
     if (defaultMap.find(temp) != defaultMap.end()) {
         return defaultMap[temp];

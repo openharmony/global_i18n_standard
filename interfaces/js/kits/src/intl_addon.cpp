@@ -1617,7 +1617,7 @@ void IntlAddon::FillInArrayElement(napi_env env, napi_value &result, napi_status
             return;
         }
         napi_value unit = nullptr;
-        int unitIndex = 2;
+        size_t unitIndex = 2;
         if (timeVector[i].size() > unitIndex) {
             status = napi_create_string_utf8(env, timeVector[i][unitIndex].c_str(), NAPI_AUTO_LENGTH, &unit);
             if (status != napi_ok) {

@@ -426,13 +426,30 @@ std::string DateTimeFormat::Format(int64_t *date, int size)
     UErrorCode status = U_ZERO_ERROR;
     std::string result;
     UnicodeString dateString;
-    int64_t year = date[YEAR_INDEX];
-    int64_t month = date[MONTH_INDEX];
-    int64_t day = date[DAY_INDEX];
-    int64_t hour = date[HOUR_INDEX];
-    int64_t minute = date[MINUTE_INDEX];
-    int64_t second = date[SECOND_INDEX];
-
+    int64_t year = 0;
+    if (YEAR_INDEX < size) {
+        year = date[YEAR_INDEX];
+    }
+    int64_t month = 0;
+    if (MONTH_INDEX < size) {
+        month = date[MONTH_INDEX];
+    }
+    int64_t day = 0;
+    if (DAY_INDEX < size) {
+        day = date[DAY_INDEX];
+    }
+    int64_t hour = 0;
+    if (HOUR_INDEX < size) {
+        hour = date[HOUR_INDEX];
+    }
+    int64_t minute = 0;
+    if (MINUTE_INDEX < size) {
+        minute = date[MINUTE_INDEX];
+    }
+    int64_t second = 0;
+    if (SECOND_INDEX < size) {
+        second = date[SECOND_INDEX];
+    }
     calendar->clear();
     calendar->set(year, month, day, hour, minute, second);
     if (!timeZone.empty()) {

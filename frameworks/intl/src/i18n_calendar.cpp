@@ -190,7 +190,7 @@ int32_t I18nCalendar::Get(UCalendarDateFields field) const
 void I18nCalendar::SetMinimalDaysInFirstWeek(int32_t value)
 {
     if (calendar_ != nullptr) {
-        calendar_->setMinimalDaysInFirstWeek(value);
+        calendar_->setMinimalDaysInFirstWeek((uint8_t)value);
         return;
     }
 }

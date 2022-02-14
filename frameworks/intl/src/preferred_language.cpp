@@ -172,7 +172,7 @@ std::vector<std::string> PreferredLanguage::GetPreferredLanguageList()
     if (systemLanguageIdx == -1) {
         list.insert(list.begin(), systemLanguage);
     } else {
-        for (size_t i = systemLanguageIdx; i > 0; i--) {
+        for (size_t i = (size_t)systemLanguageIdx; i > 0; i--) {
             list[i] = list[i-1];
         }
         list[0] = systemLanguage;

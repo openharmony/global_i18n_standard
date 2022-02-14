@@ -177,7 +177,7 @@ string Adjust(const string &origin)
     return origin;
 }
 
-int32_t GetDialectName(const char *localeName, char *name, int32_t nameCapacity, UErrorCode &status)
+int32_t GetDialectName(const char *localeName, char *name, size_t nameCapacity, UErrorCode &status)
 {
     icu::Locale locale = icu::Locale::forLanguageTag(localeName, status);
     if (status != U_ZERO_ERROR) {
@@ -277,7 +277,7 @@ string GetDisplayLanguageInner(const string &language, const string &displayLoca
         locale.getDisplayName(displayLoc, unistr);
     }
     if (sentenceCase) {
-        UChar ch = ucase_toupper(unistr.char32At(0));
+        UChar32 ch = ucase_toupper(unistr.char32At(0));
         unistr.replace(0, 1, ch);
     }
     string out;
@@ -670,7 +670,7 @@ string LocaleConfig::GetDisplayLanguage(const string &language, const string &di
         icu::UnicodeString unistr;
         locale.getDisplayLanguage(displayLoc, unistr);
         if (sentenceCase) {
-            UChar ch = ucase_toupper(unistr.char32At(0));
+            UChar32 ch = ucase_toupper(unistr.char32At(0));
             unistr.replace(0, 1, ch);
         }
         string out;
@@ -701,7 +701,7 @@ string LocaleConfig::GetDisplayRegion(const string &region, const string &displa
     icu::UnicodeString displayRegion;
     originLocale.getDisplayCountry(locale, displayRegion);
     if (sentenceCase) {
-        UChar ch = ucase_toupper(displayRegion.char32At(0));
+        UChar32 ch = ucase_toupper(displayRegion.char32At(0));
         displayRegion.replace(0, 1, ch);
     }
     string temp;
