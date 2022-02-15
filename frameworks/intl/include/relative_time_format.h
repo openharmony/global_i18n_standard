@@ -66,8 +66,9 @@ private:
     static std::unordered_map<std::string, UDateRelativeDateTimeFormatterStyle> relativeFormatStyle;
     void InsertInfo(std::vector<std::vector<std::string>> &timeVector, const std::string &unit, bool isInteger,
         const std::string &value);
-    void ProcessIntegerField(const std::map<int, int> &indexMap, std::vector<std::vector<std::string>> &timeVector,
-        int &startIndex, const std::string &unit, const std::string &result);
+    void ProcessIntegerField(const std::map<size_t, size_t> &indexMap,
+        std::vector<std::vector<std::string>> &timeVector, size_t &startIndex, const std::string &unit,
+        const std::string &result);
     void ParseConfigs(std::map<std::string, std::string> &configs);
 };
 } // namespace I18n

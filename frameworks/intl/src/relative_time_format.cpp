@@ -134,8 +134,8 @@ void RelativeTimeFormat::InsertInfo(std::vector<std::vector<std::string>> &timeV
     timeVector.push_back(info);
 }
 
-void RelativeTimeFormat::ProcessIntegerField(const std::map<int, int> &indexMap,
-    std::vector<std::vector<std::string>> &timeVector, int &startIndex, const std::string &unit,
+void RelativeTimeFormat::ProcessIntegerField(const std::map<size_t, size_t> &indexMap,
+    std::vector<std::vector<std::string>> &timeVector, size_t &startIndex, const std::string &unit,
     const std::string &result)
 {
     for (auto iter = indexMap.begin(); iter != indexMap.end(); iter++) {
@@ -164,14 +164,14 @@ void RelativeTimeFormat::FormatToParts(double number, const std::string &unit,
     fmtRelativeTime.toString(status).toUTF8String(result);
     icu::ConstrainedFieldPosition constrainedPos;
     constrainedPos.constrainCategory(UFIELD_CATEGORY_NUMBER);
-    int prevIndex = 0;
-    int length = result.length();
-    std::map<int, int> indexMap;
+    size_t prevIndex = 0;
+    size_t length = result.length();
+    std::map<size_t, size_t> indexMap;
     while (fmtRelativeTime.nextPosition(constrainedPos, status)) {
-        int startIndex = constrainedPos.getStart();
+        size_t startIndex = (size_t)constrainedPos.getStart();
         if (constrainedPos.getCategory() == UFIELD_CATEGORY_NUMBER) {
             if (constrainedPos.getField() == UNUM_GROUPING_SEPARATOR_FIELD) {
-                indexMap.insert(std::make_pair(startIndex, constrainedPos.getLimit()));
+                indexMap.insert(std::make_pair(startIndex, (size_t)constrainedPos.getLimit()));
                 continue;
             }
             if (startIndex > prevIndex) {
@@ -180,8 +180,9 @@ void RelativeTimeFormat::FormatToParts(double number, const std::string &unit,
             if (constrainedPos.getField() == UNUM_INTEGER_FIELD) {
                 ProcessIntegerField(indexMap, timeVector, startIndex, unit, result);
             }
-            InsertInfo(timeVector, unit, true, result.substr(startIndex, constrainedPos.getLimit() - startIndex));
-            prevIndex = constrainedPos.getLimit();
+            InsertInfo(timeVector, unit, true, result.substr(startIndex,
+                (size_t)constrainedPos.getLimit() - startIndex));
+            prevIndex = (size_t)constrainedPos.getLimit();
         }
     }
     if (prevIndex < length) {
