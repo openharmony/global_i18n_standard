@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#include "zone_util.h"
 #include <gtest/gtest.h>
+#include "zone_util.h"
 
 using namespace OHOS::Global::I18n;
 using testing::ext::TestSize;

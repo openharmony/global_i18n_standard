@@ -14,7 +14,6 @@
  */
 #include <regex>
 #include "core_service_client.h"
-#include "locale_config.h"
 #include "libxml/parser.h"
 #include "locale_info.h"
 #include "localebuilder.h"
@@ -29,6 +28,7 @@
 #include "ureslocs.h"
 #include "ustring.h"
 #include "ustr_imp.h"
+#include "locale_config.h"
 
 namespace OHOS {
 namespace Global {

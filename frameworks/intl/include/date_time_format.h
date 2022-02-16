@@ -15,6 +15,10 @@
 #ifndef OHOS_GLOBAL_I18N_DATE_TIME_FORMAT_H
 #define OHOS_GLOBAL_I18N_DATE_TIME_FORMAT_H
 
+#include <map>
+#include <vector>
+#include <climits>
+#include <set>
 #include "locale_info.h"
 #include "unicode/datefmt.h"
 #include "unicode/dtptngen.h"
@@ -25,10 +29,6 @@
 #include "unicode/calendar.h"
 #include "unicode/numsys.h"
 #include "unicode/dtitvfmt.h"
-#include <map>
-#include <vector>
-#include <climits>
-#include <set>
 
 namespace OHOS {
 namespace Global {

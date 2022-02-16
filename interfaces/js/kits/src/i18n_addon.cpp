@@ -16,9 +16,9 @@
 #include <vector>
 #include "character.h"
 #include "hilog/log.h"
-#include "i18n_addon.h"
 #include "i18n_calendar.h"
 #include "node_api.h"
+#include "i18n_addon.h"
 
 namespace OHOS {
 namespace Global {
