@@ -173,8 +173,8 @@ void DateTimeFormat::removeAmPmChar()
 {
     std::string patternString = "";
     pattern.toUTF8String(patternString);
-    size_t amPmCharStartIdx = -1;
-    size_t amPmCharEndIdx = -1;
+    size_t amPmCharStartIdx = 0;
+    size_t amPmCharEndIdx = 0;
     for (size_t i = 0; i < patternString.length(); i++) {
         if (patternString[i] != 'a') {
             continue;
@@ -182,11 +182,15 @@ void DateTimeFormat::removeAmPmChar()
         if ((i + 1) < patternString.length() && patternString[i+1] == 't') {
             continue;
         }
-        amPmCharStartIdx = i - 1;
-        while (amPmCharStartIdx >= 0 && patternString[amPmCharStartIdx] == ' ') {
-            amPmCharStartIdx -= 1;
+        if (i == 0) {
+            amPmCharStartIdx = i;
+        } else {
+            amPmCharStartIdx = i - 1;
+            while (amPmCharStartIdx >= 0 && patternString[amPmCharStartIdx] == ' ') {
+                amPmCharStartIdx -= 1;
+            }
+            amPmCharStartIdx += 1;
         }
-        amPmCharStartIdx += 1;
         amPmCharEndIdx = i + 1;
         while (amPmCharEndIdx < patternString.length() && patternString[amPmCharEndIdx] == ' ') {
             amPmCharEndIdx += 1;
