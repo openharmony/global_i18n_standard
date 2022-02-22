@@ -23,19 +23,15 @@ IndexUtil::IndexUtil(const std::string &localeTag)
     UErrorCode status = U_ZERO_ERROR;
     if (localeTag == "") {
         icu::Locale locale(LocaleConfig::GetSystemLocale().c_str());
-        index = new icu::AlphabeticIndex(locale, status);
+        index = std::make_unique<icu::AlphabeticIndex>(locale, status);
     } else {
         icu::Locale locale(localeTag.c_str());
-        index = new icu::AlphabeticIndex(locale, status);
+        index = std::make_unique<icu::AlphabeticIndex>(locale, status);
     }
 }
 
 IndexUtil::~IndexUtil()
 {
-    if (index != nullptr) {
-        delete index;
-        index = nullptr;
-    }
 }
 
 std::vector<std::string> IndexUtil::GetIndexList()

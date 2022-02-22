@@ -179,7 +179,7 @@ void DateTimeFormat::removeAmPmChar()
         if (patternString[i] != 'a') {
             continue;
         }
-        if ((i + 1) < patternString.length() && patternString[i+1] == 't') {
+        if ((i + 1) < patternString.length() && patternString[i + 1] == 't') {
             continue;
         }
         if (i == 0) {

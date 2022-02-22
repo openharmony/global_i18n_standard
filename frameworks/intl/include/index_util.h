@@ -31,7 +31,7 @@ public:
     std::string GetIndex(const std::string &String);
 
 private:
-    icu::AlphabeticIndex *index;
+    std::unique_ptr<icu::AlphabeticIndex> index;
 };
 }
 }

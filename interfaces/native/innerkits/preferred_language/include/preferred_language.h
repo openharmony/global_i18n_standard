@@ -31,9 +31,9 @@ public:
     static std::string GetPreferredLocale();
 
 private:
-    static bool AddPreferredLanguageNonExist(std::vector<std::string> &preferredLanguageList, int index,
+    static bool AddPreferredLanguageNonExist(std::vector<std::string> &preferredLangList, int index,
                                              const std::string& language);
-    static bool AddPreferredLanguageExist(std::vector<std::string> &preferredLanguageList, int languageIdx, int index,
+    static bool AddPreferredLanguageExist(std::vector<std::string> &preferredLangList, int languageIdx, int index,
                                           const std::string& language);
     static std::set<std::string> GetResources();
     static bool IsMatched(const std::string& preferred, const std::string& resource);
