@@ -137,9 +137,9 @@ void I18nAddon::CreateInitProperties(napi_property_descriptor *properties)
     properties[19] = DECLARE_NAPI_FUNCTION("getPreferredLanguageList", GetPreferredLanguageList);
     // 20 is properties index
     properties[20] = DECLARE_NAPI_FUNCTION("getFirstPreferredLanguage", GetFirstPreferredLanguage);
-	// 21 is properties index
+    // 21 is properties index
     properties[21] = DECLARE_NAPI_FUNCTION("is24HourClock", Is24HourClock);
-	// 22 is properties index
+    // 22 is properties index
     properties[22] = DECLARE_NAPI_FUNCTION("set24HourClock", Set24HourClock);
 }
 

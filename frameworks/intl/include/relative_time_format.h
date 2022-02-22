@@ -59,8 +59,8 @@ private:
     std::string styleString = "long";
     std::string numeric = "always";
     std::string numberingSystem;
-    LocaleInfo *localeInfo = nullptr;
-    icu::RelativeDateTimeFormatter *relativeTimeFormat = nullptr;
+    std::unique_ptr<LocaleInfo> localeInfo;
+    std::unique_ptr<icu::RelativeDateTimeFormatter> relativeTimeFormat;
     UDateRelativeDateTimeFormatterStyle style = UDAT_STYLE_LONG;
     static std::unordered_map<std::string, URelativeDateTimeUnit> relativeUnits;
     static std::unordered_map<std::string, UDateRelativeDateTimeFormatterStyle> relativeFormatStyle;

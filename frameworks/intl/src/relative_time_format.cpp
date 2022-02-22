@@ -46,8 +46,8 @@ std::unordered_map<std::string, URelativeDateTimeUnit> RelativeTimeFormat::relat
     { "years", UDAT_REL_UNIT_YEAR },
 };
 
-RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string,
-    std::string> &configs)
+RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTags,
+    std::map<std::string, std::string> &configs)
 {
     UErrorCode status = U_ZERO_ERROR;
     auto builder = std::make_unique<icu::LocaleBuilder>();
@@ -56,19 +56,19 @@ RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTag
         std::string curLocale = localeTags[i];
         locale = builder->setLanguageTag(icu::StringPiece(curLocale)).build(status);
         if (LocaleInfo::allValidLocales.count(locale.getLanguage()) > 0) {
-            localeInfo = new LocaleInfo(curLocale, configs);
+            localeInfo = std::make_unique<LocaleInfo>(curLocale, configs);
             locale = localeInfo->GetLocale();
             localeBaseName = localeInfo->GetBaseName();
-            relativeTimeFormat = new icu::RelativeDateTimeFormatter(locale, nullptr, style,
+            relativeTimeFormat = std::make_unique<icu::RelativeDateTimeFormatter>(locale, nullptr, style,
                 UDISPCTX_CAPITALIZATION_NONE, status);
             break;
         }
     }
     if (localeInfo == nullptr || relativeTimeFormat == nullptr) {
-        localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), configs);
+        localeInfo = std::make_unique<LocaleInfo>(LocaleConfig::GetSystemLocale(), configs);
         locale = localeInfo->GetLocale();
         localeBaseName = localeInfo->GetBaseName();
-        relativeTimeFormat = new icu::RelativeDateTimeFormatter(locale, nullptr, style,
+        relativeTimeFormat = std::make_unique<icu::RelativeDateTimeFormatter>(locale, nullptr, style,
             UDISPCTX_CAPITALIZATION_NONE, status);
     }
     numberingSystem = localeInfo->GetNumberingSystem();
@@ -79,14 +79,6 @@ RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTag
 
 RelativeTimeFormat::~RelativeTimeFormat()
 {
-    if (localeInfo != nullptr) {
-        delete localeInfo;
-        localeInfo = nullptr;
-    }
-    if (relativeTimeFormat != nullptr) {
-        delete relativeTimeFormat;
-        relativeTimeFormat = nullptr;
-    }
 }
 
 void RelativeTimeFormat::ParseConfigs(std::map<std::string, std::string> &configs)

@@ -39,12 +39,12 @@ bool PreferredLanguage::AddPreferredLanguageExist(std::vector<std::string> &pref
     }
     if (languageIdx < index) {
         for (int i = languageIdx; i < index; i++) {
-            preferredLanguageList[i] = preferredLanguageList[i+1];
+            preferredLanguageList[i] = preferredLanguageList[i + 1];
         }
     }
     if (languageIdx > index) {
         for (int i = languageIdx; i > index; i--) {
-            preferredLanguageList[i] = preferredLanguageList[i-1];
+            preferredLanguageList[i] = preferredLanguageList[i - 1];
         }
     }
     preferredLanguageList[index] = language;
@@ -173,7 +173,7 @@ std::vector<std::string> PreferredLanguage::GetPreferredLanguageList()
         list.insert(list.begin(), systemLanguage);
     } else {
         for (size_t i = (size_t)systemLanguageIdx; i > 0; i--) {
-            list[i] = list[i-1];
+            list[i] = list[i - 1];
         }
         list[0] = systemLanguage;
     }
