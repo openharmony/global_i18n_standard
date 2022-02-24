@@ -518,7 +518,7 @@ napi_value IntlAddon::FormatDateTime(napi_env env, napi_callback_info info)
         return nullptr;
     }
     int64_t date[] = { year, month, day, hour, minute, second };
-    std::string value = obj->datefmt_->Format(date, std::end(date) - std::begin(date));
+    std::string value = obj->datefmt_->Format(date, sizeof(date) / sizeof(int64_t));
     napi_value result = nullptr;
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
@@ -559,8 +559,8 @@ napi_value IntlAddon::FormatDateTimeRange(napi_env env, napi_callback_info info)
         HiLog::Error(LABEL, "Get DateTimeFormat object failed");
         return nullptr;
     }
-    std::string value = obj->datefmt_->FormatRange(firstDate, std::end(firstDate) - std::begin(firstDate),
-        secondDate, std::end(secondDate) - std::begin(secondDate));
+    std::string value = obj->datefmt_->FormatRange(firstDate, sizeof(firstDate) / sizeof(int64_t), secondDate,
+        sizeof(secondDate) / sizeof(int64_t));
     napi_value result = nullptr;
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {

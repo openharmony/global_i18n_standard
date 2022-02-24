@@ -186,10 +186,12 @@ void DateTimeFormat::removeAmPmChar()
             amPmCharStartIdx = i;
         } else {
             amPmCharStartIdx = i - 1;
-            while (amPmCharStartIdx >= 0 && patternString[amPmCharStartIdx] == ' ') {
+            while (amPmCharStartIdx > 0 && patternString[amPmCharStartIdx] == ' ') {
                 amPmCharStartIdx -= 1;
             }
-            amPmCharStartIdx += 1;
+            if (amPmCharStartIdx != 0 || patternString[amPmCharStartIdx] != ' ') {
+                amPmCharStartIdx += 1;
+            }
         }
         amPmCharEndIdx = i + 1;
         while (amPmCharEndIdx < patternString.length() && patternString[amPmCharEndIdx] == ' ') {
@@ -425,35 +427,26 @@ void DateTimeFormat::ComputeWeekdayOrEraOfPattern(std::string option, char16_t c
     }
 }
 
-std::string DateTimeFormat::Format(int64_t *date, int size)
+int64_t DateTimeFormat::GetArrayValue(int64_t *dateArray, size_t index, size_t size)
+{
+    if (index < size) {
+        return dateArray[index];
+    } else {
+        return 0;
+    }
+}
+
+std::string DateTimeFormat::Format(int64_t *date, size_t size)
 {
     UErrorCode status = U_ZERO_ERROR;
     std::string result;
     UnicodeString dateString;
-    int64_t year = 0;
-    if (YEAR_INDEX < size) {
-        year = date[YEAR_INDEX];
-    }
-    int64_t month = 0;
-    if (MONTH_INDEX < size) {
-        month = date[MONTH_INDEX];
-    }
-    int64_t day = 0;
-    if (DAY_INDEX < size) {
-        day = date[DAY_INDEX];
-    }
-    int64_t hour = 0;
-    if (HOUR_INDEX < size) {
-        hour = date[HOUR_INDEX];
-    }
-    int64_t minute = 0;
-    if (MINUTE_INDEX < size) {
-        minute = date[MINUTE_INDEX];
-    }
-    int64_t second = 0;
-    if (SECOND_INDEX < size) {
-        second = date[SECOND_INDEX];
-    }
+    int64_t year = GetArrayValue(date, YEAR_INDEX, size);
+    int64_t month = GetArrayValue(date, MONTH_INDEX, size);
+    int64_t day = GetArrayValue(date, DAY_INDEX, size);
+    int64_t hour = GetArrayValue(date, HOUR_INDEX, size);
+    int64_t minute = GetArrayValue(date, MINUTE_INDEX, size);
+    int64_t second = GetArrayValue(date, SECOND_INDEX, size);
     calendar->clear();
     calendar->set(year, month, day, hour, minute, second);
     if (!timeZone.empty()) {
@@ -468,18 +461,17 @@ std::string DateTimeFormat::Format(int64_t *date, int size)
     return result;
 }
 
-std::string DateTimeFormat::FormatRange(int64_t *fromDate, int fromDateSize, int64_t *toDate, int toDateSize)
+std::string DateTimeFormat::FormatRange(int64_t *fromDate, size_t fromDateSize, int64_t *toDate, size_t toDateSize)
 {
     UErrorCode status = U_ZERO_ERROR;
     std::string result;
     UnicodeString dateString;
-    int64_t year = fromDate[YEAR_INDEX];
-    int64_t month = fromDate[MONTH_INDEX];
-    int64_t day = fromDate[DAY_INDEX];
-    int64_t hour = fromDate[HOUR_INDEX];
-    int64_t minute = fromDate[MINUTE_INDEX];
-    int64_t second = fromDate[SECOND_INDEX];
-
+    int64_t year = GetArrayValue(fromDate, YEAR_INDEX, fromDateSize);
+    int64_t month = GetArrayValue(fromDate, MONTH_INDEX, fromDateSize);
+    int64_t day = GetArrayValue(fromDate, DAY_INDEX, fromDateSize);
+    int64_t hour = GetArrayValue(fromDate, HOUR_INDEX, fromDateSize);
+    int64_t minute = GetArrayValue(fromDate, MINUTE_INDEX, fromDateSize);
+    int64_t second = GetArrayValue(fromDate, SECOND_INDEX, fromDateSize);
     calendar->clear();
     calendar->set(year, month, day, hour, minute, second);
     if (!timeZone.empty()) {
@@ -489,13 +481,12 @@ std::string DateTimeFormat::FormatRange(int64_t *fromDate, int fromDateSize, int
         dateIntvFormat->setTimeZone(*zone);
         calendar->setTime(timestamp, status);
     }
-
-    year = toDate[YEAR_INDEX];
-    month = toDate[MONTH_INDEX];
-    day = toDate[DAY_INDEX];
-    hour = toDate[HOUR_INDEX];
-    minute = toDate[MINUTE_INDEX];
-    second = toDate[SECOND_INDEX];
+    year = GetArrayValue(toDate, YEAR_INDEX, toDateSize);
+    month = GetArrayValue(toDate, MONTH_INDEX, toDateSize);
+    day = GetArrayValue(toDate, DAY_INDEX, toDateSize);
+    hour = GetArrayValue(toDate, HOUR_INDEX, toDateSize);
+    minute = GetArrayValue(toDate, MINUTE_INDEX, toDateSize);
+    second = GetArrayValue(toDate, SECOND_INDEX, toDateSize);
     auto toCalendar = std::unique_ptr<Calendar>(Calendar::createInstance(locale, status));
     toCalendar->clear();
     toCalendar->set(year, month, day, hour, minute, second);

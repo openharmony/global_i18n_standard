@@ -37,8 +37,8 @@ class DateTimeFormat {
 public:
     DateTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs);
     virtual ~DateTimeFormat();
-    std::string Format(int64_t *date, int size);
-    std::string FormatRange(int64_t *fromDate, int fromDateSize, int64_t *toDate, int toDateSize);
+    std::string Format(int64_t *date, size_t size);
+    std::string FormatRange(int64_t *fromDate, size_t fromDateSize, int64_t *toDate, size_t toDateSize);
     void GetResolvedOptions(std::map<std::string, std::string> &map);
     std::string GetDateStyle() const;
     std::string GetTimeStyle() const;
@@ -103,12 +103,12 @@ private:
     static const int32_t SHORT_LENGTH = 3;
     static const int32_t LONG_LENGTH = 4;
     static const int32_t NARROW_LENGTH = 5;
-    static const int32_t YEAR_INDEX = 0;
-    static const int32_t MONTH_INDEX = 1;
-    static const int32_t DAY_INDEX = 2;
-    static const int32_t HOUR_INDEX = 3;
-    static const int32_t MINUTE_INDEX = 4;
-    static const int32_t SECOND_INDEX = 5;
+    static const size_t YEAR_INDEX = 0;
+    static const size_t MONTH_INDEX = 1;
+    static const size_t DAY_INDEX = 2;
+    static const size_t HOUR_INDEX = 3;
+    static const size_t MINUTE_INDEX = 4;
+    static const size_t SECOND_INDEX = 5;
     static const int32_t SHORT_ERA_LENGTH = 1;
     static const int32_t LONG_ERA_LENGTH = 4;
     static const int HALF_HOUR = 30;
@@ -132,6 +132,7 @@ private:
     void FixPatternPartOne();
     void FixPatternPartTwo();
     void removeAmPmChar();
+    int64_t GetArrayValue(int64_t *dateArray, size_t index, size_t size);
 };
 } // namespace I18n
 } // namespace Global
