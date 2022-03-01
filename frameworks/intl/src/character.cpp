@@ -38,14 +38,14 @@ bool IsSpaceChar(const std::string &character)
 {
     icu::UnicodeString unicodeString(character.c_str());
     UChar32 char32 = unicodeString.char32At(0);
-    return u_isspace(char32);
+    return u_isJavaSpaceChar(char32);
 }
 
 bool IsWhiteSpace(const std::string &character)
 {
     icu::UnicodeString unicodeString(character.c_str());
     UChar32 char32 = unicodeString.char32At(0);
-    return u_hasBinaryProperty(char32, UCHAR_WHITE_SPACE);
+    return u_isWhitespace(char32);
 }
 
 bool IsRTLCharacter(const std::string &character)
@@ -77,14 +77,14 @@ bool IsLowerCase(const std::string &character)
 {
     icu::UnicodeString unicodeString(character.c_str());
     UChar32 char32 = unicodeString.char32At(0);
-    return u_hasBinaryProperty(char32, UCHAR_LOWERCASE);
+    return u_islower(char32);
 }
 
 bool IsUpperCase(const std::string &character)
 {
     icu::UnicodeString unicodeString(character.c_str());
     UChar32 char32 = unicodeString.char32At(0);
-    return u_hasBinaryProperty(char32, UCHAR_UPPERCASE);
+    return u_isupper(char32);
 }
 
 std::map<UCharCategory, std::string> categoryMap = {
