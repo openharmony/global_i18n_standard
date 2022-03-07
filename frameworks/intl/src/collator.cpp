@@ -255,6 +255,7 @@ int32_t Collator::Compare(const std::string &first, const std::string &second)
 
 void Collator::ResolvedOptions(std::map<std::string, std::string> &options)
 {
+    options.insert(std::pair<std::string, std::string>("localeMatcher", localeMatcher));
     options.insert(std::pair<std::string, std::string>("locale", localeStr));
     options.insert(std::pair<std::string, std::string>("usage", usage));
     options.insert(std::pair<std::string, std::string>("sensitivity", sensitivity));
