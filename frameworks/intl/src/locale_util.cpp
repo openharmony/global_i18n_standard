@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,6 @@ bool LocaleUtil::IsRTL(const std::string &locale)
     icu::Locale curLocale(locale.c_str());
     return curLocale.isRightToLeft();
 }
-} // I18n
-} // Global
-} // OHOS
+} // namespace I18n
+} // namespace Global
+} // namespace OHOS

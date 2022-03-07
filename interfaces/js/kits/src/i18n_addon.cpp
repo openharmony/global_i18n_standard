@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -253,7 +253,7 @@ napi_value I18nAddon::UnitConvert(napi_env env, napi_callback_info info)
     localeTags.push_back(localeBuf.data());
     std::map<std::string, std::string> map = {};
     map.insert(std::make_pair("style", "unit"));
-    if (convertStatus == 0) {
+    if (!convertStatus) {
         HiLog::Error(LABEL, "Do not support the conversion");
         map.insert(std::make_pair("unit", fromUnit));
     } else {
@@ -287,7 +287,7 @@ napi_value I18nAddon::IsDigitAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isDigit = IsDigit(character);
@@ -315,7 +315,7 @@ napi_value I18nAddon::IsSpaceCharAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isSpaceChar = IsSpaceChar(character);
@@ -343,7 +343,7 @@ napi_value I18nAddon::IsWhiteSpaceAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isWhiteSpace = IsWhiteSpace(character);
@@ -371,7 +371,7 @@ napi_value I18nAddon::IsRTLCharacterAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isRTLCharacter = IsRTLCharacter(character);
@@ -399,7 +399,7 @@ napi_value I18nAddon::IsIdeoGraphicAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isIdeoGraphic = IsIdeoGraphic(character);
@@ -427,7 +427,7 @@ napi_value I18nAddon::IsLetterAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isLetter = IsLetter(character);
@@ -455,7 +455,7 @@ napi_value I18nAddon::IsLowerCaseAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isLowerCase = IsLowerCase(character);
@@ -483,7 +483,7 @@ napi_value I18nAddon::IsUpperCaseAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isUpperCase = IsUpperCase(character);
@@ -511,7 +511,7 @@ napi_value I18nAddon::GetTypeAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     std::string type = GetType(character);
@@ -1123,7 +1123,7 @@ napi_value I18nAddon::CalendarConstructor(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string localeTag = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     CalendarType type = GetCalendarType(env, argv[1]);
@@ -1157,7 +1157,7 @@ CalendarType I18nAddon::GetCalendarType(napi_env env, napi_value value)
         }
         int32_t code = 0;
         std::string calendarType = GetString(env, value, code);
-        if (code != 0) {
+        if (code) {
             return type;
         }
         if (g_typeMap.find(calendarType) != g_typeMap.end()) {
@@ -1620,7 +1620,7 @@ napi_value I18nAddon::GetDisplayName(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string localeTag = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     I18nAddon *obj = nullptr;
@@ -1684,7 +1684,7 @@ napi_value I18nAddon::BreakIteratorConstructor(napi_env env, napi_callback_info 
     }
     int32_t code = 0;
     std::string localeTag = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     std::unique_ptr<I18nAddon> obj = std::make_unique<I18nAddon>();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@
 #include "islamcal.h"
 #include "japancal.h"
 #include "persncal.h"
+#include "securec.h"
 #include "ureslocs.h"
 #include "ulocimp.h"
 #include "uresimp.h"
@@ -258,7 +259,7 @@ std::string I18nCalendar::GetDisplayName(std::string &displayLocale)
     if (status == U_ZERO_ERROR) {
         len = (length < destCapacity) ? length : destCapacity;
         if ((len > 0) && (str != nullptr)) {
-            u_memcpy(buffer, str, len);
+            memcpy_s((void *)buffer, (size_t)destCapacity, (void *)str, (size_t)len);
         }
     } else {
         return "";
