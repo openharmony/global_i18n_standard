@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1700,7 +1700,7 @@ napi_value IntlAddon::CompareString(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    int32_t compareResult = obj->collator_->Compare(first.data(), second.data());
+    CompareResult compareResult = obj->collator_->Compare(first.data(), second.data());
     napi_value result = nullptr;
     status = napi_create_int32(env, compareResult, &result);
     if (status != napi_ok) {

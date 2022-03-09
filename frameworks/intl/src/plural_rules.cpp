@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -81,7 +81,7 @@ void PluralRules::InitPluralRules(std::vector<std::string> &localeTags,
 {
     UPluralType uPluralType = (type == "cardinal") ? UPLURAL_TYPE_CARDINAL : UPLURAL_TYPE_ORDINAL;
     UErrorCode status = UErrorCode::U_ZERO_ERROR;
-    if (localeTags.size() == 0) {
+    if (!localeTags.size()) {
         localeTags.push_back(LocaleConfig::GetSystemLocale());
     }
     for (size_t i = 0; i < localeTags.size(); i++) {
@@ -150,6 +150,6 @@ std::string PluralRules::Select(double number)
     unicodeString.toUTF8String(result);
     return result;
 }
-}
-}
-}
+} // namespace I18n
+} // namespace Global
+} // namespace OHOS

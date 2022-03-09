@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -50,7 +50,7 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
             }
             ComputeHourCycleChars();
             ComputeSkeleton();
-            if (configs.size() == 0) {
+            if (!configs.size()) {
                 InitDateFormatWithoutConfigs(status);
             } else {
                 InitDateFormat(status);
@@ -182,14 +182,14 @@ void DateTimeFormat::removeAmPmChar()
         if ((i + 1) < patternString.length() && patternString[i + 1] == 't') {
             continue;
         }
-        if (i == 0) {
+        if (!i) {
             amPmCharStartIdx = i;
         } else {
             amPmCharStartIdx = i - 1;
             while (amPmCharStartIdx > 0 && patternString[amPmCharStartIdx] == ' ') {
                 amPmCharStartIdx -= 1;
             }
-            if (amPmCharStartIdx != 0 || patternString[amPmCharStartIdx] != ' ') {
+            if (amPmCharStartIdx || patternString[amPmCharStartIdx] != ' ') {
                 amPmCharStartIdx += 1;
             }
         }
@@ -200,8 +200,8 @@ void DateTimeFormat::removeAmPmChar()
         break;
     }
     size_t length = amPmCharEndIdx - amPmCharStartIdx;
-    if (length != 0) {
-        if (amPmCharStartIdx == 0 || amPmCharEndIdx == patternString.length()) {
+    if (length) {
+        if (!amPmCharStartIdx || amPmCharEndIdx == patternString.length()) {
             patternString = patternString.replace(amPmCharStartIdx, length, "");
         } else {
             patternString = patternString.replace(amPmCharStartIdx, length, " ");
