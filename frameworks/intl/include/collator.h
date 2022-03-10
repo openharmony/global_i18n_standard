@@ -52,9 +52,9 @@ private:
     std::string caseFirst;
     std::string collation;
 
-    std::unique_ptr<LocaleInfo> localeInfo;
+    std::unique_ptr<LocaleInfo> localeInfo = nullptr;
     icu::Locale locale;
-    icu::Collator *collatorPtr;
+    icu::Collator *collatorPtr = nullptr;
 
     std::set<std::string> GetValidLocales();
     std::string ParseOption(std::map<std::string, std::string> &options, const std::string &key);

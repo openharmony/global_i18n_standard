@@ -248,23 +248,6 @@ bool PreferredLanguage::IsMatched(const std::string& preferred, const std::strin
 std::string PreferredLanguage::GetFirstPreferredLanguage()
 {
     std::vector<std::string> preferredLanguageList = GetPreferredLanguageList();
-    std::set<std::string> resources = GetResources();
-    int minmumMatchedIdx = -1;
-    for (size_t i = 0; i < preferredLanguageList.size(); i++) {
-        for (std::set<std::string>::iterator it = resources.begin(); it != resources.end(); ++it) {
-            std::string preferredLanguage = preferredLanguageList[i];
-            if (preferredLanguage == "en-Qaag") {
-                preferredLanguage = "en-Latn";
-            }
-            if (IsMatched(preferredLanguage, *it)) {
-                minmumMatchedIdx = (int)i;
-                break;
-            }
-        }
-    }
-    if (minmumMatchedIdx != -1) {
-        return preferredLanguageList[minmumMatchedIdx];
-    }
     return preferredLanguageList[0];
 }
 

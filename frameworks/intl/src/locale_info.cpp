@@ -43,7 +43,8 @@ LocaleInfo::LocaleInfo(std::string localeTag)
     UErrorCode status = U_ZERO_ERROR;
     configs = {};
     ComputeFinalLocaleTag(localeTag);
-    auto builder = std::make_unique<LocaleBuilder>();
+    std::unique_ptr<icu::LocaleBuilder> builder = nullptr;
+    builder = std::make_unique<LocaleBuilder>();
     Locale locale = builder->setLanguageTag(StringPiece(localeTag)).build(status);
     if (status != U_ZERO_ERROR) {
         std::string defaultLocaleTag = LocaleConfig::GetSystemLocale();
@@ -69,7 +70,8 @@ LocaleInfo::LocaleInfo(const std::string &localeTag, std::map<std::string, std::
 {
     UErrorCode status = U_ZERO_ERROR;
     configs = configMap;
-    auto builder = std::make_unique<LocaleBuilder>();
+    std::unique_ptr<icu::LocaleBuilder> builder = nullptr;
+    builder = std::make_unique<LocaleBuilder>();
     if (localeTag != "") {
         ComputeFinalLocaleTag(localeTag);
         locale = builder->setLanguageTag(StringPiece(finalLocaleTag)).build(status);
@@ -258,7 +260,7 @@ std::string LocaleInfo::Maximize()
         if (finalLocaleTag.find("-u-") != std::string::npos) {
             restConfigs = finalLocaleTag.substr(finalLocaleTag.find("-u-"));
         }
-        std::string curBaseName = (curLocale.getBaseName() == nullptr) ? "" : curLocale.getBaseName();
+        std::string curBaseName = (!curLocale.getBaseName()) ? "" : curLocale.getBaseName();
         std::replace(curBaseName.begin(), curBaseName.end(), '_', '-');
         std::string localeTag = curBaseName + restConfigs;
         return localeTag;
@@ -276,7 +278,7 @@ std::string LocaleInfo::Minimize()
         if (finalLocaleTag.find("-u-") != std::string::npos) {
             restConfigs = finalLocaleTag.substr(finalLocaleTag.find("-u-"));
         }
-        std::string curBaseName = (curLocale.getBaseName() == nullptr) ? "" : curLocale.getBaseName();
+        std::string curBaseName = (!curLocale.getBaseName()) ? "" : curLocale.getBaseName();
         std::replace(curBaseName.begin(), curBaseName.end(), '_', '-');
         std::string localeTag = curBaseName + restConfigs;
         return localeTag;

@@ -82,11 +82,11 @@ string ZoneUtil::GetDefaultZone(const string &country)
 string ZoneUtil::GetDefaultZone(const int32_t number)
 {
     string *region_code = new(nothrow) string();
-    if (region_code == nullptr) {
+    if (!region_code) {
         return "";
     }
     phone_util.GetRegionCodeForCountryCode(number, region_code);
-    if (region_code == nullptr) {
+    if (!region_code) {
         return "";
     }
     string ret = GetDefaultZone(*region_code);
@@ -114,11 +114,11 @@ string ZoneUtil::GetDefaultZone(const string country, const int32_t offset)
 string ZoneUtil::GetDefaultZone(const int32_t number, const int32_t offset)
 {
     string *region_code = new(nothrow) string();
-    if (region_code == nullptr) {
+    if (!region_code) {
         return "";
     }
     phone_util.GetRegionCodeForCountryCode(number, region_code);
-    if (region_code == nullptr) {
+    if (!region_code) {
         return "";
     }
     string ret = GetDefaultZone(*region_code, offset);
@@ -157,7 +157,7 @@ void ZoneUtil::GetString(StringEnumeration *strEnum, string& ret)
 {
     UErrorCode status = U_ZERO_ERROR;
     UnicodeString uniString;
-    if (strEnum == nullptr) {
+    if (!strEnum) {
         return;
     }
     int32_t count = strEnum->count(status);
@@ -165,7 +165,7 @@ void ZoneUtil::GetString(StringEnumeration *strEnum, string& ret)
         return;
     }
     const UnicodeString *uniStr = strEnum->snext(status);
-    if ((status != U_ZERO_ERROR) || (uniStr == nullptr)) {
+    if ((status != U_ZERO_ERROR) || (!uniStr)) {
         return;
     }
     UnicodeString canonicalUnistring;
@@ -179,7 +179,7 @@ void ZoneUtil::GetString(StringEnumeration *strEnum, string& ret)
 
 void ZoneUtil::GetList(StringEnumeration *strEnum, vector<string> &retVec)
 {
-    if (strEnum == nullptr) {
+    if (!strEnum) {
         return;
     }
     UErrorCode status = U_ZERO_ERROR;
@@ -189,7 +189,7 @@ void ZoneUtil::GetList(StringEnumeration *strEnum, vector<string> &retVec)
     }
     while (count > 0) {
         const UnicodeString *uniStr = strEnum->snext(status);
-        if ((uniStr == nullptr) || (status != U_ZERO_ERROR)) {
+        if ((!uniStr) || (status != U_ZERO_ERROR)) {
             retVec.clear();
             break;
         }

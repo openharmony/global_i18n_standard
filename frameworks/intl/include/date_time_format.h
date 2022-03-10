@@ -116,6 +116,8 @@ private:
     static bool icuInitialized;
     static bool Init();
     static std::map<std::string, icu::DateFormat::EStyle> dateTimeStyle;
+    void InitWithLocale(const std::string &curLocale, std::map<std::string, std::string> &configs);
+    void InitWithDefaultLocale(std::map<std::string, std::string> &configs);
     void ParseConfigsPartOne(std::map<std::string, std::string> &configs);
     void ParseConfigsPartTwo(std::map<std::string, std::string> &configs);
     void AddOptions(std::string option, char16_t optionChar);
