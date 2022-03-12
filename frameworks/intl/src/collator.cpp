@@ -138,7 +138,7 @@ void Collator::SetUsage(UErrorCode &status)
 
 void Collator::SetNumeric(UErrorCode &status)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return;
     }
     if (numeric == "") {
@@ -158,7 +158,7 @@ void Collator::SetNumeric(UErrorCode &status)
 
 void Collator::SetCaseFirst(UErrorCode &status)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return;
     }
     if (caseFirst == "") {
@@ -181,7 +181,7 @@ void Collator::SetCaseFirst(UErrorCode &status)
 
 void Collator::SetSensitivity(UErrorCode &status)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return;
     }
     if (sensitivity == "base") {
@@ -199,7 +199,7 @@ void Collator::SetSensitivity(UErrorCode &status)
 
 void Collator::SetIgnorePunctuation(UErrorCode &status)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return;
     }
     if (ignorePunctuation == "true") {
@@ -219,7 +219,7 @@ bool Collator::InitCollator()
     SetSensitivity(status);
     SetIgnorePunctuation(status);
 
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return false;
     }
     return true;
@@ -235,7 +235,7 @@ Collator::~Collator()
 
 CompareResult Collator::Compare(const std::string &first, const std::string &second)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return CompareResult::INVALID;
     }
     icu::Collator::EComparisonResult result = collatorPtr->compare(icu::UnicodeString(first.data(), first.length()),

@@ -213,7 +213,7 @@ int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *des
     if (status != U_ZERO_ERROR) {
         return 0;
     }
-    if ((destCapacity < 0) || (destCapacity > 0  && dest == nullptr)) {
+    if ((destCapacity < 0) || (destCapacity > 0  && !dest)) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
@@ -262,7 +262,7 @@ string GetDisplayLanguageInner(const string &language, const string &displayLoca
             return language;
         }
         const char *name = disLocale.getName();
-        if (name == nullptr) {
+        if (!name) {
             return language;
         }
         GetDisplayLanguageImpl(language.c_str(), name, unistr);
@@ -556,15 +556,15 @@ void LocaleConfig::GetCountriesFromSim(vector<string> &simCountries)
 void LocaleConfig::GetListFromFile(const char *path, const char *resourceName, unordered_set<string> &ret)
 {
     xmlKeepBlanksDefault(0);
-    if (path == nullptr) {
+    if (!path) {
         return;
     }
     xmlDocPtr doc = xmlParseFile(path);
-    if (doc == nullptr) {
+    if (!doc) {
         return;
     }
     xmlNodePtr cur = xmlDocGetRootElement(doc);
-    if (cur == nullptr || xmlStrcmp(cur->name, reinterpret_cast<const xmlChar *>(resourceName))) {
+    if (!cur || xmlStrcmp(cur->name, reinterpret_cast<const xmlChar *>(resourceName))) {
         xmlFreeDoc(doc);
         return;
     }

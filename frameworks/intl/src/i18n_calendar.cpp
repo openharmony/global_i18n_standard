@@ -143,7 +143,7 @@ void I18nCalendar::SetTimeZone(std::string id)
 {
     icu::UnicodeString zone = icu::UnicodeString::fromUTF8(id);
     icu::TimeZone *timezone = icu::TimeZone::createTimeZone(zone);
-    if (timezone == nullptr) {
+    if (!timezone) {
         return;
     }
     if (calendar_ != nullptr) {
@@ -155,7 +155,7 @@ void I18nCalendar::SetTimeZone(std::string id)
 std::string I18nCalendar::GetTimeZone(void)
 {
     std::string ret;
-    if (calendar_ != nullptr) {
+    if (calendar_) {
         icu::UnicodeString unistr;
         calendar_->getTimeZone().getDisplayName(unistr);
         unistr.toUTF8String<std::string>(ret);
@@ -244,11 +244,11 @@ std::string I18nCalendar::GetDisplayName(std::string &displayLocale)
     icu::UnicodeString unistr;
     int32_t destCapacity = 50;
     UChar *buffer = unistr.getBuffer(destCapacity);
-    if (buffer == 0 || calendar_ == nullptr) {
+    if (buffer == 0 || !calendar_) {
         return "";
     }
     const char *type = calendar_->getType();
-    if (type == nullptr) {
+    if (!type) {
         return "";
     }
     int32_t length;

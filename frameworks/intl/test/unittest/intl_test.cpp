@@ -67,7 +67,7 @@ HWTEST_F(IntlTest, IntlFuncTest001, TestSize.Level1)
                                     { "weekday", "long" },
                                     { "era", "short"} };
     DateTimeFormat *dateFormat = new (std::nothrow) DateTimeFormat(locales, options);
-    if (dateFormat == nullptr) {
+    if (!dateFormat) {
         EXPECT_TRUE(false);
         return;
     }
@@ -98,7 +98,7 @@ HWTEST_F(IntlTest, IntlFuncTest002, TestSize.Level0)
                                     { "numeric", "true" },
                                     { "numberingSystem", "jpan" } };
     LocaleInfo *loc = new (std::nothrow) LocaleInfo(locale, options);
-    if (loc == nullptr) {
+    if (!loc) {
         EXPECT_TRUE(false);
         return;
     }
@@ -125,7 +125,7 @@ HWTEST_F(IntlTest, IntlFuncTest003, TestSize.Level1)
 {
     string locale = "en-GB";
     LocaleInfo *loc = new (std::nothrow) LocaleInfo(locale);
-    if (loc == nullptr) {
+    if (!loc) {
         EXPECT_TRUE(false);
         return;
     }
@@ -156,7 +156,7 @@ HWTEST_F(IntlTest, IntlFuncTest004, TestSize.Level1)
     map<string, string> options = { { "dateStyle", dateStyle },
                                     { "timeStyle", timeStyle } };
     DateTimeFormat *dateFormat = new (std::nothrow) DateTimeFormat(locales, options);
-    if (dateFormat == nullptr) {
+    if (!dateFormat) {
         EXPECT_TRUE(false);
         return;
     }
@@ -185,7 +185,7 @@ HWTEST_F(IntlTest, IntlFuncTest006, TestSize.Level1)
                                     { "day", "numeric" },
                                     { "weekday", "long"} };
     DateTimeFormat *dateFormat = new (std::nothrow) DateTimeFormat(locales, options);
-    if (dateFormat == nullptr) {
+    if (!dateFormat) {
         EXPECT_TRUE(false);
         return;
     }
@@ -223,7 +223,7 @@ HWTEST_F(IntlTest, IntlFuncTest005, TestSize.Level1)
                                     { "currencySign", "accounting" },
                                     { "signDisplay", "always" } };
     NumberFormat *numFmt = new (std::nothrow) NumberFormat(locales, options);
-    if (numFmt == nullptr) {
+    if (!numFmt) {
         EXPECT_TRUE(false);
         return;
     }
@@ -256,7 +256,7 @@ HWTEST_F(IntlTest, IntlFuncTest007, TestSize.Level1)
                                     { "unit", "meter" },
                                     { "unitDisplay", "long"} };
     NumberFormat *numFmt = new (std::nothrow) NumberFormat(locales, options);
-    if (numFmt == nullptr) {
+    if (!numFmt) {
         EXPECT_TRUE(false);
         return;
     }
@@ -284,7 +284,7 @@ HWTEST_F(IntlTest, IntlFuncTest008, TestSize.Level1)
                                     { "minimumIntegerDigits", minimumIntegerDigits },
                                     { "maximumFractionDigits", maximumFractionDigits } };
     NumberFormat *numFmt = new (std::nothrow) NumberFormat(locales, options);
-    if (numFmt == nullptr) {
+    if (!numFmt) {
         EXPECT_TRUE(false);
         return;
     }
@@ -312,7 +312,7 @@ HWTEST_F(IntlTest, IntlFuncTest009, TestSize.Level1)
                                     { "minimumIntegerDigits", minimumIntegerDigits },
                                     { "maximumFractionDigits", maximumFractionDigits } };
     NumberFormat *numFmt = new (std::nothrow) NumberFormat(locales, options);
-    if (numFmt == nullptr) {
+    if (!numFmt) {
         EXPECT_TRUE(false);
         return;
     }
@@ -337,7 +337,7 @@ HWTEST_F(IntlTest, IntlFuncTest010, TestSize.Level1)
     map<string, string> options = { { "style", style },
                                     { "notation", "scientific" } };
     NumberFormat *numFmt = new (std::nothrow) NumberFormat(locales, options);
-    if (numFmt == nullptr) {
+    if (!numFmt) {
         EXPECT_TRUE(false);
         return;
     }
@@ -363,7 +363,7 @@ HWTEST_F(IntlTest, IntlFuncTest011, TestSize.Level1)
                                     { "notation", "compact" },
                                     { "compactDisplay", "long" } };
     NumberFormat *numFmt = new (std::nothrow) NumberFormat(locales, options);
-    if (numFmt == nullptr) {
+    if (!numFmt) {
         EXPECT_TRUE(false);
         return;
     }
@@ -386,7 +386,7 @@ HWTEST_F(IntlTest, IntlFuncTest0012, TestSize.Level1)
     locales.push_back(locale);
     std::string expects = "4/14/21";
     DateTimeFormat *dateFormat = new (std::nothrow) DateTimeFormat(locales, options);
-    if (dateFormat == nullptr) {
+    if (!dateFormat) {
         EXPECT_TRUE(false);
         return;
     }
@@ -409,7 +409,7 @@ HWTEST_F(IntlTest, IntlFuncTest0013, TestSize.Level1)
     map<string, string> options = {};
     std::string expects = "123,456.789";
     NumberFormat *numFmt = new (std::nothrow) NumberFormat(locales, options);
-    if (numFmt == nullptr) {
+    if (!numFmt) {
         EXPECT_TRUE(false);
         return;
     }
@@ -432,7 +432,7 @@ HWTEST_F(IntlTest, IntlFuncTest0014, TestSize.Level1)
     locales.push_back(locale);
     map<string, string> options = { { "timeZone", "America/Los_Angeles"  }, { "timeZoneName", "long" } };
     DateTimeFormat *dateFormat = new (std::nothrow) DateTimeFormat(locales, options);
-    if (dateFormat == nullptr) {
+    if (!dateFormat) {
         EXPECT_TRUE(false);
         return;
     }
@@ -455,7 +455,7 @@ HWTEST_F(IntlTest, IntlFuncTest0015, TestSize.Level1)
     locales.push_back(locale);
     map<string, string> options = { { "timeZone", "America/Los_Angeles"  }, { "timeZoneName", "long" } };
     DateTimeFormat *dateFormat = new (std::nothrow) DateTimeFormat(locales, options);
-    if (dateFormat == nullptr) {
+    if (!dateFormat) {
         EXPECT_TRUE(false);
         return;
     }

@@ -37,9 +37,9 @@ public:
 
 private:
     std::string localeStr;
-    std::unique_ptr<LocaleInfo> localeInfo;
+    std::unique_ptr<LocaleInfo> localeInfo = nullptr;
     icu::Locale locale;
-    icu::PluralRules *pluralRules;
+    icu::PluralRules *pluralRules = nullptr;
     icu::number::LocalizedNumberFormatter numberFormatter;
 
     std::string localeMatcher;

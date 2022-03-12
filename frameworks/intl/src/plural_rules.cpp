@@ -92,12 +92,12 @@ void PluralRules::InitPluralRules(std::vector<std::string> &localeTags,
             locale = localeInfo->GetLocale();
             localeStr = localeInfo->GetBaseName();
             pluralRules = icu::PluralRules::forLocale(locale, uPluralType, status);
-            if (status != UErrorCode::U_ZERO_ERROR || pluralRules == nullptr) {
+            if (status != UErrorCode::U_ZERO_ERROR || !pluralRules) {
                 continue;
             }
         }
     }
-    if (status != UErrorCode::U_ZERO_ERROR || pluralRules == nullptr) {
+    if (status != UErrorCode::U_ZERO_ERROR || !pluralRules) {
         HiLog::Error(LABEL, "PluralRules object created failed");
         return;
     }
@@ -131,7 +131,7 @@ PluralRules::PluralRules(std::vector<std::string> &localeTags, std::map<std::str
 
 PluralRules::~PluralRules()
 {
-    if (pluralRules == nullptr) {
+    if (!pluralRules) {
         delete pluralRules;
         pluralRules = nullptr;
     }

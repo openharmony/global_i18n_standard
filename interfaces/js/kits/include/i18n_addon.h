@@ -134,11 +134,11 @@ private:
 
     napi_env env_;
     napi_ref wrapper_;
-    std::unique_ptr<PhoneNumberFormat> phonenumberfmt_;
-    std::unique_ptr<I18nCalendar> calendar_;
-    std::unique_ptr<I18nBreakIterator> brkiter_;
-    std::unique_ptr<IndexUtil> indexUtil_;
-    std::unique_ptr<I18nTimeZone> timezone_;
+    std::unique_ptr<PhoneNumberFormat> phonenumberfmt_ = nullptr;
+    std::unique_ptr<I18nCalendar> calendar_ = nullptr;
+    std::unique_ptr<I18nBreakIterator> brkiter_ = nullptr;
+    std::unique_ptr<IndexUtil> indexUtil_ = nullptr;
+    std::unique_ptr<I18nTimeZone> timezone_ = nullptr;
 };
 } // namespace I18n
 } // namespace Global

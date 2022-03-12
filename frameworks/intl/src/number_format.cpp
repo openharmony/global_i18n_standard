@@ -59,7 +59,8 @@ std::unordered_map<UMeasurementSystem, std::string> NumberFormat::measurementSys
 NumberFormat::NumberFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs)
 {
     UErrorCode status = U_ZERO_ERROR;
-    auto builder = std::make_unique<icu::LocaleBuilder>();
+    std::unique_ptr<icu::LocaleBuilder> builder = nullptr;
+    builder = std::make_unique<icu::LocaleBuilder>();
     ParseConfigs(configs);
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
@@ -73,7 +74,7 @@ NumberFormat::NumberFormat(const std::vector<std::string> &localeTags, std::map<
             break;
         }
     }
-    if (localeInfo == nullptr) {
+    if (!localeInfo) {
         localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), configs);
         locale = localeInfo->GetLocale();
         localeBaseName = localeInfo->GetBaseName();
