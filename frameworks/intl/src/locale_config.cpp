@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 #include <regex>
+#ifdef TEL_CORE_SERVICE_EXISTS
 #include "core_service_client.h"
+#endif
 #include "libxml/parser.h"
 #include "locale_info.h"
 #include "localebuilder.h"
@@ -549,8 +551,10 @@ void LocaleConfig::GetRelatedLocales(unordered_set<string> &relatedLocales, vect
 void LocaleConfig::GetCountriesFromSim(vector<string> &simCountries)
 {
     simCountries.push_back(GetSystemRegion());
+#ifdef TEL_CORE_SERVICE_EXISTS
     simCountries.push_back(Str16ToStr8(
         DelayedRefSingleton<Telephony::CoreServiceClient>::GetInstance().GetISOCountryCodeForSim(0)));
+#endif
 }
 
 void LocaleConfig::GetListFromFile(const char *path, const char *resourceName, unordered_set<string> &ret)

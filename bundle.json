@@ -40,7 +40,7 @@
         "syscap": [
             "SystemCapability.I18N"
         ],
-        "features": [],
+        "features": ["i18n_standard_telephone_core_service_exists"],
         "adapted_system_type": [
             "standard"
         ],

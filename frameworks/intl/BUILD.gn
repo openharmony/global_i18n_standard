@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//base/global/i18n_standard/i18n.gni")
 import("//build/ohos.gni")
 
 group("build_module") {
@@ -39,7 +40,6 @@ ohos_shared_library("preferred_language") {
     "ability_base:want",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
-    "core_service:tel_core_service_api",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "resmgr_standard:global_resmgr",
@@ -102,12 +102,15 @@ ohos_shared_library("intl_util") {
     "//third_party/libxml2:xml2",
   ]
   external_deps = [
-    "core_service:tel_core_service_api",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "startup_l2:syspara",
     "utils_base:utils",
   ]
+  if (i18n_standard_telephony_core_service_exists) {
+    external_deps += [ "core_service:tel_core_service_api" ]
+    cflags_cc += [ "-DTEL_CORE_SERVICE_EXISTS" ]
+  }
   subsystem_name = "global"
   part_name = "i18n_standard"
 }
