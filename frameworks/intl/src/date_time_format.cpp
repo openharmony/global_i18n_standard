@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,27 +35,16 @@ std::map<std::string, DateFormat::EStyle> DateTimeFormat::dateTimeStyle = {
 DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::map<std::string, std::string> &configs)
 {
     UErrorCode status = U_ZERO_ERROR;
-    auto builder = std::make_unique<LocaleBuilder>();
+    std::unique_ptr<icu::LocaleBuilder> builder = nullptr;
+    builder = std::make_unique<LocaleBuilder>();
     ParseConfigsPartOne(configs);
     ParseConfigsPartTwo(configs);
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
         locale = Locale::forLanguageTag(StringPiece(curLocale), status);
         if (LocaleInfo::allValidLocales.count(locale.getLanguage()) > 0) {
-            localeInfo = new LocaleInfo(curLocale, configs);
-            locale = localeInfo->GetLocale();
-            localeTag = localeInfo->GetBaseName();
-            if (hourCycle.empty()) {
-                hourCycle = localeInfo->GetHourCycle();
-            }
-            ComputeHourCycleChars();
-            ComputeSkeleton();
-            if (configs.size() == 0) {
-                InitDateFormatWithoutConfigs(status);
-            } else {
-                InitDateFormat(status);
-            }
-            if (dateFormat == nullptr) {
+            InitWithLocale(curLocale, configs);
+            if (!dateFormat) {
                 delete localeInfo;
                 localeInfo = nullptr;
                 continue;
@@ -63,23 +52,9 @@ DateTimeFormat::DateTimeFormat(const std::vector<std::string> &localeTags, std::
             break;
         }
     }
-    if (localeInfo == nullptr || dateFormat == nullptr) {
-        if (localeInfo != nullptr) {
-            delete localeInfo;
-        }
-        localeInfo = new LocaleInfo(LocaleConfig::GetSystemLocale(), configs);
-        locale = localeInfo->GetLocale();
-        localeTag = locale.getBaseName();
-        std::replace(localeTag.begin(), localeTag.end(), '_', '-');
-        if (dateFormat != nullptr) {
-            delete dateFormat;
-        }
-        dateFormat = DateFormat::createInstance();
+    if (!localeInfo || !dateFormat) {
+        InitWithDefaultLocale(configs);
     }
-    if (dateIntvFormat == nullptr) {
-        dateIntvFormat = DateIntervalFormat::createInstance(pattern, status);
-    }
-    calendar = Calendar::createInstance(locale, status);
 }
 
 DateTimeFormat::~DateTimeFormat()
@@ -100,6 +75,44 @@ DateTimeFormat::~DateTimeFormat()
         delete localeInfo;
         localeInfo = nullptr;
     }
+}
+
+void DateTimeFormat::InitWithLocale(const std::string &curLocale, std::map<std::string, std::string> &configs)
+{
+    UErrorCode status = U_ZERO_ERROR;
+    localeInfo = new LocaleInfo(curLocale, configs);
+    locale = localeInfo->GetLocale();
+    localeTag = localeInfo->GetBaseName();
+    if (hourCycle.empty()) {
+        hourCycle = localeInfo->GetHourCycle();
+    }
+    if (hour12.empty() && hourCycle.empty()) {
+        bool is24HourClock = LocaleConfig::Is24HourClock();
+        if (is24HourClock) {
+            hour12 = "false";
+        }
+    }
+    ComputeHourCycleChars();
+    ComputeSkeleton();
+    if (!configs.size()) {
+        InitDateFormatWithoutConfigs(status);
+    } else {
+        InitDateFormat(status);
+    }
+    calendar = Calendar::createInstance(locale, status);
+}
+
+void DateTimeFormat::InitWithDefaultLocale(std::map<std::string, std::string> &configs)
+{
+    if (localeInfo != nullptr) {
+        delete localeInfo;
+        localeInfo = nullptr;
+    }
+    if (dateFormat != nullptr) {
+        delete dateFormat;
+        dateFormat = nullptr;
+    }
+    InitWithLocale(LocaleConfig::GetSystemLocale(), configs);
 }
 
 void DateTimeFormat::InitDateFormatWithoutConfigs(UErrorCode &status)
@@ -182,14 +195,14 @@ void DateTimeFormat::removeAmPmChar()
         if ((i + 1) < patternString.length() && patternString[i + 1] == 't') {
             continue;
         }
-        if (i == 0) {
+        if (!i) {
             amPmCharStartIdx = i;
         } else {
             amPmCharStartIdx = i - 1;
             while (amPmCharStartIdx > 0 && patternString[amPmCharStartIdx] == ' ') {
                 amPmCharStartIdx -= 1;
             }
-            if (amPmCharStartIdx != 0 || patternString[amPmCharStartIdx] != ' ') {
+            if (amPmCharStartIdx || patternString[amPmCharStartIdx] != ' ') {
                 amPmCharStartIdx += 1;
             }
         }
@@ -200,8 +213,8 @@ void DateTimeFormat::removeAmPmChar()
         break;
     }
     size_t length = amPmCharEndIdx - amPmCharStartIdx;
-    if (length != 0) {
-        if (amPmCharStartIdx == 0 || amPmCharEndIdx == patternString.length()) {
+    if (length) {
+        if (!amPmCharStartIdx || amPmCharEndIdx == patternString.length()) {
             patternString = patternString.replace(amPmCharStartIdx, length, "");
         } else {
             patternString = patternString.replace(amPmCharStartIdx, length, " ");
@@ -282,12 +295,6 @@ void DateTimeFormat::ParseConfigsPartTwo(std::map<std::string, std::string> &con
     }
     if (configs.count("hour12") > 0) {
         hour12 = configs["hour12"];
-    }
-    if (hour12.empty() && hourCycle.empty()) {
-        bool is24HourClock = LocaleConfig::Is24HourClock();
-        if (is24HourClock) {
-            hour12 = "false";
-        }
     }
     if (configs.count("weekday") > 0) {
         weekday = configs["weekday"];

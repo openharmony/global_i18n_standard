@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,7 +48,7 @@ bool PreferredLanguage::AddPreferredLanguageExist(std::vector<std::string> &pref
         }
     }
     preferredLanguageList[index] = language;
-    if (languageIdx == 0 || index == 0) {
+    if (!languageIdx || !index) {
         bool status = LocaleConfig::SetSystemLanguage(preferredLanguageList[0]);
         if (!status) {
             return false;
@@ -61,7 +61,7 @@ bool PreferredLanguage::AddPreferredLanguageNonExist(std::vector<std::string> &p
     const std::string& language)
 {
     preferredLanguageList.insert(preferredLanguageList.begin() + index, language);
-    if (index == 0) {
+    if (!index) {
         bool status = LocaleConfig::SetSystemLanguage(preferredLanguageList[0]);
         if (!status) {
             return false;
@@ -131,7 +131,7 @@ bool PreferredLanguage::RemovePreferredLanguage(int index)
     std::vector<std::string>::iterator it = preferredLanguageList.begin();
     preferredLanguageList.erase(it + idx);
     bool status = false;
-    if (idx == 0) {
+    if (!idx) {
         status = LocaleConfig::SetSystemLanguage(preferredLanguageList[0]);
         if (!status) {
             return false;
@@ -154,7 +154,7 @@ std::vector<std::string> PreferredLanguage::GetPreferredLanguageList()
     std::string systemLanguage = LocaleConfig::GetSystemLanguage();
     std::vector<std::string> list;
     Split(preferredLanguageValue, ";", list);
-    if (list.size() == 0) {
+    if (!list.size()) {
         if (systemLanguage != "") {
             list.push_back(systemLanguage);
         }
@@ -248,23 +248,6 @@ bool PreferredLanguage::IsMatched(const std::string& preferred, const std::strin
 std::string PreferredLanguage::GetFirstPreferredLanguage()
 {
     std::vector<std::string> preferredLanguageList = GetPreferredLanguageList();
-    std::set<std::string> resources = GetResources();
-    int minmumMatchedIdx = -1;
-    for (size_t i = 0; i < preferredLanguageList.size(); i++) {
-        for (std::set<std::string>::iterator it = resources.begin(); it != resources.end(); ++it) {
-            std::string preferredLanguage = preferredLanguageList[i];
-            if (preferredLanguage == "en-Qaag") {
-                preferredLanguage = "en-Latn";
-            }
-            if (IsMatched(preferredLanguage, *it)) {
-                minmumMatchedIdx = (int)i;
-                break;
-            }
-        }
-    }
-    if (minmumMatchedIdx != -1) {
-        return preferredLanguageList[minmumMatchedIdx];
-    }
     return preferredLanguageList[0];
 }
 
@@ -296,7 +279,7 @@ bool PreferredLanguage::IsValidLanguage(const std::string &language)
 
 bool PreferredLanguage::IsValidTag(const std::string &tag)
 {
-    if (tag.size() == 0) {
+    if (!tag.size()) {
         return false;
     }
     std::vector<std::string> splits;
@@ -320,6 +303,6 @@ void PreferredLanguage::Split(const std::string &src, const std::string &sep, st
         dest.push_back(src.substr(begin));
     }
 }
-}
-}
-}
+} // namespace I18n
+} // namespace Global
+} // namespace OHOS

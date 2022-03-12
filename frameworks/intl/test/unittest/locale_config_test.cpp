@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -51,7 +51,7 @@ void LocaleConfigTest::TearDown(void)
 HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest001, TestSize.Level1)
 {
     int ret = SetParameter("hm.sys.language", "");
-    if (ret == 0) {
+    if (!ret) {
         EXPECT_EQ(LocaleConfig::GetSystemLanguage(), "zh-Hans");
     }
 }
@@ -64,7 +64,7 @@ HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest001, TestSize.Level1)
 HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest002, TestSize.Level1)
 {
     int ret = SetParameter("hm.sys.locale", "");
-    if (ret == 0) {
+    if (!ret) {
         EXPECT_EQ(LocaleConfig::GetSystemRegion(), "CN");
     }
 }
@@ -77,7 +77,7 @@ HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest002, TestSize.Level1)
 HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest003, TestSize.Level1)
 {
     int ret = SetParameter("hm.sys.locale", "");
-    if (ret == 0) {
+    if (!ret) {
         EXPECT_EQ(LocaleConfig::GetSystemLocale(), "zh-Hans-CN");
     }
 }
@@ -132,7 +132,7 @@ HWTEST_F(LocaleConfigTest, LocaleConfigFuncTest007, TestSize.Level1)
 {
     vector<string> countries;
     LocaleConfig::GetSystemCountries(countries);
-    unsigned int size = 241;
+    unsigned int size = 240;
     EXPECT_EQ(countries.size(), size);
 }
 

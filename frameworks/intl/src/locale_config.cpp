@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -170,14 +170,14 @@ string Adjust(const string &origin)
 {
     for (auto iter = g_languageMap.begin(); iter != g_languageMap.end(); ++iter) {
         string key = iter->first;
-        if (origin.compare(0, key.length(), key) == 0) {
+        if (!origin.compare(0, key.length(), key)) {
             return iter->second;
         }
     }
     return origin;
 }
 
-int32_t GetDialectName(const char *localeName, char *name, size_t nameCapacity, UErrorCode &status)
+size_t GetDialectName(const char *localeName, char *name, size_t nameCapacity, UErrorCode &status)
 {
     icu::Locale locale = icu::Locale::forLanguageTag(localeName, status);
     if (status != U_ZERO_ERROR) {
@@ -207,28 +207,29 @@ int32_t GetDialectName(const char *localeName, char *name, size_t nameCapacity, 
     return temp.size();
 }
 
-int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *dest, int32_t destCapacity,
+int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *dest, size_t destCapacity,
     UErrorCode &status)
 {
     if (status != U_ZERO_ERROR) {
         return 0;
     }
-    if ((destCapacity < 0) || (destCapacity > 0  && dest == nullptr)) {
+    if ((destCapacity < 0) || (destCapacity > 0  && !dest)) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
     char localeBuffer[ULOC_FULLNAME_CAPACITY];
-    int32_t length = GetDialectName(locale, localeBuffer, sizeof(localeBuffer), status);
-    if (status != U_ZERO_ERROR || length == 0) {
+    size_t length = GetDialectName(locale, localeBuffer, sizeof(localeBuffer), status);
+    if (status != U_ZERO_ERROR || !length) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
+    int32_t length2 = static_cast<int32_t>(length);
     const UChar *str = uloc_getTableStringWithFallback(U_ICUDATA_LANG, displayLocale, "Languages",
-        nullptr, localeBuffer, &length, &status);
+        nullptr, localeBuffer, &length2, &status);
     if (status <= U_ZERO_ERROR) {
-        int32_t len = (length < destCapacity) ? length : destCapacity;
+        size_t len = (length < destCapacity) ? length : destCapacity;
         if ((len > 0) && (str != nullptr)) {
-            u_memcpy(dest, str, len);
+            memcpy_s((void *)dest, destCapacity, (void *)str, len);
         }
     } else {
         status = U_USING_DEFAULT_WARNING;
@@ -239,13 +240,14 @@ int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *des
 
 void GetDisplayLanguageImpl(const char *locale, const char *displayLocale, icu::UnicodeString &result)
 {
-    UChar *buffer = result.getBuffer(50); // size 50 is enough to hold language name
-    if (buffer == 0) {
+    size_t destCapacity = 50;  // size 50 is enough to hold language name
+    UChar *buffer = result.getBuffer((int32_t)destCapacity);
+    if (!buffer) {
         result.truncate(0);
         return;
     }
     UErrorCode status = U_ZERO_ERROR;
-    int32_t length = GetDisplayName(locale, displayLocale, buffer, result.getCapacity(), status);
+    int32_t length = GetDisplayName(locale, displayLocale, buffer, destCapacity, status);
     result.releaseBuffer(U_SUCCESS(status) ? length : 0);
 }
 
@@ -253,14 +255,14 @@ string GetDisplayLanguageInner(const string &language, const string &displayLoca
 {
     icu::UnicodeString unistr;
     // 0 is the start position of language, 2 is the length of zh and fa
-    if (language.compare(0, 2, "zh") == 0 || language.compare(0, 2, "fa") == 0) {
+    if (!language.compare(0, 2, "zh") || !language.compare(0, 2, "fa")) {
         UErrorCode error = U_ZERO_ERROR;
         icu::Locale disLocale = icu::Locale::forLanguageTag(displayLocale, error);
         if (error != U_ZERO_ERROR) {
             return language;
         }
         const char *name = disLocale.getName();
-        if (name == nullptr) {
+        if (!name) {
             return language;
         }
         GetDisplayLanguageImpl(language.c_str(), name, unistr);
@@ -431,7 +433,7 @@ bool LocaleConfig::IsValidRegion(const string &region)
 
 bool LocaleConfig::IsValidTag(const string &tag)
 {
-    if (tag.size() == 0) {
+    if (!tag.size()) {
         return false;
     }
     vector<string> splits;
@@ -554,15 +556,15 @@ void LocaleConfig::GetCountriesFromSim(vector<string> &simCountries)
 void LocaleConfig::GetListFromFile(const char *path, const char *resourceName, unordered_set<string> &ret)
 {
     xmlKeepBlanksDefault(0);
-    if (path == nullptr) {
+    if (!path) {
         return;
     }
     xmlDocPtr doc = xmlParseFile(path);
-    if (doc == nullptr) {
+    if (!doc) {
         return;
     }
     xmlNodePtr cur = xmlDocGetRootElement(doc);
-    if (cur == nullptr || (xmlStrcmp(cur->name, reinterpret_cast<const xmlChar *>(resourceName))) != 0) {
+    if (!cur || xmlStrcmp(cur->name, reinterpret_cast<const xmlChar *>(resourceName))) {
         xmlFreeDoc(doc);
         return;
     }
@@ -850,7 +852,7 @@ bool LocaleConfig::Is24HourClock()
     if (code <= 0) {
         return false;
     }
-    if (strcmp(value, "true") == 0) {
+    if (!strcmp(value, "true")) {
         return true;
     }
     return false;
@@ -866,6 +868,6 @@ bool LocaleConfig::Set24HourClock(bool option)
     }
     return SetParameter(HOUR_KEY, optionStr.data()) == 0;
 }
-} // I18n
-} // Global
-} // OHOS
+} // namespace I18n
+} // namespace Global
+} // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -50,7 +50,8 @@ RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTag
     std::map<std::string, std::string> &configs)
 {
     UErrorCode status = U_ZERO_ERROR;
-    auto builder = std::make_unique<icu::LocaleBuilder>();
+    std::unique_ptr<icu::LocaleBuilder> builder = nullptr;
+    builder = std::make_unique<icu::LocaleBuilder>();
     ParseConfigs(configs);
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
@@ -64,7 +65,7 @@ RelativeTimeFormat::RelativeTimeFormat(const std::vector<std::string> &localeTag
             break;
         }
     }
-    if (localeInfo == nullptr || relativeTimeFormat == nullptr) {
+    if (!localeInfo || !relativeTimeFormat) {
         localeInfo = std::make_unique<LocaleInfo>(LocaleConfig::GetSystemLocale(), configs);
         locale = localeInfo->GetLocale();
         localeBaseName = localeInfo->GetBaseName();
@@ -96,13 +97,13 @@ void RelativeTimeFormat::ParseConfigs(std::map<std::string, std::string> &config
 
 std::string RelativeTimeFormat::Format(double number, const std::string &unit)
 {
-    if (relativeUnits.count(unit) == 0) {
+    if (!relativeUnits.count(unit)) {
         return "";
     }
     UErrorCode status = U_ZERO_ERROR;
     icu::UnicodeString formattedTime;
     std::string result;
-    if (strcmp(numeric.c_str(), "always") == 0) {
+    if (!strcmp(numeric.c_str(), "always")) {
         formattedTime = relativeTimeFormat->formatNumericToValue(number, relativeUnits[unit], status).toString(status);
     } else {
         formattedTime = relativeTimeFormat->formatToValue(number, relativeUnits[unit], status).toString(status);
@@ -142,13 +143,13 @@ void RelativeTimeFormat::ProcessIntegerField(const std::map<size_t, size_t> &ind
 void RelativeTimeFormat::FormatToParts(double number, const std::string &unit,
     std::vector<std::vector<std::string>> &timeVector)
 {
-    if (relativeUnits.count(unit) == 0) {
+    if (!relativeUnits.count(unit)) {
         return;
     }
     UErrorCode status = U_ZERO_ERROR;
     std::string result;
     icu::FormattedRelativeDateTime fmtRelativeTime;
-    if (numeric.empty() || strcmp(numeric.c_str(), "always") == 0) {
+    if (numeric.empty() || !strcmp(numeric.c_str(), "always")) {
         fmtRelativeTime = relativeTimeFormat->formatNumericToValue(number, relativeUnits[unit], status);
     } else {
         fmtRelativeTime = relativeTimeFormat->formatToValue(number, relativeUnits[unit], status);

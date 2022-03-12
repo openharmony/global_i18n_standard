@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -415,7 +415,7 @@ void GetRestPreferredUnit(const string &region, const string &usage, vector<stri
             break;
         }
     }
-    if (units.size() == 0) {
+    if (!units.size()) {
         GetFallbackPreferredUnit(region, usage, units);
     }
 }
@@ -466,7 +466,7 @@ void GetPreferredUnit(const string &region, const string &usage, vector<string> 
             break;
         }
     }
-    if (units.size() == 0) {
+    if (!units.size()) {
         GetRestPreferredUnit(region, usage, units);
     }
 }
@@ -488,7 +488,7 @@ void ComputeFactorValue(const string &unit, const string &measSys, vector<double
 double ComputeSIPrefixValue(const string &unit)
 {
     for (auto& prefixValue : PREFIX_VALUE) {
-        if (unit.rfind(prefixValue.first, 0) == 0) {
+        if (!unit.rfind(prefixValue.first, 0)) {
             return prefixValue.second;
         }
     }
@@ -498,7 +498,7 @@ double ComputeSIPrefixValue(const string &unit)
 void ComputePowerValue(const string &unit, const string &measSys, vector<double> &factors)
 {
     for (auto& powerValue : POWER_VALUE) {
-        if (unit.rfind(powerValue.first, 0) == 0) {
+        if (!unit.rfind(powerValue.first, 0)) {
             string baseUnit = unit.substr(powerValue.first.length());
             double value = ComputeSIPrefixValue(baseUnit);
             double compare = 0.0;
@@ -518,12 +518,12 @@ int ComputeValue(const string &unit, const string &measSys, vector<double> &fact
         if (baseValues.size() == BASE_VALUE_SIZE) {
             vector<double> numerator = { 1.0, 0.0 };
             int status = ComputeValue(baseValues[0], measSys, numerator);
-            if (status == 0) {
+            if (!status) {
                 return 0;
             }
             vector<double> denominator = { 1.0, 0.0 };
             status = ComputeValue(baseValues[1], measSys, denominator);
-            if (status == 0) {
+            if (!status) {
                 return 0;
             }
             factors[0] = numerator[0] / denominator[0];
@@ -557,23 +557,23 @@ int Convert(double &value, const string &fromUnit, const string &fromMeasSys, co
     UErrorCode icuStatus = U_ZERO_ERROR;
     icu::MeasureUnit::getAvailable(unitArray, MAX_UNIT_NUM, icuStatus);
     for (icu::MeasureUnit curUnit : unitArray) {
-        if (strcmp(curUnit.getSubtype(), fromUnit.c_str()) == 0) {
+        if (!strcmp(curUnit.getSubtype(), fromUnit.c_str())) {
             fromUnitType = curUnit.getType();
         }
-        if (strcmp(curUnit.getSubtype(), toUnit.c_str()) == 0) {
+        if (!strcmp(curUnit.getSubtype(), toUnit.c_str())) {
             toUnitType = curUnit.getType();
         }
     }
-    if (fromUnitType.empty() || toUnitType.empty() || strcmp(fromUnitType.c_str(), toUnitType.c_str()) != 0) {
+    if (fromUnitType.empty() || toUnitType.empty() || strcmp(fromUnitType.c_str(), toUnitType.c_str())) {
         return 0;
     }
     int status = ComputeValue(fromUnit, fromMeasSys, fromFactors);
-    if (status == 0) {
+    if (!status) {
         return 0;
     }
     vector<double> toFactors = {0.0, 0.0};
     status = ComputeValue(toUnit, toMeasSys, toFactors);
-    if (status == 0) {
+    if (!status) {
         return 0;
     }
     if (fromFactors.size() == FACTOR_SIZE) {
@@ -585,6 +585,6 @@ int Convert(double &value, const string &fromUnit, const string &fromMeasSys, co
     value = result;
     return 1;
 }
-} // I18n
-} // Global
-} // OHOS
+} // namespace I18n
+} // namespace Global
+} // namespace OHOS
