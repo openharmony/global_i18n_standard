@@ -26,10 +26,7 @@ config("preferred_language_config") {
 }
 ohos_shared_library("preferred_language") {
   public_configs = [ ":preferred_language_config" ]
-  include_dirs = [
-    "//base/global/resmgr_standard/frameworks/resmgr/include",
-    "include",
-  ]
+  include_dirs = [ "include" ]
   sources = [ "src/preferred_language.cpp" ]
   cflags_cc = [
     "-Wall",
@@ -37,12 +34,7 @@ ohos_shared_library("preferred_language") {
   ]
   deps = [ "//base/global/i18n_standard/frameworks/intl:intl_util" ]
   external_deps = [
-    "ability_base:want",
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
     "hiviewdfx_hilog_native:libhilog",
-    "ipc:ipc_core",
-    "resmgr_standard:global_resmgr",
     "startup_l2:syspara",
   ]
   subsystem_name = "global"

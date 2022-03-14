@@ -12,5 +12,5 @@
 # limitations under the License.
 
 declare_args() {
-  i18n_standard_telephony_core_service_exists = false
+  i18n_standard_telephony_core_service_exists = true
 }
