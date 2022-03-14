@@ -12,11 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <regex>
-#include "bundle_mgr_client.h"
-#include "hap_resource.h"
-#include "hilog/log.h"
-#include "ipc_skeleton.h"
 #include "locale_config.h"
 #include "locale_info.h"
 #include "parameter.h"
@@ -29,7 +24,6 @@ const char *PreferredLanguage::RESOURCE_PATH_HEAD = "/data/accounts/account_0/ap
 const char *PreferredLanguage::RESOURCE_PATH_TAILOR = "/assets/entry/resources.index";
 const char *PreferredLanguage::RESOURCE_PATH_SPLITOR = "/";
 const char *PreferredLanguage::PREFERRED_LANGUAGES = "persist.sys.preferredLanguages";
-static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "LocaleConfig" };
 
 bool PreferredLanguage::AddPreferredLanguageExist(std::vector<std::string> &preferredLanguageList, int languageIdx,
     int index, const std::string& language)
@@ -178,40 +172,6 @@ std::vector<std::string> PreferredLanguage::GetPreferredLanguageList()
         list[0] = systemLanguage;
     }
     return list;
-}
-
-std::set<std::string> PreferredLanguage::GetResources()
-{
-    pid_t uid = OHOS::IPCSkeleton::GetCallingUid();
-    std::string bundleName = "";
-    OHOS::AppExecFwk::BundleMgrClient client;
-    bool status = client.GetBundleNameForUid(uid, bundleName);
-    if (!status) {
-        HiviewDFX::HiLog::Error(LABEL, "Failed to get bundleName");
-    }
-    const std::string resourcePath = RESOURCE_PATH_HEAD + bundleName + RESOURCE_PATH_SPLITOR + bundleName +
-        RESOURCE_PATH_TAILOR;
-    const OHOS::Global::Resource::HapResource *resource =
-        OHOS::Global::Resource::HapResource::LoadFromIndex(resourcePath.c_str(), nullptr);
-    const std::vector<std::string> qualifiers = resource->GetQualifiers();
-    std::set<std::string> result;
-    std::regex languagePattern("type:0.*str:([a-z]{2})");
-    std::regex countryPattern("type:1.*str:([A-Z]{2})");
-    for (size_t i = 0; i < qualifiers.size(); i++) {
-        std::smatch match;
-        bool found = regex_search(qualifiers[i], match, languagePattern);
-        if (!found) {
-            continue;
-        }
-        std::string locale = match.str(1);
-        found = regex_search(qualifiers[i], match, countryPattern);
-        if (found) {
-            locale += "-";
-            locale += match.str(1);
-        }
-        result.insert(locale);
-    }
-    return result;
 }
 
 bool PreferredLanguage::IsMatched(const std::string& preferred, const std::string& resource)
