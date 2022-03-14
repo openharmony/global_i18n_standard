@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,11 +28,18 @@
 namespace OHOS {
 namespace Global {
 namespace I18n {
+typedef enum CompareResult {
+    INVALID = -2,
+    SMALLER,
+    EQUAL,
+    GREATER,
+} CompareResult;
+
 class Collator {
 public:
     Collator(std::vector<std::string> &localeTags, std::map<std::string, std::string> &options);
     ~Collator();
-    int32_t Compare(const std::string &first, const std::string &second);
+    CompareResult Compare(const std::string &first, const std::string &second);
     void ResolvedOptions(std::map<std::string, std::string> &options);
 
 private:
@@ -45,9 +52,9 @@ private:
     std::string caseFirst;
     std::string collation;
 
-    std::unique_ptr<LocaleInfo> localeInfo;
+    std::unique_ptr<LocaleInfo> localeInfo = nullptr;
     icu::Locale locale;
-    icu::Collator *collatorPtr;
+    icu::Collator *collatorPtr = nullptr;
 
     std::set<std::string> GetValidLocales();
     std::string ParseOption(std::map<std::string, std::string> &options, const std::string &key);
@@ -61,8 +68,7 @@ private:
     void SetIgnorePunctuation(UErrorCode &status);
     bool InitCollator();
 };
-}
-}
-}
-
-#endif // GLOBAL_I18N_STANDARD_COLLATOR_H
+} // namespace I18n
+} // namespace Global
+} // namespace OHOS
+#endif

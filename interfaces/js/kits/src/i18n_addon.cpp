@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <chrono>
 #include <unordered_map>
 #include <vector>
 #include "character.h"
@@ -26,6 +27,7 @@ namespace I18n {
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "I18nJs" };
 static thread_local napi_ref* g_constructor = nullptr;
 static thread_local napi_ref* g_brkConstructor = nullptr;
+static thread_local napi_ref* g_timezoneConstructor = nullptr;
 static thread_local napi_ref g_indexUtilConstructor = nullptr;
 static std::unordered_map<std::string, UCalendarDateFields> g_fieldsMap {
     { "era", UCAL_ERA },
@@ -77,7 +79,7 @@ I18nAddon::~I18nAddon()
 
 void I18nAddon::Destructor(napi_env env, void *nativeObject, void *hint)
 {
-    if (nativeObject == nullptr) {
+    if (!nativeObject) {
         return;
     }
     reinterpret_cast<I18nAddon *>(nativeObject)->~I18nAddon();
@@ -141,6 +143,8 @@ void I18nAddon::CreateInitProperties(napi_property_descriptor *properties)
     properties[21] = DECLARE_NAPI_FUNCTION("is24HourClock", Is24HourClock);
     // 22 is properties index
     properties[22] = DECLARE_NAPI_FUNCTION("set24HourClock", Set24HourClock);
+    // 23 is properties index
+    properties[23] = DECLARE_NAPI_FUNCTION("getTimeZone", GetI18nTimeZone);
 }
 
 napi_value I18nAddon::Init(napi_env env, napi_value exports)
@@ -163,10 +167,10 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
         return nullptr;
     }
     napi_value character = CreateCharacterObject(env);
-    if (character == nullptr) {
+    if (!character) {
         return nullptr;
     }
-    size_t propertiesNums = 23;
+    size_t propertiesNums = 24;
     napi_property_descriptor properties[propertiesNums];
     CreateInitProperties(properties);
     properties[13] = DECLARE_NAPI_PROPERTY("Util", util);  // 13 is properties index
@@ -253,7 +257,7 @@ napi_value I18nAddon::UnitConvert(napi_env env, napi_callback_info info)
     localeTags.push_back(localeBuf.data());
     std::map<std::string, std::string> map = {};
     map.insert(std::make_pair("style", "unit"));
-    if (convertStatus == 0) {
+    if (!convertStatus) {
         HiLog::Error(LABEL, "Do not support the conversion");
         map.insert(std::make_pair("unit", fromUnit));
     } else {
@@ -261,7 +265,8 @@ napi_value I18nAddon::UnitConvert(napi_env env, napi_callback_info info)
     }
     // 4 is the index of value
     GetOptionMap(env, argv[4], map);
-    auto numberFmt = std::make_unique<NumberFormat>(localeTags, map);
+    std::unique_ptr<NumberFormat> numberFmt = nullptr;
+    numberFmt = std::make_unique<NumberFormat>(localeTags, map);
     std::string value = numberFmt->Format(number);
     napi_value result;
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
@@ -287,7 +292,7 @@ napi_value I18nAddon::IsDigitAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isDigit = IsDigit(character);
@@ -315,7 +320,7 @@ napi_value I18nAddon::IsSpaceCharAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isSpaceChar = IsSpaceChar(character);
@@ -343,7 +348,7 @@ napi_value I18nAddon::IsWhiteSpaceAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isWhiteSpace = IsWhiteSpace(character);
@@ -371,7 +376,7 @@ napi_value I18nAddon::IsRTLCharacterAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isRTLCharacter = IsRTLCharacter(character);
@@ -399,7 +404,7 @@ napi_value I18nAddon::IsIdeoGraphicAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isIdeoGraphic = IsIdeoGraphic(character);
@@ -427,7 +432,7 @@ napi_value I18nAddon::IsLetterAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isLetter = IsLetter(character);
@@ -455,7 +460,7 @@ napi_value I18nAddon::IsLowerCaseAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isLowerCase = IsLowerCase(character);
@@ -483,7 +488,7 @@ napi_value I18nAddon::IsUpperCaseAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     bool isUpperCase = IsUpperCase(character);
@@ -511,7 +516,7 @@ napi_value I18nAddon::GetTypeAddon(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string character = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     std::string type = GetType(character);
@@ -920,8 +925,9 @@ napi_value I18nAddon::PhoneNumberFormatConstructor(napi_env env, napi_callback_i
     std::map<std::string, std::string> options;
     GetOptionValue(env, argv[1], "type", options);
 
-    std::unique_ptr<I18nAddon> obj = std::make_unique<I18nAddon>();
-    if (obj == nullptr) {
+    std::unique_ptr<I18nAddon> obj = nullptr;
+    obj = std::make_unique<I18nAddon>();
+    if (!obj) {
         HiLog::Error(LABEL, "Create I18nAddon failed");
         return nullptr;
     }
@@ -986,7 +992,7 @@ napi_value I18nAddon::IsValidPhoneNumber(napi_env env, napi_callback_info info)
 
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->phonenumberfmt_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->phonenumberfmt_) {
         HiLog::Error(LABEL, "GetPhoneNumberFormat object failed");
         return nullptr;
     }
@@ -1032,7 +1038,7 @@ napi_value I18nAddon::FormatPhoneNumber(napi_env env, napi_callback_info info)
 
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->phonenumberfmt_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->phonenumberfmt_) {
         HiLog::Error(LABEL, "Get PhoneNumberFormat object failed");
         return nullptr;
     }
@@ -1091,7 +1097,7 @@ napi_value I18nAddon::InitI18nCalendar(napi_env env, napi_value exports)
         return nullptr;
     }
     g_constructor = new (std::nothrow) napi_ref;
-    if (g_constructor == nullptr) {
+    if (!g_constructor) {
         HiLog::Error(LABEL, "Failed to create ref at init");
         return nullptr;
     }
@@ -1123,12 +1129,13 @@ napi_value I18nAddon::CalendarConstructor(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string localeTag = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     CalendarType type = GetCalendarType(env, argv[1]);
-    std::unique_ptr<I18nAddon> obj = std::make_unique<I18nAddon>();
-    if (obj == nullptr) {
+    std::unique_ptr<I18nAddon> obj = nullptr;
+    obj = std::make_unique<I18nAddon>();
+    if (!obj) {
         HiLog::Error(LABEL, "Create I18nAddon failed");
         return nullptr;
     }
@@ -1157,7 +1164,7 @@ CalendarType I18nAddon::GetCalendarType(napi_env env, napi_value value)
         }
         int32_t code = 0;
         std::string calendarType = GetString(env, value, code);
-        if (code != 0) {
+        if (code) {
             return type;
         }
         if (g_typeMap.find(calendarType) != g_typeMap.end()) {
@@ -1189,7 +1196,7 @@ napi_value I18nAddon::GetCalendar(napi_env env, napi_callback_info info)
         HiLog::Error(LABEL, "Failed to create reference at GetCalendar");
         return nullptr;
     }
-    if (argv[1] == nullptr) {
+    if (!argv[1]) {
         status = napi_create_string_utf8(env, "", NAPI_AUTO_LENGTH, argv + 1);
         if (status != napi_ok) {
             return nullptr;
@@ -1206,7 +1213,7 @@ napi_value I18nAddon::GetCalendar(napi_env env, napi_callback_info info)
 
 napi_value I18nAddon::GetDate(napi_env env, napi_value value)
 {
-    if (value == nullptr) {
+    if (!value) {
         return nullptr;
     }
     napi_value funcGetDateInfo = nullptr;
@@ -1226,7 +1233,7 @@ napi_value I18nAddon::GetDate(napi_env env, napi_value value)
 
 void I18nAddon::SetMilliseconds(napi_env env, napi_value value)
 {
-    if (value == nullptr) {
+    if (!value) {
         return;
     }
     double milliseconds = 0;
@@ -1273,7 +1280,7 @@ napi_value I18nAddon::Set(napi_env env, napi_callback_info info)
     }
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1292,12 +1299,12 @@ napi_value I18nAddon::SetTime(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    if (argv[0] == nullptr) {
+    if (!argv[0]) {
         return nullptr;
     }
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1311,7 +1318,7 @@ napi_value I18nAddon::SetTime(napi_env env, napi_callback_info info)
         return nullptr;
     } else {
         napi_value val = GetDate(env, argv[0]);
-        if (val == nullptr) {
+        if (!val) {
             return nullptr;
         }
         obj->SetMilliseconds(env, val);
@@ -1321,7 +1328,7 @@ napi_value I18nAddon::SetTime(napi_env env, napi_callback_info info)
 
 void I18nAddon::SetField(napi_env env, napi_value value, UCalendarDateFields field)
 {
-    if (value == nullptr) {
+    if (!value) {
         return;
     }
     int32_t val = 0;
@@ -1370,7 +1377,7 @@ napi_value I18nAddon::SetTimeZone(napi_env env, napi_callback_info info)
     std::string timezone(buf.data());
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1387,7 +1394,7 @@ napi_value I18nAddon::GetTimeZone(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1410,7 +1417,7 @@ napi_value I18nAddon::GetFirstDayOfWeek(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1433,7 +1440,7 @@ napi_value I18nAddon::GetMinimalDaysInFirstWeek(napi_env env, napi_callback_info
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1469,7 +1476,7 @@ napi_value I18nAddon::SetFirstDayOfWeek(napi_env env, napi_callback_info info)
     }
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1499,7 +1506,7 @@ napi_value I18nAddon::SetMinimalDaysInFirstWeek(napi_env env, napi_callback_info
     }
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1540,7 +1547,7 @@ napi_value I18nAddon::Get(napi_env env, napi_callback_info info)
     }
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
@@ -1566,11 +1573,11 @@ napi_value I18nAddon::IsWeekend(napi_env env, napi_callback_info info)
     bool isWeekEnd = false;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
     do {
-        if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+        if (status != napi_ok || !obj || !obj->calendar_) {
             HiLog::Error(LABEL, "Get calendar object failed");
             break;
         }
-        if (argv[0] == nullptr) {
+        if (!argv[0]) {
             isWeekEnd = obj->calendar_->IsWeekend();
         } else {
             napi_value funcGetDateInfo = nullptr;
@@ -1620,16 +1627,16 @@ napi_value I18nAddon::GetDisplayName(napi_env env, napi_callback_info info)
     }
     int32_t code = 0;
     std::string localeTag = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->calendar_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->calendar_) {
         HiLog::Error(LABEL, "Get calendar object failed");
         return nullptr;
     }
-    if (obj->calendar_ == nullptr) {
+    if (!obj->calendar_) {
         return nullptr;
     }
     std::string name = obj->calendar_->GetDisplayName(localeTag);
@@ -1684,11 +1691,12 @@ napi_value I18nAddon::BreakIteratorConstructor(napi_env env, napi_callback_info 
     }
     int32_t code = 0;
     std::string localeTag = GetString(env, argv[0], code);
-    if (code != 0) {
+    if (code) {
         return nullptr;
     }
-    std::unique_ptr<I18nAddon> obj = std::make_unique<I18nAddon>();
-    if (obj == nullptr) {
+    std::unique_ptr<I18nAddon> obj = nullptr;
+    obj = std::make_unique<I18nAddon>();
+    if (!obj) {
         HiLog::Error(LABEL, "Create I18nAddon failed");
         return nullptr;
     }
@@ -1699,7 +1707,7 @@ napi_value I18nAddon::BreakIteratorConstructor(napi_env env, napi_callback_info 
         return nullptr;
     }
     obj->brkiter_ = std::make_unique<I18nBreakIterator>(localeTag);
-    if (obj->brkiter_ == nullptr) {
+    if (!obj->brkiter_) {
         HiLog::Error(LABEL, "Wrap BreakIterator failed");
         return nullptr;
     }
@@ -1729,7 +1737,7 @@ napi_value I18nAddon::InitBreakIterator(napi_env env, napi_value exports)
         return nullptr;
     }
     g_brkConstructor = new (std::nothrow) napi_ref;
-    if (g_brkConstructor == nullptr) {
+    if (!g_brkConstructor) {
         HiLog::Error(LABEL, "Failed to create brkiterator ref at init");
         return nullptr;
     }
@@ -1754,7 +1762,7 @@ napi_value I18nAddon::GetLineInstance(napi_env env, napi_callback_info info)
         HiLog::Error(LABEL, "Failed to create reference at GetLineInstance");
         return nullptr;
     }
-    if (argv[0] == nullptr) {
+    if (!argv[0]) {
         return nullptr;
     }
     napi_value result = nullptr;
@@ -1775,7 +1783,7 @@ napi_value I18nAddon::Current(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
@@ -1798,7 +1806,7 @@ napi_value I18nAddon::First(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
@@ -1821,7 +1829,7 @@ napi_value I18nAddon::Last(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
@@ -1844,7 +1852,7 @@ napi_value I18nAddon::Previous(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
@@ -1867,7 +1875,7 @@ napi_value I18nAddon::Next(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
@@ -1904,11 +1912,11 @@ napi_value I18nAddon::SetText(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
-    if (argv[0] == nullptr) {
+    if (!argv[0]) {
         return nullptr;
     }
     napi_valuetype valueType = napi_valuetype::napi_undefined;
@@ -1942,7 +1950,7 @@ napi_value I18nAddon::GetText(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
@@ -1966,11 +1974,11 @@ napi_value I18nAddon::Following(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
-    if (argv[0] == nullptr) {
+    if (!argv[0]) {
         return nullptr;
     }
     napi_valuetype valueType = napi_valuetype::napi_undefined;
@@ -2004,11 +2012,11 @@ napi_value I18nAddon::IsBoundary(napi_env env, napi_callback_info info)
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->brkiter_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->brkiter_) {
         HiLog::Error(LABEL, "Get BreakIterator object failed");
         return nullptr;
     }
-    if (argv[0] == nullptr) {
+    if (!argv[0]) {
         return nullptr;
     }
     napi_valuetype valueType = napi_valuetype::napi_undefined;
@@ -2062,8 +2070,9 @@ napi_value I18nAddon::IndexUtilConstructor(napi_env env, napi_callback_info info
         }
         localeTag = localeBuf.data();
     }
-    std::unique_ptr<I18nAddon> obj = std::make_unique<I18nAddon>();
-    if (obj == nullptr) {
+    std::unique_ptr<I18nAddon> obj = nullptr;
+    obj = std::make_unique<I18nAddon>();
+    if (!obj) {
         HiLog::Error(LABEL, "Create I18nAddon failed");
         return nullptr;
     }
@@ -2107,7 +2116,7 @@ napi_value I18nAddon::GetIndexUtil(napi_env env, napi_callback_info info)
         return nullptr;
     }
     napi_value result = nullptr;
-    if (argv[0] == nullptr) {
+    if (!argv[0]) {
         status = napi_new_instance(env, constructor, 0, argv, &result);
     } else {
         status = napi_new_instance(env, constructor, 1, argv, &result);
@@ -2129,7 +2138,7 @@ napi_value I18nAddon::GetIndexList(napi_env env, napi_callback_info info)
 
     I18nAddon *obj = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->indexUtil_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->indexUtil_) {
         HiLog::Error(LABEL, "GetPhoneNumberFormat object failed");
         return nullptr;
     }
@@ -2184,7 +2193,7 @@ napi_value I18nAddon::AddLocale(napi_env env, napi_callback_info info)
     }
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->indexUtil_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->indexUtil_) {
         HiLog::Error(LABEL, "Get IndexUtil object failed");
         return nullptr;
     }
@@ -2219,7 +2228,7 @@ napi_value I18nAddon::GetIndex(napi_env env, napi_callback_info info)
     }
     I18nAddon *obj = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
-    if (status != napi_ok || obj == nullptr || obj->indexUtil_ == nullptr) {
+    if (status != napi_ok || !obj || !obj->indexUtil_) {
         HiLog::Error(LABEL, "Get IndexUtil object failed");
         return nullptr;
     }
@@ -2382,13 +2391,294 @@ napi_value I18nAddon::GetFirstPreferredLanguage(napi_env env, napi_callback_info
     return result;
 }
 
+napi_value I18nAddon::InitI18nTimeZone(napi_env env, napi_value exports)
+{
+    napi_status status = napi_ok;
+    napi_property_descriptor properties[] = {
+        DECLARE_NAPI_FUNCTION("getID", GetID),
+        DECLARE_NAPI_FUNCTION("getDisplayName", GetTimeZoneDisplayName),
+        DECLARE_NAPI_FUNCTION("getRawOffset", GetRawOffset),
+        DECLARE_NAPI_FUNCTION("getOffset", GetOffset),
+    };
+    napi_value constructor = nullptr;
+    status = napi_define_class(env, "TimeZone", NAPI_AUTO_LENGTH, I18nTimeZoneConstructor, nullptr,
+        sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to define class TimeZone at Init");
+        return nullptr;
+    }
+    g_timezoneConstructor = new (std::nothrow) napi_ref;
+    if (!g_timezoneConstructor) {
+        HiLog::Error(LABEL, "Failed to create TimeZone ref at init");
+        return nullptr;
+    }
+    status = napi_create_reference(env, constructor, 1, g_timezoneConstructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create reference g_timezoneConstructor at init");
+        return nullptr;
+    }
+    return exports;
+}
+
+napi_value I18nAddon::I18nTimeZoneConstructor(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (status != napi_ok) {
+        return nullptr;
+    }
+    std::string zoneID = "";
+    if (argv[0] != nullptr) {
+        napi_valuetype valueType = napi_valuetype::napi_undefined;
+        napi_typeof(env, argv[0], &valueType);
+        if (valueType != napi_valuetype::napi_string) {
+            napi_throw_type_error(env, nullptr, "Parameter type does not match");
+            return nullptr;
+        }
+        int32_t code = 0;
+        zoneID = GetString(env, argv[0], code);
+        if (code != 0) {
+            return nullptr;
+        }
+    }
+    std::unique_ptr<I18nAddon> obj = nullptr;
+    obj = std::make_unique<I18nAddon>();
+    if (!obj) {
+        HiLog::Error(LABEL, "Create I18nAddon failed");
+        return nullptr;
+    }
+    status =
+        napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), I18nAddon::Destructor, nullptr, &obj->wrapper_);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Wrap II18nAddon failed");
+        return nullptr;
+    }
+    obj->timezone_ = std::make_unique<I18nTimeZone>(zoneID);
+    if (!obj->timezone_) {
+        HiLog::Error(LABEL, "Wrap TimeZone failed");
+        return nullptr;
+    }
+    obj.release();
+    return thisVar;
+}
+
+napi_value I18nAddon::GetI18nTimeZone(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_value constructor = nullptr;
+    napi_status status = napi_get_reference_value(env, *g_timezoneConstructor, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create reference at GetTimeZoneInstance");
+        return nullptr;
+    }
+    
+    napi_value result = nullptr;
+    if (!argv[0]) {
+        status = napi_new_instance(env, constructor, 0, nullptr, &result); // 1 arguments
+    } else {
+        status = napi_new_instance(env, constructor, 1, argv, &result); // 1 arguments
+    }
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "GetTimeZone create instance failed");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::GetID(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value *argv = nullptr;
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || !obj || !obj->timezone_) {
+        HiLog::Error(LABEL, "Get TimeZone object failed");
+        return nullptr;
+    }
+    std::string result = obj->timezone_->GetID();
+    napi_value value = nullptr;
+    status = napi_create_string_utf8(env, result.c_str(), NAPI_AUTO_LENGTH, &value);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create result failed");
+        return nullptr;
+    }
+    return value;
+}
+
+int32_t I18nAddon::GetParameter(napi_env env, napi_value *argv, std::string &localeStr, bool &isDST)
+{
+    if (!argv[0]) {
+        return 0;  // 0 represents no parameter.
+    }
+    napi_status status = napi_ok;
+    size_t len = 0;
+    if (!argv[1]) {
+        napi_valuetype valueType = napi_valuetype::napi_undefined;
+        napi_typeof(env, argv[0], &valueType);
+        if (valueType == napi_valuetype::napi_string) {
+            status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+            std::vector<char> buf(len + 1);
+            status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
+            localeStr.insert(localeStr.end(), buf.begin(), buf.end());
+            if (status != napi_ok) {
+                return -1;  // -1 represents Invalid parameter.
+            }
+            return 1;  // 1 represents one string parameter.
+        } else if (valueType == napi_valuetype::napi_boolean) {
+            status = napi_get_value_bool(env, argv[0], &isDST);
+            if (status != napi_ok) {
+                return -1;  // -1 represents Invalid parameter.
+            }
+            return 2;  // 2 represents one boolean parameter.
+        } else {
+            return -1;  // -1 represents Invalid parameter.
+        }
+    }
+    napi_valuetype valueType0 = napi_valuetype::napi_undefined;
+    napi_valuetype valueType1 = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType0);  // 0 represents first parameter
+    napi_typeof(env, argv[1], &valueType1);  // 0 represents second parameter
+    if (valueType0 != napi_valuetype::napi_string || valueType1 != napi_valuetype::napi_boolean) {
+        return -1;  // -1 represents Invalid parameter.
+    }
+    status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    std::vector<char> buf(len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
+    localeStr.insert(localeStr.end(), buf.begin(), buf.end());
+    status = napi_get_value_bool(env, argv[1], &isDST);
+    if (status != napi_ok) {
+        return -1;  // -1 represents Invalid parameter.
+    }
+    return 3;  // 3 represents one string parameter and one bool parameter.
+}
+
+napi_value I18nAddon::GetTimeZoneDisplayName(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    I18nAddon *obj = nullptr;
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || !obj || !obj->timezone_) {
+        HiLog::Error(LABEL, "Get TimeZone object failed");
+        return nullptr;
+    }
+    
+    std::string locale;
+    bool isDST = false;
+    int32_t parameterStatus = GetParameter(env, argv, locale, isDST);
+
+    std::string result;
+    if (parameterStatus == -1) {  // -1 represents Invalid parameter.
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    } else if (parameterStatus == 0) {
+        result = obj->timezone_->GetDisplayName();
+    } else if (parameterStatus == 1) {  // 1 represents one string parameter.
+        result = obj->timezone_->GetDisplayName(locale);
+    } else if (parameterStatus == 2) {  // 2 represents one boolean parameter.
+        result = obj->timezone_->GetDisplayName(isDST);
+    } else {
+        result = obj->timezone_->GetDisplayName(locale, isDST);
+    }
+
+    napi_value value = nullptr;
+    status = napi_create_string_utf8(env, result.c_str(), NAPI_AUTO_LENGTH, &value);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create result failed");
+        return nullptr;
+    }
+    return value;
+}
+
+napi_value I18nAddon::GetOffset(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+
+    double date = 0;
+    if (argv[0]) {
+        napi_valuetype valueType = napi_valuetype::napi_undefined;
+        napi_typeof(env, argv[0], &valueType);
+        if (valueType != napi_valuetype::napi_number) {
+            HiLog::Error(LABEL, "Invalid parameter type");
+            return nullptr;
+        }
+        status = napi_get_value_double(env, argv[0], &date);
+        if (status != napi_ok) {
+            HiLog::Error(LABEL, "Get parameter date failed");
+            return nullptr;
+        }
+    } else {
+        auto time = std::chrono::system_clock::now();
+        auto since_epoch = time.time_since_epoch();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch);
+        date = (double)millis.count();
+    }
+
+    I18nAddon *obj = nullptr;
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || !obj || !obj->timezone_) {
+        HiLog::Error(LABEL, "Get TimeZone object failed");
+        return nullptr;
+    }
+    int32_t result = obj->timezone_->GetOffset(date);
+    napi_value value = nullptr;
+    status = napi_create_int32(env, result, &value);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create result failed");
+        return nullptr;
+    }
+    return value;
+}
+
+napi_value I18nAddon::GetRawOffset(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value *argv = nullptr;
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || !obj || !obj->timezone_) {
+        HiLog::Error(LABEL, "Get TimeZone object failed");
+        return nullptr;
+    }
+    int32_t result = obj->timezone_->GetRawOffset();
+    napi_value value = nullptr;
+    status = napi_create_int32(env, result, &value);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Create result failed");
+        return nullptr;
+    }
+    return value;
+}
+
 napi_value Init(napi_env env, napi_value exports)
 {
     napi_value val = I18nAddon::Init(env, exports);
     val = I18nAddon::InitPhoneNumberFormat(env, val);
     val = I18nAddon::InitBreakIterator(env, val);
     val = I18nAddon::InitI18nCalendar(env, val);
-    return I18nAddon::InitIndexUtil(env, val);
+    val = I18nAddon::InitIndexUtil(env, val);
+    return I18nAddon::InitI18nTimeZone(env, val);
 }
 
 static napi_module g_i18nModule = {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@
 #include "islamcal.h"
 #include "japancal.h"
 #include "persncal.h"
+#include "securec.h"
 #include "ureslocs.h"
 #include "ulocimp.h"
 #include "uresimp.h"
@@ -142,7 +143,7 @@ void I18nCalendar::SetTimeZone(std::string id)
 {
     icu::UnicodeString zone = icu::UnicodeString::fromUTF8(id);
     icu::TimeZone *timezone = icu::TimeZone::createTimeZone(zone);
-    if (timezone == nullptr) {
+    if (!timezone) {
         return;
     }
     if (calendar_ != nullptr) {
@@ -154,7 +155,7 @@ void I18nCalendar::SetTimeZone(std::string id)
 std::string I18nCalendar::GetTimeZone(void)
 {
     std::string ret;
-    if (calendar_ != nullptr) {
+    if (calendar_) {
         icu::UnicodeString unistr;
         calendar_->getTimeZone().getDisplayName(unistr);
         unistr.toUTF8String<std::string>(ret);
@@ -243,11 +244,11 @@ std::string I18nCalendar::GetDisplayName(std::string &displayLocale)
     icu::UnicodeString unistr;
     int32_t destCapacity = 50;
     UChar *buffer = unistr.getBuffer(destCapacity);
-    if (buffer == 0 || calendar_ == nullptr) {
+    if (buffer == 0 || !calendar_) {
         return "";
     }
     const char *type = calendar_->getType();
-    if (type == nullptr) {
+    if (!type) {
         return "";
     }
     int32_t length;
@@ -258,7 +259,7 @@ std::string I18nCalendar::GetDisplayName(std::string &displayLocale)
     if (status == U_ZERO_ERROR) {
         len = (length < destCapacity) ? length : destCapacity;
         if ((len > 0) && (str != nullptr)) {
-            u_memcpy(buffer, str, len);
+            memcpy_s((void *)buffer, (size_t)destCapacity, (void *)str, (size_t)len);
         }
     } else {
         return "";

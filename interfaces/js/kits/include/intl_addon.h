@@ -122,12 +122,12 @@ private:
 
     napi_env env_;
     napi_ref wrapper_;
-    std::unique_ptr<LocaleInfo> locale_;
-    std::unique_ptr<DateTimeFormat> datefmt_;
-    std::unique_ptr<NumberFormat> numberfmt_;
-    std::unique_ptr<RelativeTimeFormat> relativetimefmt_;
-    std::unique_ptr<Collator> collator_;
-    std::unique_ptr<PluralRules> pluralrules_;
+    std::unique_ptr<LocaleInfo> locale_ = nullptr;
+    std::unique_ptr<DateTimeFormat> datefmt_ = nullptr;
+    std::unique_ptr<NumberFormat> numberfmt_ = nullptr;
+    std::unique_ptr<RelativeTimeFormat> relativetimefmt_ = nullptr;
+    std::unique_ptr<Collator> collator_ = nullptr;
+    std::unique_ptr<PluralRules> pluralrules_ = nullptr;
 };
 } // namespace I18n
 } // namespace Global

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 #include "napi/native_api.h"
 #include "i18n_break_iterator.h"
 #include "i18n_calendar.h"
+#include "i18n_timezone.h"
 #include "index_util.h"
 #include "napi/native_node_api.h"
 #include "locale_config.h"
@@ -73,6 +74,8 @@ public:
     static napi_value RemovePreferredLanguage(napi_env env, napi_callback_info info);
     static napi_value GetPreferredLanguageList(napi_env env, napi_callback_info info);
     static napi_value GetFirstPreferredLanguage(napi_env env, napi_callback_info info);
+    static napi_value InitI18nTimeZone(napi_env env, napi_value exports);
+    static napi_value GetI18nTimeZone(napi_env env, napi_callback_info info);
 
 private:
     static void CreateInitProperties(napi_property_descriptor *properties);
@@ -122,12 +125,20 @@ private:
     static napi_value CreateUtilObject(napi_env env);
     static napi_value CreateCharacterObject(napi_env env);
 
+    static napi_value I18nTimeZoneConstructor(napi_env env, napi_callback_info info);
+    static napi_value GetID(napi_env env, napi_callback_info info);
+    static int32_t GetParameter(napi_env env, napi_value *argv, std::string &localeStr, bool &isDST);
+    static napi_value GetTimeZoneDisplayName(napi_env env, napi_callback_info info);
+    static napi_value GetOffset(napi_env env, napi_callback_info info);
+    static napi_value GetRawOffset(napi_env env, napi_callback_info info);
+
     napi_env env_;
     napi_ref wrapper_;
-    std::unique_ptr<PhoneNumberFormat> phonenumberfmt_;
-    std::unique_ptr<I18nCalendar> calendar_;
-    std::unique_ptr<I18nBreakIterator> brkiter_;
-    std::unique_ptr<IndexUtil> indexUtil_;
+    std::unique_ptr<PhoneNumberFormat> phonenumberfmt_ = nullptr;
+    std::unique_ptr<I18nCalendar> calendar_ = nullptr;
+    std::unique_ptr<I18nBreakIterator> brkiter_ = nullptr;
+    std::unique_ptr<IndexUtil> indexUtil_ = nullptr;
+    std::unique_ptr<I18nTimeZone> timezone_ = nullptr;
 };
 } // namespace I18n
 } // namespace Global

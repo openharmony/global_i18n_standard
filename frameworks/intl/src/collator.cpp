@@ -1,9 +1,5 @@
-//
-// Created by s00619675 on 2021/10/25.
-//
-
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -70,7 +66,7 @@ Collator::Collator(std::vector<std::string> &localeTags, std::map<std::string, s
     ParseAllOptions(options);
 
     UErrorCode status = UErrorCode::U_ZERO_ERROR;
-    if (localeTags.size() == 0) {
+    if (!localeTags.size()) {
         localeTags.push_back(LocaleConfig::GetSystemLocale());
     }
     for (size_t i = 0; i < localeTags.size(); i++) {
@@ -98,7 +94,7 @@ bool Collator::IsValidCollation(std::string &collation, UErrorCode &status)
         int length;
         const char *validCollations = enumeration->next(&length, status);
         while (validCollations != nullptr) {
-            if (strcmp(validCollations, currentCollation) == 0) {
+            if (!strcmp(validCollations, currentCollation)) {
                 return true;
             }
             validCollations = enumeration->next(&length, status);
@@ -142,7 +138,7 @@ void Collator::SetUsage(UErrorCode &status)
 
 void Collator::SetNumeric(UErrorCode &status)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return;
     }
     if (numeric == "") {
@@ -162,7 +158,7 @@ void Collator::SetNumeric(UErrorCode &status)
 
 void Collator::SetCaseFirst(UErrorCode &status)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return;
     }
     if (caseFirst == "") {
@@ -185,7 +181,7 @@ void Collator::SetCaseFirst(UErrorCode &status)
 
 void Collator::SetSensitivity(UErrorCode &status)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return;
     }
     if (sensitivity == "base") {
@@ -203,7 +199,7 @@ void Collator::SetSensitivity(UErrorCode &status)
 
 void Collator::SetIgnorePunctuation(UErrorCode &status)
 {
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return;
     }
     if (ignorePunctuation == "true") {
@@ -223,7 +219,7 @@ bool Collator::InitCollator()
     SetSensitivity(status);
     SetIgnorePunctuation(status);
 
-    if (collatorPtr == nullptr) {
+    if (!collatorPtr) {
         return false;
     }
     return true;
@@ -237,24 +233,25 @@ Collator::~Collator()
     }
 }
 
-int32_t Collator::Compare(const std::string &first, const std::string &second)
+CompareResult Collator::Compare(const std::string &first, const std::string &second)
 {
-    if (collatorPtr == nullptr) {
-        return -2;
+    if (!collatorPtr) {
+        return CompareResult::INVALID;
     }
     icu::Collator::EComparisonResult result = collatorPtr->compare(icu::UnicodeString(first.data(), first.length()),
         icu::UnicodeString(second.data(), second.length()));
     if (result == icu::Collator::EComparisonResult::LESS) {
-        return -1;
+        return CompareResult::SMALLER;
     } else if (result == icu::Collator::EComparisonResult::EQUAL) {
-        return 0;
+        return CompareResult::EQUAL;
     } else {
-        return 1;
+        return CompareResult::GREATER;
     }
 }
 
 void Collator::ResolvedOptions(std::map<std::string, std::string> &options)
 {
+    options.insert(std::pair<std::string, std::string>("localeMatcher", localeMatcher));
     options.insert(std::pair<std::string, std::string>("locale", localeStr));
     options.insert(std::pair<std::string, std::string>("usage", usage));
     options.insert(std::pair<std::string, std::string>("sensitivity", sensitivity));
@@ -263,6 +260,6 @@ void Collator::ResolvedOptions(std::map<std::string, std::string> &options)
     options.insert(std::pair<std::string, std::string>("caseFirst", caseFirst));
     options.insert(std::pair<std::string, std::string>("collation", collation));
 }
-}
-}
-}
+} // namespace I18n
+} // namespace Global
+} // namespace OHOS
