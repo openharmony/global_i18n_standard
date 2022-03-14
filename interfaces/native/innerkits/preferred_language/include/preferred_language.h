@@ -35,7 +35,6 @@ private:
                                              const std::string& language);
     static bool AddPreferredLanguageExist(std::vector<std::string> &preferredLangList, int languageIdx, int index,
                                           const std::string& language);
-    static std::set<std::string> GetResources();
     static bool IsMatched(const std::string& preferred, const std::string& resource);
     static bool IsValidLanguage(const std::string &language);
     static bool IsValidTag(const std::string &tag);
