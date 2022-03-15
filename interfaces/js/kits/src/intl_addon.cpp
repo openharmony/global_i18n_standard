@@ -1734,6 +1734,7 @@ napi_value IntlAddon::GetCollatorResolvedOptions(napi_env env, napi_callback_inf
     napi_create_object(env, &result);
     std::map<std::string, std::string> options = {};
     obj->collator_->ResolvedOptions(options);
+    SetOptionProperties(env, result, options, "localeMatcher");
     SetOptionProperties(env, result, options, "locale");
     SetOptionProperties(env, result, options, "usage");
     SetOptionProperties(env, result, options, "sensitivity");
