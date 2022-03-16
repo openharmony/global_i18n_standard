@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//base/global/i18n_standard/i18n.gni")
 import("//build/ohos.gni")
 
 group("build_module") {
@@ -88,6 +87,7 @@ ohos_shared_library("intl_util") {
     ":forbidden_regions_xml",
     ":language_config.para",
     ":white_languages_xml",
+    "//third_party/icu/icu4c:ohos_icudat",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
     "//third_party/libphonenumber/cpp:phonenumber_standard",
@@ -99,7 +99,8 @@ ohos_shared_library("intl_util") {
     "startup_l2:syspara",
     "utils_base:utils",
   ]
-  if (i18n_standard_telephony_core_service_exists) {
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.telephony_core_service)) {
     external_deps += [ "core_service:tel_core_service_api" ]
     cflags_cc += [ "-DTEL_CORE_SERVICE_EXISTS" ]
   }

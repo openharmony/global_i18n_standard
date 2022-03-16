@@ -40,7 +40,7 @@
         "syscap": [
             "SystemCapability.I18N"
         ],
-        "features": ["i18n_standard_telephone_core_service_exists"],
+        "features": [],
         "adapted_system_type": [
             "standard"
         ],
@@ -60,7 +60,8 @@
                 "libhilog",
                 "samgr_proxy",
                 "ace_napi",
-                "base"
+                "base",
+		"common"
             ],
             "third_party": [
                 "icu",
@@ -72,8 +73,7 @@
             "sub_component": [
                 "//base/global/i18n_standard/frameworks/zone:zone_util",
                 "//base/global/i18n_standard/frameworks/intl:build_module",
-                "//base/global/i18n_standard/interfaces/js/kits:build_module",
-                "//third_party/icu/icu4c:ohos_icudat"
+                "//base/global/i18n_standard/interfaces/js/kits:build_module"
             ],
             "inner_kits": [
                 {
