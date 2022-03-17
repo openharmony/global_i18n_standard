@@ -40,7 +40,7 @@
         "syscap": [
             "SystemCapability.I18N"
         ],
-        "features": [],
+        "features": ["i18n_standard_telephony_core_service_exists"],
         "adapted_system_type": [
             "standard"
         ],
@@ -48,17 +48,10 @@
         "ram": "",
         "deps": {
             "components": [
-                "ability_base",
-                "ability_runtime",
-                "want",
-                "appexecfwk_base",
-                "appexecfwk_core",
-                "ipc_core",
                 "syspara",
                 "utils",
                 "tel_core_service_api",
                 "libhilog",
-                "samgr_proxy",
                 "ace_napi",
                 "base"
             ],
