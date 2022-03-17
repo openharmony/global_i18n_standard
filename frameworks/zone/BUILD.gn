@@ -37,6 +37,7 @@ ohos_shared_library("zone_util") {
   ]
   remove_configs = [ "//build/config/compiler:no_rtti" ]
   deps = [
+    "//third_party/icu/icu4c:ohos_icudat",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
     "//third_party/libphonenumber/cpp:phonenumber_standard",
