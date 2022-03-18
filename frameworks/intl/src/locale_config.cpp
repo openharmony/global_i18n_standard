@@ -179,7 +179,7 @@ string Adjust(const string &origin)
     return origin;
 }
 
-size_t GetDialectName(const char *localeName, char *name, size_t nameCapacity, UErrorCode &status)
+int32_t GetDialectName(const char *localeName, char *name, size_t nameCapacity, UErrorCode &status)
 {
     icu::Locale locale = icu::Locale::forLanguageTag(localeName, status);
     if (status != U_ZERO_ERROR) {
@@ -209,7 +209,7 @@ size_t GetDialectName(const char *localeName, char *name, size_t nameCapacity, U
     return temp.size();
 }
 
-int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *dest, size_t destCapacity,
+int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *dest, int32_t destCapacity,
     UErrorCode &status)
 {
     if (status != U_ZERO_ERROR) {
@@ -220,18 +220,17 @@ int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *des
         return 0;
     }
     char localeBuffer[ULOC_FULLNAME_CAPACITY];
-    size_t length = GetDialectName(locale, localeBuffer, sizeof(localeBuffer), status);
+    int32_t length = GetDialectName(locale, localeBuffer, sizeof(localeBuffer), status);
     if (status != U_ZERO_ERROR || !length) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
-    int32_t length2 = static_cast<int32_t>(length);
     const UChar *str = uloc_getTableStringWithFallback(U_ICUDATA_LANG, displayLocale, "Languages",
-        nullptr, localeBuffer, &length2, &status);
+        nullptr, localeBuffer, &length, &status);
     if (status <= U_ZERO_ERROR) {
-        size_t len = (length < destCapacity) ? length : destCapacity;
+        int32_t len = (length < destCapacity) ? length : destCapacity;
         if ((len > 0) && (str != nullptr)) {
-            memcpy_s((void *)dest, destCapacity, (void *)str, len);
+            u_memcpy(dest, str, len);
         }
     } else {
         status = U_USING_DEFAULT_WARNING;
@@ -242,14 +241,13 @@ int32_t GetDisplayName(const char *locale, const char *displayLocale, UChar *des
 
 void GetDisplayLanguageImpl(const char *locale, const char *displayLocale, icu::UnicodeString &result)
 {
-    size_t destCapacity = 50;  // size 50 is enough to hold language name
-    UChar *buffer = result.getBuffer((int32_t)destCapacity);
+    UChar *buffer = result.getBuffer(50);  // size 50 is enough to hold language name
     if (!buffer) {
         result.truncate(0);
         return;
     }
     UErrorCode status = U_ZERO_ERROR;
-    int32_t length = GetDisplayName(locale, displayLocale, buffer, destCapacity, status);
+    int32_t length = GetDisplayName(locale, displayLocale, buffer, result.getCapacity(), status);
     result.releaseBuffer(U_SUCCESS(status) ? length : 0);
 }
 
