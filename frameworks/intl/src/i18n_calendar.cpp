@@ -24,7 +24,6 @@
 #include "islamcal.h"
 #include "japancal.h"
 #include "persncal.h"
-#include "securec.h"
 #include "ureslocs.h"
 #include "ulocimp.h"
 #include "uresimp.h"
@@ -259,7 +258,7 @@ std::string I18nCalendar::GetDisplayName(std::string &displayLocale)
     if (status == U_ZERO_ERROR) {
         len = (length < destCapacity) ? length : destCapacity;
         if ((len > 0) && (str != nullptr)) {
-            memcpy_s((void *)buffer, (size_t)destCapacity, (void *)str, (size_t)len);
+            u_memcpy(buffer, str, len);
         }
     } else {
         return "";
