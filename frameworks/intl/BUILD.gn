@@ -94,6 +94,7 @@ ohos_shared_library("intl_util") {
     "//third_party/libxml2:xml2",
   ]
   external_deps = [
+    "access_token:libaccesstoken_sdk",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "startup_l2:syspara",

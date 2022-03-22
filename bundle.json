@@ -48,20 +48,15 @@
         "ram": "",
         "deps": {
             "components": [
-                "ability_base",
-                "ability_runtime",
-                "want",
-                "appexecfwk_base",
-                "appexecfwk_core",
                 "ipc_core",
                 "syspara",
                 "utils",
                 "tel_core_service_api",
+                "libaccesstoken_sdk",
                 "libhilog",
-                "samgr_proxy",
                 "ace_napi",
                 "base",
-		"common"
+                "common"
             ],
             "third_party": [
                 "icu",
