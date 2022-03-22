@@ -2515,22 +2515,36 @@ napi_value I18nAddon::GetID(napi_env env, napi_callback_info info)
     return value;
 }
 
+bool I18nAddon::GetStringFromJS(napi_env env, napi_value argv, std::string &jsString)
+{
+    size_t len = 0;
+    napi_status status = napi_get_value_string_utf8(env, argv, nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to get string length");
+        return false;
+    }
+    std::vector<char> argvBuf(len + 1);
+    status = napi_get_value_string_utf8(env, argv, argvBuf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to get string item");
+        return false;
+    }
+    jsString = argvBuf.data();
+    return true;
+}
+
 int32_t I18nAddon::GetParameter(napi_env env, napi_value *argv, std::string &localeStr, bool &isDST)
 {
     if (!argv[0]) {
         return 0;  // 0 represents no parameter.
     }
     napi_status status = napi_ok;
-    size_t len = 0;
     if (!argv[1]) {
         napi_valuetype valueType = napi_valuetype::napi_undefined;
         napi_typeof(env, argv[0], &valueType);
         if (valueType == napi_valuetype::napi_string) {
-            status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
-            std::vector<char> buf(len + 1);
-            status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
-            localeStr.insert(localeStr.end(), buf.begin(), buf.end());
-            if (status != napi_ok) {
+            bool valid = GetStringFromJS(env, argv[0], localeStr);
+            if (!valid) {
                 return -1;  // -1 represents Invalid parameter.
             }
             return 1;  // 1 represents one string parameter.
@@ -2551,10 +2565,10 @@ int32_t I18nAddon::GetParameter(napi_env env, napi_value *argv, std::string &loc
     if (valueType0 != napi_valuetype::napi_string || valueType1 != napi_valuetype::napi_boolean) {
         return -1;  // -1 represents Invalid parameter.
     }
-    status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
-    std::vector<char> buf(len + 1);
-    status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
-    localeStr.insert(localeStr.end(), buf.begin(), buf.end());
+    bool valid = GetStringFromJS(env, argv[0], localeStr);
+    if (!valid) {
+        return -1;  // -1 represents Invalid parameter.
+    }
     status = napi_get_value_bool(env, argv[1], &isDST);
     if (status != napi_ok) {
         return -1;  // -1 represents Invalid parameter.
