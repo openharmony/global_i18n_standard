@@ -132,6 +132,8 @@ private:
     static napi_value GetOffset(napi_env env, napi_callback_info info);
     static napi_value GetRawOffset(napi_env env, napi_callback_info info);
 
+    static bool GetStringFromJS(napi_env env, napi_value argv, std::string &jsString);
+
     napi_env env_;
     napi_ref wrapper_;
     std::unique_ptr<PhoneNumberFormat> phonenumberfmt_ = nullptr;
