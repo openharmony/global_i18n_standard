@@ -48,13 +48,15 @@
         "ram": "",
         "deps": {
             "components": [
+                "ipc_core",
                 "syspara",
                 "utils",
                 "tel_core_service_api",
+                "libaccesstoken_sdk",
                 "libhilog",
                 "ace_napi",
                 "base",
-		"common"
+                "common"
             ],
             "third_party": [
                 "icu",

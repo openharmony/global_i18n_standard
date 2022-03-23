@@ -13,9 +13,12 @@
  * limitations under the License.
  */
 #include <regex>
+#include "accesstoken_kit.h"
 #ifdef TEL_CORE_SERVICE_EXISTS
 #include "core_service_client.h"
 #endif
+#include "hilog/log.h"
+#include "ipc_skeleton.h"
 #include "libxml/parser.h"
 #include "locale_info.h"
 #include "localebuilder.h"
@@ -36,7 +39,9 @@ namespace OHOS {
 namespace Global {
 namespace I18n {
 using namespace std;
+using namespace OHOS::HiviewDFX;
 
+static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "LocaleConfig" };
 const char *LocaleConfig::LANGUAGE_KEY = "persist.sys.language";
 const char *LocaleConfig::LOCALE_KEY = "persist.sys.locale";
 const char *LocaleConfig::HOUR_KEY = "persist.sys.is24Hour";
@@ -340,8 +345,34 @@ string LocaleConfig::GetSystemLocale()
     return "";
 }
 
+bool LocaleConfig::CheckPermission()
+{
+    Security::AccessToken::AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
+    int result = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    if (Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(callerToken)
+        == Security::AccessToken::ATokenTypeEnum::TOKEN_NATIVE) {
+        result = Security::AccessToken::AccessTokenKit::VerifyNativeToken(callerToken,
+                                                                          "ohos.permission.UPDATE_CONFIGURATION");
+    } else if (Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(callerToken)
+        == Security::AccessToken::ATokenTypeEnum::TOKEN_HAP) {
+        result = Security::AccessToken::AccessTokenKit::VerifyAccessToken(callerToken,
+                                                                          "ohos.permission.UPDATE_CONFIGURATION");
+    } else {
+        HiLog::Info(LABEL, "Invlid tokenID");
+        return false;
+    }
+    if (result != Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+        HiLog::Info(LABEL, "Verify permission failed");
+        return false;
+    }
+    return true;
+}
+
 bool LocaleConfig::SetSystemLanguage(const string &language)
 {
+    if (!CheckPermission()) {
+        return false;
+    }
     if (!IsValidTag(language)) {
         return false;
     }
@@ -350,6 +381,9 @@ bool LocaleConfig::SetSystemLanguage(const string &language)
 
 bool LocaleConfig::SetSystemRegion(const string &region)
 {
+    if (!CheckPermission()) {
+        return false;
+    }
     if (!IsValidRegion(region)) {
         return false;
     }
@@ -379,6 +413,9 @@ bool LocaleConfig::SetSystemRegion(const string &region)
 
 bool LocaleConfig::SetSystemLocale(const string &locale)
 {
+    if (!CheckPermission()) {
+        return false;
+    }
     if (!IsValidTag(locale)) {
         return false;
     }
@@ -862,6 +899,9 @@ bool LocaleConfig::Is24HourClock()
 
 bool LocaleConfig::Set24HourClock(bool option)
 {
+    if (!CheckPermission()) {
+        return false;
+    }
     std::string optionStr = "";
     if (option) {
         optionStr = "true";

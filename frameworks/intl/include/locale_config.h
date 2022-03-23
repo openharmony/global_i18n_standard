@@ -96,6 +96,7 @@ private:
     static std::set<std::string> validHcTag;
     static bool listsInitialized;
     static bool InitializeLists();
+    static bool CheckPermission();
 };
 } // namespace I18n
 } // namespace Global
