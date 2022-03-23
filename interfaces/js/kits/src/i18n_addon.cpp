@@ -2701,7 +2701,7 @@ static napi_module g_i18nModule = {
     .nm_filename = nullptr,
     .nm_register_func = Init,
     .nm_modname = "i18n",
-    .nm_priv = ((void *)0),
+    .nm_priv = nullptr,
     .reserved = { 0 }
 };
 

@@ -103,6 +103,7 @@ private:
     void GetDigitsResolvedOptions(std::map<std::string, std::string> &map);
     void InitProperties();
     void InitDigitsProperties();
+    void SetUnit(std::string &preferredUnit);
 };
 } // namespace I18n
 } // namespace Global

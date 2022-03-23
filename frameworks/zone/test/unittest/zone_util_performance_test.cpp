@@ -52,7 +52,7 @@ void ZoneUtilPerformanceTest::TearDown(void)
  */
 HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest001, TestSize.Level1)
 {
-    unsigned long long total = 0;
+    uint64_t total = 0;
     double average = 0;
     string expects[] = { "Asia/Shanghai", "America/New_York" };
     string countries[] = { "JP", "KR" };
@@ -60,7 +60,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest001, TestSize.Leve
     ZoneUtil util;
     for (int k = 0; k < 1000; ++k) {
         for (int i = 0; i < count; ++i) {
-            auto t1= std::chrono::high_resolution_clock::now();
+            auto t1 = std::chrono::high_resolution_clock::now();
             string out = util.GetDefaultZone(countries[i].c_str());
             auto t2 = std::chrono::high_resolution_clock::now();
             total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
@@ -77,7 +77,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest001, TestSize.Leve
  */
 HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest002, TestSize.Level1)
 {
-    unsigned long long total = 0;
+    uint64_t total = 0;
     double average = 0;
     string expects[] = { "Asia/Shanghai", "America/Detroit" };
     int32_t offsets[] = { 3600 * 1000 * 8, -3600 * 1000 * 5 };
@@ -86,7 +86,7 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest002, TestSize.Leve
     ZoneUtil util;
     for (int k = 0; k < 1000; ++k) {
         for (int i = 0; i < count; ++i) {
-            auto t1= std::chrono::high_resolution_clock::now();
+            auto t1 = std::chrono::high_resolution_clock::now();
             string out = util.GetDefaultZone(countries[i].c_str(), offsets[i]);
             auto t2 = std::chrono::high_resolution_clock::now();
             total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
@@ -103,14 +103,14 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest002, TestSize.Leve
  */
 HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest003, TestSize.Level1)
 {
-    unsigned long long total = 0;
+    uint64_t total = 0;
     double average = 0;
     vector<string> expects = { "Asia/Shanghai", "Asia/Urumqi"};
     string country = "CN";
     vector<string> out;
     ZoneUtil util;
     for (int k = 0; k < 1000; ++k) {
-        auto t1= std::chrono::high_resolution_clock::now();
+        auto t1 = std::chrono::high_resolution_clock::now();
         util.GetZoneList(country, out);
         auto t2 = std::chrono::high_resolution_clock::now();
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
@@ -126,14 +126,14 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest003, TestSize.Leve
  */
 HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest004, TestSize.Level1)
 {
-    unsigned long long total = 0;
+    uint64_t total = 0;
     double average = 0;
     vector<string> expects = { "Europe/London" };
     string country = "GB";
     vector<string> out;
     ZoneUtil util;
     for (int k = 0; k < 1000; ++k) {
-        auto t1= std::chrono::high_resolution_clock::now();
+        auto t1 = std::chrono::high_resolution_clock::now();
         util.GetZoneList(country, out);
         auto t2 = std::chrono::high_resolution_clock::now();
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
@@ -149,14 +149,14 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest004, TestSize.Leve
  */
 HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest005, TestSize.Level1)
 {
-    unsigned long long total = 0;
+    uint64_t total = 0;
     double average = 0;
     vector<string> expects = { "Europe/Berlin", "Europe/Busingen" };
     string country = "DE";
     vector<string> out;
     ZoneUtil util;
     for (int k = 0; k < 1000; ++k) {
-        auto t1= std::chrono::high_resolution_clock::now();
+        auto t1 = std::chrono::high_resolution_clock::now();
         util.GetZoneList(country, out);
         auto t2 = std::chrono::high_resolution_clock::now();
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
@@ -172,14 +172,14 @@ HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest005, TestSize.Leve
  */
 HWTEST_F(ZoneUtilPerformanceTest,  ZoneUtilPerformanceFuncTest006, TestSize.Level1)
 {
-    unsigned long long total = 0;
+    uint64_t total = 0;
     double average = 0;
     vector<string> expects = { "Asia/Shanghai" };
     string country = "CN";
     vector<string> out;
     ZoneUtil util;
     for (int k = 0; k < 1000; ++k) {
-        auto t1= std::chrono::high_resolution_clock::now();
+        auto t1 = std::chrono::high_resolution_clock::now();
         util.GetZoneList(country, 3600 * 1000 * 8, out);
         auto t2 = std::chrono::high_resolution_clock::now();
         total += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
