@@ -77,6 +77,24 @@ DateTimeFormat::~DateTimeFormat()
     }
 }
 
+bool DateTimeFormat::CheckInitSuccess()
+{
+    if (dateIntvFormat == nullptr || calendar == nullptr || dateFormat == nullptr || localeInfo == nullptr) {
+        return false;
+    }
+    return true;
+}
+
+std::unique_ptr<DateTimeFormat> DateTimeFormat::CreateInstance(const std::vector<std::string> &localeTags,
+                                                               std::map<std::string, std::string> &configs)
+{
+    std::unique_ptr<DateTimeFormat> dateTimeFormat = std::make_unique<DateTimeFormat>(localeTags, configs);
+    if (!dateTimeFormat->CheckInitSuccess()) {
+        return nullptr;
+    }
+    return dateTimeFormat;
+}
+
 void DateTimeFormat::InitWithLocale(const std::string &curLocale, std::map<std::string, std::string> &configs)
 {
     UErrorCode status = U_ZERO_ERROR;
@@ -228,10 +246,10 @@ void DateTimeFormat::InitDateFormat(UErrorCode &status)
     if (!dateStyle.empty() || !timeStyle.empty()) {
         DateFormat::EStyle dateStyleValue = DateFormat::EStyle::kNone;
         DateFormat::EStyle timeStyleValue = DateFormat::EStyle::kNone;
-        if (!dateStyle.empty()) {
+        if (!dateStyle.empty() && dateTimeStyle.count(dateStyle) > 0) {
             dateStyleValue = dateTimeStyle[dateStyle];
         }
-        if (!timeStyle.empty()) {
+        if (!timeStyle.empty() && dateTimeStyle.count(timeStyle) > 0) {
             timeStyleValue = dateTimeStyle[timeStyle];
         }
         dateFormat = DateFormat::createDateTimeInstance(dateStyleValue, timeStyleValue, locale);
@@ -495,6 +513,9 @@ std::string DateTimeFormat::FormatRange(int64_t *fromDate, size_t fromDateSize, 
     minute = GetArrayValue(toDate, MINUTE_INDEX, toDateSize);
     second = GetArrayValue(toDate, SECOND_INDEX, toDateSize);
     auto toCalendar = std::unique_ptr<Calendar>(Calendar::createInstance(locale, status));
+    if (toCalendar == nullptr) {
+        return nullptr;
+    }
     toCalendar->clear();
     toCalendar->set(year, month, day, hour, minute, second);
     if (!timeZone.empty()) {

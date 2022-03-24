@@ -66,6 +66,9 @@ bool PreferredLanguage::AddPreferredLanguageNonExist(std::vector<std::string> &p
 
 bool PreferredLanguage::AddPreferredLanguage(const std::string &language, int index)
 {
+    if (!LocaleConfig::CheckPermission()) {
+        return false;
+    }
     if (!IsValidTag(language)) {
         return false;
     }
@@ -111,6 +114,9 @@ bool PreferredLanguage::AddPreferredLanguage(const std::string &language, int in
 
 bool PreferredLanguage::RemovePreferredLanguage(int index)
 {
+    if (!LocaleConfig::CheckPermission()) {
+        return false;
+    }
     std::vector<std::string> preferredLanguageList = GetPreferredLanguageList();
     int idx = index;
     if (index < 0) {

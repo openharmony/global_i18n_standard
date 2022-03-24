@@ -958,7 +958,7 @@ bool I18nAddon::InitPhoneNumberFormatContext(napi_env env, napi_callback_info in
         return false;
     }
     env_ = env;
-    phonenumberfmt_ = std::make_unique<PhoneNumberFormat>(country, options);
+    phonenumberfmt_ = PhoneNumberFormat::CreateInstance(country, options);
 
     return phonenumberfmt_ != nullptr;
 }
@@ -2456,7 +2456,7 @@ napi_value I18nAddon::I18nTimeZoneConstructor(napi_env env, napi_callback_info i
         HiLog::Error(LABEL, "Wrap II18nAddon failed");
         return nullptr;
     }
-    obj->timezone_ = std::make_unique<I18nTimeZone>(zoneID);
+    obj->timezone_ = I18nTimeZone::CreateInstance(zoneID);
     if (!obj->timezone_) {
         HiLog::Error(LABEL, "Wrap TimeZone failed");
         return nullptr;

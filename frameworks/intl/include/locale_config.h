@@ -46,6 +46,7 @@ public:
     static std::string GetValidLocale(const std::string &localeTag);
     static bool Is24HourClock();
     static bool Set24HourClock(bool option);
+    static bool CheckPermission();
 
 private:
     static bool IsValidLanguage(const std::string &language);
@@ -96,7 +97,6 @@ private:
     static std::set<std::string> validHcTag;
     static bool listsInitialized;
     static bool InitializeLists();
-    static bool CheckPermission();
 };
 } // namespace I18n
 } // namespace Global

@@ -370,7 +370,6 @@ napi_value IntlAddon::DateTimeFormatConstructor(napi_env env, napi_callback_info
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-
     std::vector<std::string> localeTags;
     if (argv[0] != nullptr) {
         napi_valuetype valueType = napi_valuetype::napi_undefined;
@@ -389,31 +388,26 @@ napi_value IntlAddon::DateTimeFormatConstructor(napi_env env, napi_callback_info
             }
         }
     }
-
     std::map<std::string, std::string> map = {};
     if (argv[1] != nullptr) {
         GetDateOptionValues(env, argv[1], map);
     }
-
     std::unique_ptr<IntlAddon> obj = nullptr;
     obj = std::make_unique<IntlAddon>();
     if (!obj) {
         HiLog::Error(LABEL, "Create IntlAddon failed");
         return nullptr;
     }
-
     status =
         napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), IntlAddon::Destructor, nullptr, &obj->wrapper_);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Wrap IntlAddon failed");
         return nullptr;
     }
-
     if (!obj->InitDateTimeFormatContext(env, info, localeTags, map)) {
         HiLog::Error(LABEL, "Init DateTimeFormat failed");
         return nullptr;
     }
-
     obj.release();
     return thisVar;
 }
@@ -428,7 +422,7 @@ bool IntlAddon::InitDateTimeFormatContext(napi_env env, napi_callback_info info,
         return false;
     }
     env_ = env;
-    datefmt_ = std::make_unique<DateTimeFormat>(localeTags, map);
+    datefmt_ = DateTimeFormat::CreateInstance(localeTags, map);
 
     return datefmt_ != nullptr;
 }
@@ -538,6 +532,10 @@ napi_value IntlAddon::FormatDateTimeRange(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (argv[0] == nullptr || argv[1] == nullptr) {
+        HiLog::Error(LABEL, "Parameter wrong");
+        return nullptr;
+    }
     int64_t firstYear = GetYear(env, argv, 0);
     int64_t firstMonth = GetMonth(env, argv, 0);
     int64_t firstDay = GetDay(env, argv, 0);
