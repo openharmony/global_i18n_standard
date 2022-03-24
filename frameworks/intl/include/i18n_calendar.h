@@ -39,7 +39,7 @@ enum CalendarType {
 
 class I18nCalendar {
 public:
-    I18nCalendar(std::string localeTag);
+    explicit I18nCalendar(std::string localeTag);
     I18nCalendar(std::string localeTag, CalendarType type);
     virtual ~I18nCalendar();
     void SetTime(double time);

@@ -24,7 +24,7 @@ namespace Global {
 namespace I18n {
 class IndexUtil {
 public:
-    IndexUtil(const std::string &localeTag);
+    explicit IndexUtil(const std::string &localeTag);
     ~IndexUtil();
     std::vector<std::string> GetIndexList();
     void AddLocale(const std::string &localeTag);

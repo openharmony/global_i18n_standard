@@ -241,6 +241,18 @@ void NumberFormat::ParseDigitsConfigs(std::map<std::string, std::string> &config
     }
 }
 
+void NumberFormat::SetUnit(std::string &preferredUnit)
+{
+    if (preferredUnit.empty()) {
+        return;
+    }
+    for (icu::MeasureUnit curUnit : unitArray) {
+        if (!strcmp(curUnit.getSubtype(), preferredUnit.c_str())) {
+            numberFormat = numberFormat.unit(curUnit);
+        }
+    }
+}
+
 std::string NumberFormat::Format(double number)
 {
     double finalNumber = number;
@@ -273,13 +285,7 @@ std::string NumberFormat::Format(double number)
             finalNumber = preferredValuesUnderOne.rbegin()->first;
             preferredUnit = preferredValuesUnderOne.rbegin()->second;
         }
-        if (!preferredUnit.empty()) {
-            for (icu::MeasureUnit curUnit : unitArray) {
-                if (!strcmp(curUnit.getSubtype(), preferredUnit.c_str())) {
-                    numberFormat = numberFormat.unit(curUnit);
-                }
-            }
-        }
+        SetUnit(preferredUnit);
     }
     std::string result;
     UErrorCode status = U_ZERO_ERROR;

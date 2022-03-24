@@ -22,7 +22,7 @@ namespace Global {
 namespace I18n {
 class I18nBreakIterator {
 public:
-    I18nBreakIterator(std::string lcoaleTag);
+    explicit I18nBreakIterator(std::string lcoaleTag);
     virtual ~I18nBreakIterator();
     int32_t current();
     int32_t first();
