@@ -31,8 +31,11 @@ public:
     virtual ~PhoneNumberFormat();
     bool isValidPhoneNumber(const std::string &number) const;
     std::string format(const std::string &number) const;
+    static std::unique_ptr<PhoneNumberFormat> CreateInstance(const std::string &countryTag,
+                                                             const std::map<std::string, std::string> &options);
 
 private:
+    PhoneNumberUtil* GetPhoneNumberUtil();
     PhoneNumberUtil *util;
     std::string country;
     PhoneNumberUtil::PhoneNumberFormat phoneNumberFormat;

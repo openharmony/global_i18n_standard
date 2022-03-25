@@ -59,6 +59,9 @@ public:
     std::string GetLocaleMatcher() const;
     std::string GetFormatMatcher() const;
     std::string GetFractionalSecondDigits() const;
+    static std::unique_ptr<DateTimeFormat> CreateInstance(const std::vector<std::string> &localeTags,
+                                                          std::map<std::string, std::string> &configs);
+
 private:
     std::string localeTag;
     std::string dateStyle;
@@ -135,6 +138,7 @@ private:
     void FixPatternPartTwo();
     void removeAmPmChar();
     int64_t GetArrayValue(int64_t *dateArray, size_t index, size_t size);
+    bool CheckInitSuccess();
 };
 } // namespace I18n
 } // namespace Global

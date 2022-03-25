@@ -32,8 +32,10 @@ public:
     std::string GetDisplayName(bool isDST);
     std::string GetDisplayName(std::string localeStr);
     std::string GetDisplayName(std::string localeStr, bool isDST);
+    static std::unique_ptr<I18nTimeZone> CreateInstance(std::string zoneID);
 
 private:
+    icu::TimeZone* GetTimeZone();
     icu::TimeZone *timezone;
 };
 } // namespace I18n

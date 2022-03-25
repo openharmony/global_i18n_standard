@@ -92,12 +92,17 @@ bool Collator::IsValidCollation(std::string &collation, UErrorCode &status)
         std::unique_ptr<icu::StringEnumeration> enumeration(
             icu::Collator::getKeywordValuesForLocale("collation", icu::Locale(locale.getBaseName()), false, status));
         int length;
-        const char *validCollations = enumeration->next(&length, status);
+        const char *validCollations = nullptr;
+        if (enumeration != nullptr) {
+            validCollations = enumeration->next(&length, status);
+        }
         while (validCollations != nullptr) {
             if (!strcmp(validCollations, currentCollation)) {
                 return true;
             }
-            validCollations = enumeration->next(&length, status);
+            if (enumeration != nullptr) {
+                validCollations = enumeration->next(&length, status);
+            }
         }
     }
     return false;

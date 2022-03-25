@@ -51,6 +51,21 @@ PhoneNumberFormat::~PhoneNumberFormat()
 {
 }
 
+std::unique_ptr<PhoneNumberFormat> PhoneNumberFormat::CreateInstance(const std::string &countryTag,
+    const std::map<std::string, std::string> &options)
+{
+    std::unique_ptr<PhoneNumberFormat> phoneNumberFormat = std::make_unique<PhoneNumberFormat>(countryTag, options);
+    if (phoneNumberFormat->GetPhoneNumberUtil() == nullptr) {
+        return nullptr;
+    }
+    return phoneNumberFormat;
+}
+
+PhoneNumberUtil* PhoneNumberFormat::GetPhoneNumberUtil()
+{
+    return util;
+}
+
 bool PhoneNumberFormat::isValidPhoneNumber(const std::string &number) const
 {
     i18n::phonenumbers::PhoneNumber phoneNumber;

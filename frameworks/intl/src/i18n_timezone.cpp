@@ -39,6 +39,20 @@ I18nTimeZone::~I18nTimeZone()
     }
 }
 
+icu::TimeZone* I18nTimeZone::GetTimeZone()
+{
+    return timezone;
+}
+
+std::unique_ptr<I18nTimeZone> I18nTimeZone::CreateInstance(std::string zoneID)
+{
+    std::unique_ptr<I18nTimeZone> i18nTimeZone = std::make_unique<I18nTimeZone>(zoneID);
+    if (i18nTimeZone->GetTimeZone() == nullptr) {
+        return nullptr;
+    }
+    return i18nTimeZone;
+}
+
 int32_t I18nTimeZone::GetOffset(double date)
 {
     int32_t rawOffset = 0;

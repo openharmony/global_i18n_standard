@@ -175,7 +175,9 @@ void NumberFormat::ParseConfigs(std::map<std::string, std::string> &configs)
         unit = configs["unit"];
         if (configs.count("unitDisplay") > 0) {
             unitDisplayString = configs["unitDisplay"];
-            unitDisplay = unitStyle[unitDisplayString];
+            if (unitStyle.count(unitDisplayString) > 0) {
+                unitDisplay = unitStyle[unitDisplayString];
+            }
         }
         if (configs.count("unitUsage") > 0) {
             unitUsage = configs["unitUsage"];
@@ -185,7 +187,8 @@ void NumberFormat::ParseConfigs(std::map<std::string, std::string> &configs)
         currency = configs["currency"];
         if (configs.count("currencySign") > 0) {
             currencySign = configs["currencySign"];
-            if (configs["currencySign"] != "accounting" && !signDisplayString.empty()) {
+            if (configs["currencySign"] != "accounting" && !signDisplayString.empty() &&
+                signAccountingStyle.count(signDisplayString) > 0) {
                 signDisplay = signAccountingStyle[signDisplayString];
             }
         }
