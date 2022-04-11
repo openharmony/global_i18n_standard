@@ -38,7 +38,7 @@
         "name": "i18n_standard",
         "subsystem": "global",
         "syscap": [
-            "SystemCapability.I18N"
+            "SystemCapability.Global.I18n"
         ],
         "features": [],
         "adapted_system_type": [
