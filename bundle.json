@@ -1,10 +1,10 @@
 {
-    "name": "@ohos/global_i18n_standard",
+    "name": "@ohos/global_i18n",
     "version": "1.0.0",
     "description": "Provides internationalization APIS for implementing functions such date and time formatting.",
     "homePage": "https://gitee.com/openharmony/",
     "license": "Apache V2",
-    "repository": "https://gitee.com/openharmony/global_i18n_standard",
+    "repository": "https://gitee.com/openharmony/global_i18n",
     "domain": "os",
     "language": "",
     "publishAs": "code-segment",
@@ -32,10 +32,10 @@
         }
     ],
     "segment": {
-        "destPath": "base/global/i18n_standard"
+        "destPath": "base/global/i18n"
     },
     "component": {
-        "name": "i18n_standard",
+        "name": "i18n",
         "subsystem": "global",
         "syscap": [
             "SystemCapability.Global.I18n"
@@ -66,43 +66,43 @@
         },
         "build": {
             "sub_component": [
-                "//base/global/i18n_standard/frameworks/zone:zone_util",
-                "//base/global/i18n_standard/frameworks/intl:build_module",
-                "//base/global/i18n_standard/interfaces/js/kits:build_module"
+                "//base/global/i18n/frameworks/zone:zone_util",
+                "//base/global/i18n/frameworks/intl:build_module",
+                "//base/global/i18n/interfaces/js/kits:build_module"
             ],
             "inner_kits": [
                 {
-                    "name": "//base/global/i18n_standard/frameworks/zone:zone_util",
+                    "name": "//base/global/i18n/frameworks/zone:zone_util",
                     "header": {
                         "header_files": [
                             "zone_util.h"
                         ],
-                        "header_base": "//base/global/i18n_standard/interfaces/native/innerkits/zone/include"
+                        "header_base": "//base/global/i18n/interfaces/native/innerkits/zone/include"
                     }
                 },
                 {
-                    "name": "//base/global/i18n_standard/frameworks/intl:intl_util",
+                    "name": "//base/global/i18n/frameworks/intl:intl_util",
                     "header": {
                         "header_files": [
                             "locale_config.h",
                             "locale_info.h"
                         ],
-                        "header_base": "//base/global/i18n_standard/frameworks/intl/include"
+                        "header_base": "//base/global/i18n/frameworks/intl/include"
                     }
                 },
                 {
-                    "name": "//base/global/i18n_standard/frameworks/intl:preferred_language",
+                    "name": "//base/global/i18n/frameworks/intl:preferred_language",
                     "header": {
                         "header_files": [
                             "preferred_language.h"
                         ],
-                        "header_base": "//base/global/i18n_standard/interfaces/native/innerkits/preferred_language/include"
+                        "header_base": "//base/global/i18n/interfaces/native/innerkits/preferred_language/include"
                     }
                 }
             ],
             "test": [
-                "//base/global/i18n_standard/frameworks/intl/test:intl_test",
-                "//base/global/i18n_standard/frameworks/zone/test:zone_util_test"
+                "//base/global/i18n/frameworks/intl/test:intl_test",
+                "//base/global/i18n/frameworks/zone/test:zone_util_test"
             ]
         }
     }

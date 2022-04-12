@@ -13,7 +13,7 @@
 
 import("//build/test.gni")
 
-module_output_path = "i18n_standard/intl_test"
+module_output_path = "i18n/intl_test"
 
 ohos_unittest("intl_test") {
   module_out_path = module_output_path
@@ -23,12 +23,12 @@ ohos_unittest("intl_test") {
     "unittest/locale_config_test.cpp",
   ]
   include_dirs = [
-    "//base/global/i18n_standard/frameworks/intl/include",
+    "//base/global/i18n/frameworks/intl/include",
     "//third_party/icu/icu4c/source/common",
     "//third_party/icu/icu4c/source/i18n",
   ]
   deps = [
-    "//base/global/i18n_standard/frameworks/intl:intl_util",
+    "//base/global/i18n/frameworks/intl:intl_util",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
     "//third_party/googletest:gtest_main",
     "//third_party/icu/icu4c:shared_icui18n",

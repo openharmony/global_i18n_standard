@@ -16,7 +16,7 @@ The directory structure for the i18n module is as follows:
 
 ```
 /base/global/
-├── i18n_standard           # Code repository for the i18n framework
+├── i18n                    # Code repository for the i18n framework
 │   ├── frameworks          # Core code of the i18n framework
 │   ├── interfaces          # APIs
 │   │   ├── js              # JavaScript APIs
