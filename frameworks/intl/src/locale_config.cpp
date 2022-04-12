@@ -42,12 +42,12 @@ using namespace std;
 using namespace OHOS::HiviewDFX;
 
 static constexpr OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001E00, "LocaleConfig" };
-const char *LocaleConfig::LANGUAGE_KEY = "persist.sys.language";
-const char *LocaleConfig::LOCALE_KEY = "persist.sys.locale";
-const char *LocaleConfig::HOUR_KEY = "persist.sys.is24Hour";
-const char *LocaleConfig::DEFAULT_LOCALE_KEY = "const.sys.locale";
-const char *LocaleConfig::DEFAULT_LANGUAGE_KEY = "const.sys.language";
-const char *LocaleConfig::DEFAULT_REGION_KEY = "const.sys.region";
+const char *LocaleConfig::LANGUAGE_KEY = "persist.global.language";
+const char *LocaleConfig::LOCALE_KEY = "persist.global.locale";
+const char *LocaleConfig::HOUR_KEY = "persist.global.is24Hour";
+const char *LocaleConfig::DEFAULT_LOCALE_KEY = "const.global.locale";
+const char *LocaleConfig::DEFAULT_LANGUAGE_KEY = "const.global.language";
+const char *LocaleConfig::DEFAULT_REGION_KEY = "const.global.region";
 const char *LocaleConfig::SUPPORTED_LOCALES_NAME = "supported_locales";
 const char *LocaleConfig::SUPPORTED_REGIONS_NAME = "supported_regions";
 const char *LocaleConfig::WHITE_LANGUAGES_NAME = "white_languages";
