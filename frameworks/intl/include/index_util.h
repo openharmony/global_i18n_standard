@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef GLOBAL_I18N_STANDARD_INDEX_UTIL_H
-#define GLOBAL_I18N_STANDARD_INDEX_UTIL_H
+#ifndef GLOBAL_I18N_INDEX_UTIL_H
+#define GLOBAL_I18N_INDEX_UTIL_H
 
 #include <string>
 #include <vector>

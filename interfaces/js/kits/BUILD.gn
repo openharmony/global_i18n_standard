@@ -22,8 +22,8 @@ group("build_module") {
 
 ohos_shared_library("intl") {
   include_dirs = [
-    "//base/global/i18n_standard/frameworks/intl/include",
-    "//base/global/i18n_standard/interfaces/js/kits/include",
+    "//base/global/i18n/frameworks/intl/include",
+    "//base/global/i18n/interfaces/js/kits/include",
     "//base/hiviewdfx/interfaces/native/innerkits/include",
     "//foundation/ace/napi/native_engine",
     "//foundation/ace/napi/interfaces/kits",
@@ -39,7 +39,7 @@ ohos_shared_library("intl") {
   sources = [ "src/intl_addon.cpp" ]
 
   deps = [
-    "//base/global/i18n_standard/frameworks/intl:intl_util",
+    "//base/global/i18n/frameworks/intl:intl_util",
     "//foundation/ace/napi:ace_napi",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
@@ -48,13 +48,13 @@ ohos_shared_library("intl") {
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
   relative_install_dir = "module"
   subsystem_name = "global"
-  part_name = "i18n_standard"
+  part_name = "i18n"
 }
 
 ohos_shared_library("i18n") {
   include_dirs = [
-    "//base/global/i18n_standard/frameworks/intl/include",
-    "//base/global/i18n_standard/interfaces/js/kits/include",
+    "//base/global/i18n/frameworks/intl/include",
+    "//base/global/i18n/interfaces/js/kits/include",
     "//base/hiviewdfx/interfaces/native/innerkits/include",
     "//foundation/ace/napi/native_engine",
     "//foundation/ace/napi/interfaces/kits",
@@ -70,8 +70,8 @@ ohos_shared_library("i18n") {
   sources = [ "src/i18n_addon.cpp" ]
 
   deps = [
-    "//base/global/i18n_standard/frameworks/intl:intl_util",
-    "//base/global/i18n_standard/frameworks/intl:preferred_language",
+    "//base/global/i18n/frameworks/intl:intl_util",
+    "//base/global/i18n/frameworks/intl:preferred_language",
     "//third_party/icu/icu4c:shared_icui18n",
     "//third_party/icu/icu4c:shared_icuuc",
     "//third_party/libphonenumber/cpp:phonenumber_standard",
@@ -82,5 +82,5 @@ ohos_shared_library("i18n") {
   ]
   relative_install_dir = "module"
   subsystem_name = "global"
-  part_name = "i18n_standard"
+  part_name = "i18n"
 }

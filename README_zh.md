@@ -16,7 +16,7 @@
 
 ```
 /base/global/
-├── i18n_standard           # 国际化框架代码仓
+├── i18n                    # 国际化框架代码仓
 │   ├── frameworks          # 国际化框架核心代码
 │   ├── interfaces          # 国际化框架接口
 │   │   ├── js              # 国际化框架JavaScript接口

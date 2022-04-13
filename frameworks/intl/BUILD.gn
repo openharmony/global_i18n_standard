@@ -21,7 +21,9 @@ group("build_module") {
 }
 
 config("preferred_language_config") {
-  include_dirs = [ "//base/global/i18n_standard/interfaces/native/innerkits/preferred_language/include" ]
+  include_dirs = [
+    "//base/global/i18n/interfaces/native/innerkits/preferred_language/include",
+  ]
 }
 ohos_shared_library("preferred_language") {
   public_configs = [ ":preferred_language_config" ]
@@ -31,13 +33,13 @@ ohos_shared_library("preferred_language") {
     "-Wall",
     "-fPIC",
   ]
-  deps = [ "//base/global/i18n_standard/frameworks/intl:intl_util" ]
+  deps = [ "//base/global/i18n/frameworks/intl:intl_util" ]
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "startup_l2:syspara",
   ]
   subsystem_name = "global"
-  part_name = "i18n_standard"
+  part_name = "i18n"
 }
 
 config("intl_util_config") {
@@ -46,8 +48,8 @@ config("intl_util_config") {
     "//third_party/icu/icu4c/source/common",
     "//third_party/icu/icu4c/source/i18n",
     "//third_party/icu/icu4c/source/common/unicode",
-    "//base/global/i18n_standard/frameworks/intl/include",
-    "//base/global/i18n_standard/interfaces/native/innerkits/i18n/include",
+    "//base/global/i18n/frameworks/intl/include",
+    "//base/global/i18n/interfaces/native/innerkits/i18n/include",
   ]
 }
 ohos_shared_library("intl_util") {
@@ -106,51 +108,46 @@ ohos_shared_library("intl_util") {
     cflags_cc += [ "-DTEL_CORE_SERVICE_EXISTS" ]
   }
   subsystem_name = "global"
-  part_name = "i18n_standard"
+  part_name = "i18n"
 }
 
 ohos_prebuilt_etc("language_config.para") {
-  source =
-      "//base/global/i18n_standard/frameworks/intl/etc/language_config.para"
-  part_name = "i18n_standard"
+  source = "//base/global/i18n/frameworks/intl/etc/language_config.para"
+  part_name = "i18n"
   module_install_dir = "etc/param"
 }
 
 ohos_prebuilt_etc("config_locales_xml") {
-  source =
-      "//base/global/i18n_standard/frameworks/intl/etc/supported_locales.xml"
+  source = "//base/global/i18n/frameworks/intl/etc/supported_locales.xml"
   module_install_dir = "usr/ohos_locale_config/"
-  part_name = "i18n_standard"
+  part_name = "i18n"
   subsystem_name = "global"
 }
 
 ohos_prebuilt_etc("config_regions_xml") {
-  source =
-      "//base/global/i18n_standard/frameworks/intl/etc/supported_regions.xml"
+  source = "//base/global/i18n/frameworks/intl/etc/supported_regions.xml"
   module_install_dir = "usr/ohos_locale_config/"
-  part_name = "i18n_standard"
+  part_name = "i18n"
   subsystem_name = "global"
 }
 
 ohos_prebuilt_etc("white_languages_xml") {
-  source = "//base/global/i18n_standard/frameworks/intl/etc/white_languages.xml"
+  source = "//base/global/i18n/frameworks/intl/etc/white_languages.xml"
   module_install_dir = "usr/ohos_locale_config/"
-  part_name = "i18n_standard"
+  part_name = "i18n"
   subsystem_name = "global"
 }
 
 ohos_prebuilt_etc("forbidden_languages_xml") {
-  source =
-      "//base/global/i18n_standard/frameworks/intl/etc/forbidden_languages.xml"
+  source = "//base/global/i18n/frameworks/intl/etc/forbidden_languages.xml"
   module_install_dir = "usr/ohos_locale_config/"
-  part_name = "i18n_standard"
+  part_name = "i18n"
   subsystem_name = "global"
 }
 
 ohos_prebuilt_etc("forbidden_regions_xml") {
-  source =
-      "//base/global/i18n_standard/frameworks/intl/etc/forbidden_regions.xml"
+  source = "//base/global/i18n/frameworks/intl/etc/forbidden_regions.xml"
   module_install_dir = "usr/ohos_locale_config/"
-  part_name = "i18n_standard"
+  part_name = "i18n"
   subsystem_name = "global"
 }
