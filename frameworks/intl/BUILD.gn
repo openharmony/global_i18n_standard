@@ -21,9 +21,7 @@ group("build_module") {
 }
 
 config("preferred_language_config") {
-  include_dirs = [
-    "//base/global/i18n/interfaces/native/innerkits/preferred_language/include",
-  ]
+  include_dirs = [ "//base/global/i18n/interfaces/native/inner_apis/preferred_language/include" ]
 }
 ohos_shared_library("preferred_language") {
   public_configs = [ ":preferred_language_config" ]
@@ -49,7 +47,7 @@ config("intl_util_config") {
     "//third_party/icu/icu4c/source/i18n",
     "//third_party/icu/icu4c/source/common/unicode",
     "//base/global/i18n/frameworks/intl/include",
-    "//base/global/i18n/interfaces/native/innerkits/i18n/include",
+    "//base/global/i18n/interfaces/native/inner_apis/i18n/include",
   ]
 }
 ohos_shared_library("intl_util") {
