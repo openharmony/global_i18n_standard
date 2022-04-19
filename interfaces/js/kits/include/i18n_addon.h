@@ -76,6 +76,10 @@ public:
     static napi_value GetFirstPreferredLanguage(napi_env env, napi_callback_info info);
     static napi_value InitI18nTimeZone(napi_env env, napi_value exports);
     static napi_value GetI18nTimeZone(napi_env env, napi_callback_info info);
+    static napi_value GetDateOrder(napi_env env, napi_callback_info info);
+    static napi_value InitTransliterator(napi_env env, napi_value exports);
+    static napi_value GetTransliteratorInstance(napi_env env, napi_callback_info info);
+    static napi_value GetAvailableIDs(napi_env env, napi_callback_info info);
 
 private:
     static void CreateInitProperties(napi_property_descriptor *properties);
@@ -132,12 +136,19 @@ private:
     static napi_value GetOffset(napi_env env, napi_callback_info info);
     static napi_value GetRawOffset(napi_env env, napi_callback_info info);
 
+    static napi_value Transform(napi_env env, napi_callback_info info);
+    static napi_value CreateTransliteratorObject(napi_env env);
+    bool InitTransliteratorContext(napi_env env, napi_callback_info info, const std::string &idTag);
+    static napi_value TransliteratorConstructor(napi_env env, napi_callback_info info);
+    static std::string ModifyOrder(std::string &pattern);
+    static void ProcessNormal(char ch, int *order, size_t orderSize, int *lengths, size_t lengsSize);
     static bool GetStringFromJS(napi_env env, napi_value argv, std::string &jsString);
 
     napi_env env_;
     napi_ref wrapper_;
     std::unique_ptr<PhoneNumberFormat> phonenumberfmt_ = nullptr;
     std::unique_ptr<I18nCalendar> calendar_ = nullptr;
+    std::unique_ptr<icu::Transliterator> transliterator_ = nullptr;
     std::unique_ptr<I18nBreakIterator> brkiter_ = nullptr;
     std::unique_ptr<IndexUtil> indexUtil_ = nullptr;
     std::unique_ptr<I18nTimeZone> timezone_ = nullptr;

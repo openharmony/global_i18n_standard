@@ -18,6 +18,10 @@
 #include "character.h"
 #include "hilog/log.h"
 #include "i18n_calendar.h"
+#include "unicode/locid.h"
+#include "unicode/datefmt.h"
+#include "unicode/smpdtfmt.h"
+#include "unicode/translit.h"
 #include "node_api.h"
 #include "i18n_addon.h"
 
@@ -29,6 +33,7 @@ static thread_local napi_ref* g_constructor = nullptr;
 static thread_local napi_ref* g_brkConstructor = nullptr;
 static thread_local napi_ref* g_timezoneConstructor = nullptr;
 static thread_local napi_ref g_indexUtilConstructor = nullptr;
+static thread_local napi_ref* g_transConstructor = nullptr;
 static std::unordered_map<std::string, UCalendarDateFields> g_fieldsMap {
     { "era", UCAL_ERA },
     { "year", UCAL_YEAR },
@@ -158,6 +163,7 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
     }
     napi_property_descriptor utilProperties[] = {
         DECLARE_NAPI_FUNCTION("unitConvert", UnitConvert),
+        DECLARE_NAPI_FUNCTION("getDateOrder", GetDateOrder)
     };
     status = napi_define_properties(env, util,
                                     sizeof(utilProperties) / sizeof(napi_property_descriptor),
@@ -170,11 +176,16 @@ napi_value I18nAddon::Init(napi_env env, napi_value exports)
     if (!character) {
         return nullptr;
     }
-    size_t propertiesNums = 24;
+    napi_value transliterator = CreateTransliteratorObject(env);
+    if (!transliterator) {
+        return nullptr;
+    }
+    size_t propertiesNums = 25;
     napi_property_descriptor properties[propertiesNums];
     CreateInitProperties(properties);
     properties[13] = DECLARE_NAPI_PROPERTY("Util", util);  // 13 is properties index
     properties[16] = DECLARE_NAPI_PROPERTY("Character", character);  // 16 is properties index
+    properties[24] = DECLARE_NAPI_PROPERTY("Transliterator", transliterator); // 24 is properties index
     status = napi_define_properties(env, exports, propertiesNums, properties);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to set properties at init");
@@ -272,6 +283,338 @@ napi_value I18nAddon::UnitConvert(napi_env env, napi_callback_info info)
     status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Failed to create string item");
+        return nullptr;
+    }
+    return result;
+}
+
+napi_value I18nAddon::GetDateOrder(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    size_t len = 0;
+    napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    std::vector<char> languageBuf(len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], languageBuf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to get locale string for GetDateOrder");
+        return nullptr;
+    }
+    UErrorCode icuStatus = U_ZERO_ERROR;
+    icu::Locale locale = icu::Locale::forLanguageTag(languageBuf.data(), icuStatus);
+    if (icuStatus != U_ZERO_ERROR) {
+        HiLog::Error(LABEL, "Failed to create locale for GetDateOrder");
+        return nullptr;
+    }
+    icu::SimpleDateFormat* formatter = dynamic_cast<icu::SimpleDateFormat*>
+        (icu::DateFormat::createDateInstance(icu::DateFormat::EStyle::kDefault, locale));
+    if (icuStatus != U_ZERO_ERROR || formatter == nullptr) {
+        HiLog::Error(LABEL, "Failed to create SimpleDateFormat");
+        return nullptr;
+    }
+    std::string tempValue;
+    icu::UnicodeString unistr;
+    formatter->toPattern(unistr);
+    unistr.toUTF8String<std::string>(tempValue);
+    std::string value = ModifyOrder(tempValue);
+    napi_value result;
+    status = napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create string item");
+        return nullptr;
+    }
+    return result;
+}
+
+std::string I18nAddon::ModifyOrder(std::string &pattern)
+{
+    int order[3] = { 0 }; // total 3 elements 'y', 'M'/'L', 'd'
+    int lengths[4] = { 0 }; // first elements is the currently found elememnts, thus 4 elements totally.
+    size_t len = pattern.length();
+    for (size_t i = 0; i < len; ++i) {
+        char ch = pattern[i];
+        if (((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z'))) {
+            ProcessNormal(ch, order, 3, lengths, 4); // 3, 4 are lengths of these arrays
+        } else if (ch == '\'') {
+            ++i;
+            while ((i < len) && pattern[i] != '\'') {
+                ++i;
+            }
+        }
+    }
+    std::string ret;
+    for (int i = 0; i < 3; ++i) { // 3 is the size of orders
+        switch (order[i]) {
+            case 'y': {
+                if ((lengths[1] <= 0) || (lengths[1] > 6)) { // 6 is the max length of a filed
+                    break;
+                }
+                ret.append(lengths[1], order[i]);
+                break;
+            }
+            case 'L': {
+                if ((lengths[2] <= 0) || (lengths[2] > 6)) { // 6 is the max length of a filed, 2 is the index
+                    break;
+                }
+                ret.append(lengths[2], order[i]); // 2 is the index of 'L'
+                break;
+            }
+            case 'd': {
+                if ((lengths[3] <= 0) || (lengths[3] > 6)) { // 6 is the max length of a filed, 3 is the index
+                    break;
+                }
+                ret.append(lengths[3], order[i]); // 3 is the index of 'y'
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        if ((i < 2) && (order[i] != 0)) { // 2 is the index of 'L'
+            ret.append(1, '-');
+        }
+    }
+    return ret;
+}
+
+void I18nAddon::ProcessNormal(char ch, int *order, size_t orderSize, int *lengths, size_t lengsSize)
+{
+    char adjust;
+    int index = -1;
+    if (ch == 'd') {
+        adjust = 'd';
+        index = 3; // 3 is the index of 'd'
+    } else if ((ch == 'L') || (ch == 'M')) {
+        adjust = 'L';
+        index = 2; // 2 is the index of 'L'
+    } else if (ch == 'y') {
+        adjust = 'y';
+        index = 1;
+    } else {
+        return;
+    }
+    if ((index < 0) || (index >= static_cast<int>(lengsSize))) {
+        return;
+    }
+    if (lengths[index] == 0) {
+        if (lengths[0] >= 3) { // 3 is the index of order
+            return;
+        }
+        order[lengths[0]] = adjust;
+        ++lengths[0];
+        lengths[index] = 1;
+    } else {
+        ++lengths[index];
+    }
+}
+
+napi_value I18nAddon::InitTransliterator(napi_env env, napi_value exports)
+{
+    napi_status status = napi_ok;
+    napi_property_descriptor properties[] = {
+        DECLARE_NAPI_FUNCTION("transform", Transform),
+    };
+    napi_value constructor = nullptr;
+    status = napi_define_class(env, "Transliterator", NAPI_AUTO_LENGTH, TransliteratorConstructor, nullptr,
+        sizeof(properties) / sizeof(napi_property_descriptor), properties, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to define transliterator class at Init");
+        return nullptr;
+    }
+    g_transConstructor = new (std::nothrow) napi_ref;
+    if (!g_transConstructor) {
+        HiLog::Error(LABEL, "Failed to create trans ref at init");
+        return nullptr;
+    }
+    status = napi_create_reference(env, constructor, 1, g_transConstructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create trans reference at init");
+        return nullptr;
+    }
+    return exports;
+}
+
+napi_value I18nAddon::TransliteratorConstructor(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (status != napi_ok) {
+        return nullptr;
+    }
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    int32_t code = 0;
+    std::string idTag = GetString(env, argv[0], code);
+    if (code) {
+        return nullptr;
+    }
+    std::unique_ptr<I18nAddon> obj = nullptr;
+    obj = std::make_unique<I18nAddon>();
+    if (!obj) {
+        HiLog::Error(LABEL, "Create I18nAddon failed");
+        return nullptr;
+    }
+    status =
+        napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), I18nAddon::Destructor, nullptr, &obj->wrapper_);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Wrap II18nAddon failed");
+        return nullptr;
+    }
+    if (!obj->InitTransliteratorContext(env, info, idTag)) {
+        return nullptr;
+    }
+    obj.release();
+    return thisVar;
+}
+
+bool I18nAddon::InitTransliteratorContext(napi_env env, napi_callback_info info, const std::string &idTag)
+{
+    UErrorCode status = U_ZERO_ERROR;
+    icu::UnicodeString unistr = icu::UnicodeString::fromUTF8(idTag);
+    icu::Transliterator *trans = icu::Transliterator::createInstance(unistr, UTransDirection::UTRANS_FORWARD, status);
+    if ((status != U_ZERO_ERROR) || (trans == nullptr)) {
+        return false;
+    }
+    transliterator_ = std::unique_ptr<icu::Transliterator>(trans);
+    return transliterator_ != nullptr;
+}
+
+napi_value I18nAddon::CreateTransliteratorObject(napi_env env)
+{
+    napi_status status = napi_ok;
+    napi_value transliterator = nullptr;
+    status = napi_create_object(env, &transliterator);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create transliterator object at init");
+        return nullptr;
+    }
+    napi_property_descriptor transProperties[] = {
+        DECLARE_NAPI_FUNCTION("getAvailableIDs", GetAvailableIDs),
+        DECLARE_NAPI_FUNCTION("getInstance", GetTransliteratorInstance)
+    };
+    status = napi_define_properties(env, transliterator,
+                                    sizeof(transProperties) / sizeof(napi_property_descriptor),
+                                    transProperties);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to set properties of transliterator at init");
+        return nullptr;
+    }
+    return transliterator;
+}
+
+napi_value I18nAddon::Transform(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    I18nAddon *obj = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&obj));
+    if (status != napi_ok || !obj || !obj->transliterator_) {
+        HiLog::Error(LABEL, "Get Transliterator object failed");
+        return nullptr;
+    }
+    if (!argv[0]) {
+        return nullptr;
+    }
+    napi_valuetype valueType = napi_valuetype::napi_undefined;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_valuetype::napi_string) {
+        napi_throw_type_error(env, nullptr, "Parameter type does not match");
+        return nullptr;
+    }
+    size_t len = 0;
+    status = napi_get_value_string_utf8(env, argv[0], nullptr, 0, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get field length failed");
+        return nullptr;
+    }
+    std::vector<char> buf(len + 1);
+    status = napi_get_value_string_utf8(env, argv[0], buf.data(), len + 1, &len);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get string value failed");
+        return nullptr;
+    }
+    icu::UnicodeString unistr = icu::UnicodeString::fromUTF8(buf.data());
+    obj->transliterator_->transliterate(unistr);
+    std::string temp;
+    unistr.toUTF8String(temp);
+    napi_value value;
+    status = napi_create_string_utf8(env, temp.c_str(), NAPI_AUTO_LENGTH, &value);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get field length failed");
+        return nullptr;
+    }
+    return value;
+}
+
+napi_value I18nAddon::GetAvailableIDs(napi_env env, napi_callback_info info)
+{
+    size_t argc = 0;
+    napi_value *argv = nullptr;
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (status != napi_ok) {
+        return nullptr;
+    }
+    UErrorCode icuStatus = U_ZERO_ERROR;
+    icu::StringEnumeration *strenum = icu::Transliterator::getAvailableIDs(icuStatus);
+    if (icuStatus != U_ZERO_ERROR) {
+        HiLog::Error(LABEL, "Failed to get available ids");
+        if (strenum) {
+            delete strenum;
+        }
+        return nullptr;
+    }
+
+    napi_value result = nullptr;
+    napi_create_array(env, &result);
+    uint32_t i = 0;
+    const char *temp = nullptr;
+    while ((temp = strenum->next(nullptr, icuStatus)) != nullptr) {
+        if (icuStatus != U_ZERO_ERROR) {
+            break;
+        }
+        napi_value val = nullptr;
+        napi_create_string_utf8(env, temp, strlen(temp), &val);
+        napi_set_element(env, result, i, val);
+        ++i;
+    }
+    if (strenum) {
+        delete strenum;
+    }
+    return result;
+}
+
+napi_value I18nAddon::GetTransliteratorInstance(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1; // retrieve 2 arguments
+    napi_value argv[1] = { 0 };
+    napi_value thisVar = nullptr;
+    void *data = nullptr;
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    napi_value constructor = nullptr;
+    napi_status status = napi_get_reference_value(env, *g_transConstructor, &constructor);
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Failed to create reference at GetCalendar");
+        return nullptr;
+    }
+    napi_value result = nullptr;
+    status = napi_new_instance(env, constructor, 1, argv, &result); // 2 arguments
+    if (status != napi_ok) {
+        HiLog::Error(LABEL, "Get Transliterator create instance failed");
         return nullptr;
     }
     return result;
@@ -2692,7 +3035,8 @@ napi_value Init(napi_env env, napi_value exports)
     val = I18nAddon::InitBreakIterator(env, val);
     val = I18nAddon::InitI18nCalendar(env, val);
     val = I18nAddon::InitIndexUtil(env, val);
-    return I18nAddon::InitI18nTimeZone(env, val);
+    val = I18nAddon::InitI18nTimeZone(env, val);
+    return I18nAddon::InitTransliterator(env, val);
 }
 
 static napi_module g_i18nModule = {

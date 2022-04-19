@@ -66,7 +66,8 @@ ohos_shared_library("i18n") {
     "//third_party/libphonenumber",
     "//third_party/protobuf/src",
   ]
-
+  cflags_cc = [ "-frtti" ]
+  remove_configs = [ "//build/config/compiler:no_rtti" ]
   sources = [ "src/i18n_addon.cpp" ]
 
   deps = [
