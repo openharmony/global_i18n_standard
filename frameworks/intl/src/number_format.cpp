@@ -175,7 +175,9 @@ void NumberFormat::ParseConfigs(std::map<std::string, std::string> &configs)
         unit = configs["unit"];
         if (configs.count("unitDisplay") > 0) {
             unitDisplayString = configs["unitDisplay"];
-            unitDisplay = unitStyle[unitDisplayString];
+            if (unitStyle.count(unitDisplayString) > 0) {
+                unitDisplay = unitStyle[unitDisplayString];
+            }
         }
         if (configs.count("unitUsage") > 0) {
             unitUsage = configs["unitUsage"];
