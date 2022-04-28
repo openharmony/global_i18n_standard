@@ -403,7 +403,7 @@ void I18nAddon::ProcessNormal(char ch, int *order, size_t orderSize, int *length
         if (lengths[0] >= 3) { // 3 is the index of order
             return;
         }
-        order[lengths[0]] = adjust;
+        order[lengths[0]] = (int) adjust;
         ++lengths[0];
         lengths[index] = 1;
     } else {
