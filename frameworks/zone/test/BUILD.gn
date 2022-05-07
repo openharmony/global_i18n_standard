@@ -33,8 +33,6 @@ ohos_unittest("zone_util_test") {
     "//third_party/googletest/googletest/src/hwext/gtest-utils.cc",
     "unittest/zone_util_test.cpp",
   ]
-  remove_configs = [ "//build/config/compiler:no_rtti" ]
-  cflags_cc = [ "-frtti" ]
   include_dirs = [
     "//third_party/googletest/googletest/include",
     "//third_party/googletest/googletest",
