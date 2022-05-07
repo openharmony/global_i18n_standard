@@ -33,9 +33,7 @@ ohos_shared_library("zone_util") {
   cflags_cc = [
     "-Wall",
     "-fPIC",
-    "-frtti",
   ]
-  remove_configs = [ "//build/config/compiler:no_rtti" ]
   deps = [
     "//third_party/icu/icu4c:ohos_icudat",
     "//third_party/icu/icu4c:shared_icui18n",
