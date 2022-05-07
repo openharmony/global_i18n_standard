@@ -24,7 +24,7 @@ ohos_shared_library("intl") {
   include_dirs = [
     "//base/global/i18n/frameworks/intl/include",
     "//base/global/i18n/interfaces/js/kits/include",
-    "//base/hiviewdfx/interfaces/native/inner_apis/include",
+    "//base/hiviewdfx/interfaces/native/inner_api/include",
     "//foundation/arkui/napi/native_engine",
     "//foundation/arkui/napi/interfaces/kits",
     "//third_party/node/src",
@@ -55,7 +55,7 @@ ohos_shared_library("i18n") {
   include_dirs = [
     "//base/global/i18n/frameworks/intl/include",
     "//base/global/i18n/interfaces/js/kits/include",
-    "//base/hiviewdfx/interfaces/native/inner_apis/include",
+    "//base/hiviewdfx/interfaces/native/inner_api/include",
     "//foundation/arkui/napi/native_engine",
     "//foundation/arkui/napi/interfaces/kits",
     "//third_party/node/src",
