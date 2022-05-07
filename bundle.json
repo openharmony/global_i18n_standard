@@ -77,7 +77,7 @@
                         "header_files": [
                             "zone_util.h"
                         ],
-                        "header_base": "//base/global/i18n/interfaces/native/inner_apis/zone/include"
+                        "header_base": "//base/global/i18n/interfaces/native/inner_api/zone/include"
                     }
                 },
                 {
@@ -96,7 +96,7 @@
                         "header_files": [
                             "preferred_language.h"
                         ],
-                        "header_base": "//base/global/i18n/interfaces/native/inner_apis/preferred_language/include"
+                        "header_base": "//base/global/i18n/interfaces/native/inner_api/preferred_language/include"
                     }
                 }
             ],
