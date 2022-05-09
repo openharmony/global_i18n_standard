@@ -10,8 +10,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-persist.sys.language=zh-Hans
-persist.sys.locale=zh-Hans-CN
-const.sys.language=zh-Hans
-const.sys.locale=zh-Hans-CN
-const.sys.region=CN
+persist.global.language=zh-Hans
+persist.global.locale=zh-Hans-CN
+const.global.language=zh-Hans
+const.global.locale=zh-Hans-CN
+const.global.region=CN
