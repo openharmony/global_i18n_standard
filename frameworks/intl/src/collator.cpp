@@ -66,9 +66,7 @@ Collator::Collator(std::vector<std::string> &localeTags, std::map<std::string, s
     ParseAllOptions(options);
 
     UErrorCode status = UErrorCode::U_ZERO_ERROR;
-    if (!localeTags.size()) {
-        localeTags.push_back(LocaleConfig::GetSystemLocale());
-    }
+    localeTags.push_back(LocaleConfig::GetSystemLocale());
     for (size_t i = 0; i < localeTags.size(); i++) {
         std::string curLocale = localeTags[i];
         locale = icu::Locale::forLanguageTag(icu::StringPiece(curLocale), status);
