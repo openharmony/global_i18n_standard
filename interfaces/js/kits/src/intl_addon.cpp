@@ -181,6 +181,9 @@ void GetOptionValue(napi_env env, napi_value options, const std::string &optionN
             napi_get_value_string_utf8(env, optionValue, nullptr, 0, &len);
             std::vector<char> optionBuf(len + 1);
             status = napi_get_value_string_utf8(env, optionValue, optionBuf.data(), len + 1, &len);
+            if (status != napi_ok) {
+                return;
+            }
             map.insert(make_pair(optionName, optionBuf.data()));
         }
     }
@@ -300,6 +303,9 @@ napi_value IntlAddon::LocaleConstructor(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (status != napi_ok) {
+        return nullptr;
+    }
     std::string localeTag = GetLocaleTag(env, argv[0]);
 
     std::map<std::string, std::string> map = {};
@@ -364,12 +370,14 @@ void GetLocaleTags(napi_env env, napi_value rawLocaleTag, std::vector<std::strin
 
 napi_value IntlAddon::DateTimeFormatConstructor(napi_env env, napi_callback_info info)
 {
-    // Need to get one parameter of a locale in string format to create DateTimeFormat object.
     size_t argc = 2;
     napi_value argv[2] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (status != napi_ok) {
+        return nullptr;
+    }
     std::vector<std::string> localeTags;
     if (argv[0] != nullptr) {
         napi_valuetype valueType = napi_valuetype::napi_undefined;
@@ -429,13 +437,14 @@ bool IntlAddon::InitDateTimeFormatContext(napi_env env, napi_callback_info info,
 
 napi_value IntlAddon::RelativeTimeFormatConstructor(napi_env env, napi_callback_info info)
 {
-    // Need to get one parameter of a locale in string format to create DateTimeFormat object.
     size_t argc = 2;
     napi_value argv[2] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-
+    if (status != napi_ok) {
+        return nullptr;
+    }
     std::vector<std::string> localeTags;
     if (argv[0] != nullptr) {
         napi_valuetype valueType = napi_valuetype::napi_undefined;
@@ -454,31 +463,26 @@ napi_value IntlAddon::RelativeTimeFormatConstructor(napi_env env, napi_callback_
             }
         }
     }
-
     std::map<std::string, std::string> map = {};
     if (argv[1] != nullptr) {
         GetRelativeTimeOptionValues(env, argv[1], map);
     }
-
     std::unique_ptr<IntlAddon> obj = nullptr;
     obj = std::make_unique<IntlAddon>();
     if (!obj) {
         HiLog::Error(LABEL, "Create IntlAddon failed");
         return nullptr;
     }
-
     status =
         napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), IntlAddon::Destructor, nullptr, &obj->wrapper_);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Wrap IntlAddon failed");
         return nullptr;
     }
-
     if (!obj->InitRelativeTimeFormatContext(env, info, localeTags, map)) {
         HiLog::Error(LABEL, "Init RelativeTimeFormat failed");
         return nullptr;
     }
-
     obj.release();
     return thisVar;
 }
@@ -595,13 +599,14 @@ void GetNumberOptionValues(napi_env env, napi_value options, std::map<std::strin
 
 napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info info)
 {
-    // Need to get one parameter of a locale in string format to create DateTimeFormat object.
     size_t argc = 2;
     napi_value argv[2] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-
+    if (status != napi_ok) {
+        return nullptr;
+    }
     std::vector<std::string> localeTags;
     if (argv[0] != nullptr) {
         napi_valuetype valueType = napi_valuetype::napi_undefined;
@@ -621,31 +626,25 @@ napi_value IntlAddon::NumberFormatConstructor(napi_env env, napi_callback_info i
             }
         }
     }
-
     std::map<std::string, std::string> map = {};
     if (argv[1] != nullptr) {
         GetNumberOptionValues(env, argv[1], map);
     }
-
     std::unique_ptr<IntlAddon> obj = nullptr;
     obj = std::make_unique<IntlAddon>();
     if (!obj) {
-        HiLog::Error(LABEL, "Create IntlAddon failed");
         return nullptr;
     }
-
     status =
         napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), IntlAddon::Destructor, nullptr, &obj->wrapper_);
     if (status != napi_ok) {
         HiLog::Error(LABEL, "Wrap IntlAddon failed");
         return nullptr;
     }
-
     if (!obj->InitNumberFormatContext(env, info, localeTags, map)) {
         HiLog::Error(LABEL, "Init NumberFormat failed");
         return nullptr;
     }
-
     obj.release();
     return thisVar;
 }
@@ -1486,6 +1485,9 @@ napi_value IntlAddon::CollatorConstructor(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (status != napi_ok) {
+        return nullptr;
+    }
     std::vector<std::string> localeTags;
     if (argv[0] != nullptr) {
         napi_valuetype valueType = napi_valuetype::napi_undefined;
@@ -1504,12 +1506,10 @@ napi_value IntlAddon::CollatorConstructor(napi_env env, napi_callback_info info)
             }
         }
     }
-
     std::map<std::string, std::string> map = {};
     if (argv[1] != nullptr) {
         GetCollatorOptionValue(env, argv[1], map);
     }
-
     std::unique_ptr<IntlAddon> obj = nullptr;
     obj = std::make_unique<IntlAddon>();
     if (!obj) {
@@ -1869,6 +1869,9 @@ napi_value IntlAddon::PluralRulesConstructor(napi_env env, napi_callback_info in
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
+    if (status != napi_ok) {
+        return nullptr;
+    }
     napi_valuetype valueType = napi_valuetype::napi_undefined;
     std::vector<std::string> localeTags;
     if (argv[0] != nullptr) {
