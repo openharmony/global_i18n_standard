@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "number_format.h"
+#include "parse_option_int.h"
 #include <locale>
 #include <codecvt>
 #include "ohos/init_data.h"
@@ -135,27 +136,26 @@ void NumberFormat::InitProperties()
 
 void NumberFormat::InitDigitsProperties()
 {
+    int parsed = 0;
     if (!maximumSignificantDigits.empty() || !minimumSignificantDigits.empty()) {
-        if (!maximumSignificantDigits.empty()) {
-            int32_t maxSignificantDigits = std::stoi(maximumSignificantDigits);
-            numberFormat = numberFormat.precision(icu::number::Precision::maxSignificantDigits(maxSignificantDigits));
+        if (!maximumSignificantDigits.empty() && ParseOptionInt(maximumSignificantDigits, parsed)) {
+            numberFormat = numberFormat.precision(icu::number::Precision::maxSignificantDigits(parsed));
         }
-        if (!minimumSignificantDigits.empty()) {
-            int32_t minSignificantDigits = std::stoi(minimumSignificantDigits);
-            numberFormat = numberFormat.precision(icu::number::Precision::minSignificantDigits(minSignificantDigits));
+        if (!minimumSignificantDigits.empty() && ParseOptionInt(minimumSignificantDigits, parsed)) {
+            numberFormat = numberFormat.precision(icu::number::Precision::minSignificantDigits(parsed));
         }
     } else {
-        if (!minimumIntegerDigits.empty() && std::stoi(minimumIntegerDigits) > 1) {
+        if (!minimumIntegerDigits.empty() && ParseOptionInt(minimumIntegerDigits, parsed) && parsed > 1) {
             numberFormat =
-                numberFormat.integerWidth(icu::number::IntegerWidth::zeroFillTo(std::stoi(minimumIntegerDigits)));
+                numberFormat.integerWidth(icu::number::IntegerWidth::zeroFillTo(parsed));
         }
-        if (!minimumFractionDigits.empty()) {
+        if (!minimumFractionDigits.empty() && ParseOptionInt(minimumFractionDigits, parsed)) {
             numberFormat =
-                numberFormat.precision(icu::number::Precision::minFraction(std::stoi(minimumFractionDigits)));
+                numberFormat.precision(icu::number::Precision::minFraction(parsed));
         }
-        if (!maximumFractionDigits.empty()) {
+        if (!maximumFractionDigits.empty() && ParseOptionInt(maximumFractionDigits, parsed)) {
             numberFormat =
-                numberFormat.precision(icu::number::Precision::maxFraction(std::stoi(maximumFractionDigits)));
+                numberFormat.precision(icu::number::Precision::maxFraction(parsed));
         }
     }
 }
