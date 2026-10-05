@@ -20,6 +20,7 @@
 
 #include "locale_config.h"
 #include "plural_rules.h"
+#include "parse_option_int.h"
 
 namespace OHOS {
 namespace Global {
@@ -44,7 +45,8 @@ void PluralRules::ParseAllOptions(std::map<std::string, std::string> &options)
     type = ParseOption(options, "type");
     type = (type == "") ? "cardinal" : type;
     std::string minIntegerStr = ParseOption(options, "minimumIntegerDigits");
-    minInteger = (minIntegerStr == "") ? 1 : std::stoi(minIntegerStr);
+    minInteger = 1;
+    ParseOptionInt(minIntegerStr, minInteger);
 
     minFraction = 0;
     maxFraction = 0;
@@ -54,17 +56,21 @@ void PluralRules::ParseAllOptions(std::map<std::string, std::string> &options)
     std::string maxSignificantStr = ParseOption(options, "maximumSignificantDigits");
     if (minSignificantStr != "" || maxSignificantStr != "") {
         // 1 is the default value of minSignificant
-        minSignificant = (minSignificantStr == "") ? 1 : std::stoi(minSignificantStr);
+        minSignificant = 1;
+        ParseOptionInt(minSignificantStr, minSignificant);
         // 21 is the default value of maxSignificant
-        maxSignificant = (maxSignificantStr == "") ? 21 : std::stoi(maxSignificantStr);
+        maxSignificant = 21;
+        ParseOptionInt(maxSignificantStr, maxSignificant);
     } else {
         minSignificant = 0;
         maxSignificant = 0;
 
         if (minFractionStr != "" || maxFractionStr != "") {
-            minFraction = (minFractionStr == "") ? 0 : std::stoi(minFractionStr);
+            minFraction = 0;
+            ParseOptionInt(minFractionStr, minFraction);
             int maxFractionDefault = std::max(3, minFraction);  // 3 is the default valud of minFraction
-            maxFraction = (maxFractionStr == "") ? maxFractionDefault : std::stoi(maxFractionStr);
+            maxFraction = maxFractionDefault;
+            ParseOptionInt(maxFractionStr, maxFraction);
             if (minFraction > maxFraction) {
                 HiLog::Error(LABEL, "minimumFractionDigits is greater than maximumFractionDigits");
                 return;
